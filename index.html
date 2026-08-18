@@ -1,12 +1,261 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>WebRTC Chat</title>
-    <script defer type="module" src="./src/index.ts"></script>
-  </head>
-  <body>
-    <div id="app">Hello</div>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>P2P WebRTC Chat (Serverless)</title>
+  <script defer type="module" src="./src/index.ts"></script>
+  <style>
+      :root {
+          --bg: #0f172a;
+          --card: #1e293b;
+          --accent: #38bdf8;
+          --text: #f8fafc;
+          --border: #334155;
+      }
+
+      body {
+          font-family: system-ui, -apple-system, sans-serif;
+          background: var(--bg);
+          color: var(--text);
+          max-width: 800px;
+          margin: 2rem auto;
+          padding: 0 1rem;
+      }
+
+      h2 {
+          border-bottom: 2px solid var(--border);
+          padding-bottom: 0.5rem;
+      }
+
+      .grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1rem;
+          margin-bottom: 1rem;
+      }
+
+      .card {
+          background: var(--card);
+          padding: 1rem;
+          border-radius: 8px;
+          border: 1px solid var(--border);
+      }
+
+      textarea {
+          width: 100%;
+          height: 80px;
+          background: #0f172a;
+          color: var(--text);
+          border: 1px solid var(--border);
+          border-radius: 4px;
+          box-sizing: border-box;
+          margin: 0.5rem 0;
+          font-family: monospace;
+          font-size: 0.8rem;
+          resize: none;
+      }
+
+      button {
+          background: var(--accent);
+          color: #000;
+          font-weight: bold;
+          border: none;
+          padding: 0.5rem 1rem;
+          border-radius: 4px;
+          cursor: pointer;
+          margin-right: 0.5rem;
+      }
+
+      button:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+      }
+
+      #chat-box {
+          height: 250px;
+          background: #0f172a;
+          border: 1px solid var(--border);
+          border-radius: 4px;
+          padding: 0.5rem;
+          overflow-y: auto;
+          margin-bottom: 0.5rem;
+      }
+
+      .msg {
+          margin: 0.25rem 0;
+          padding: 0.25rem 0.5rem;
+          border-radius: 4px;
+      }
+
+      .system {
+          color: #94a3b8;
+          font-style: italic;
+      }
+
+      .sent {
+          color: #38bdf8;
+      }
+
+      .received {
+          color: #4ade80;
+      }
+
+      .input-row {
+          display: flex;
+          gap: 0.5rem;
+      }
+
+      .input-row input {
+          flex: 1;
+          background: #0f172a;
+          color: var(--text);
+          border: 1px solid var(--border);
+          border-radius: 4px;
+          padding: 0.5rem;
+      }
+
+      #status {
+          font-weight: bold;
+          color: #f59e0b;
+          margin-bottom: 1rem;
+      }
+
+      #status.connected {
+          color: #4ade80;
+      }
+  </style>
+</head>
+<body>
+
+  <h2>P2P WebRTC Chat</h2>
+  <div id="status">Status: Not Connected</div>
+
+  <div class="grid">
+    <!-- HOST PANEL -->
+    <div class="card">
+      <h3>1. Host (Create Room)</h3>
+      <button id="create-btn">Create Connection Offer</button>
+      <label>Your Offer Code (Send to Peer):</label>
+      <textarea id="offer-out" readonly placeholder="Click Create Offer..."></textarea>
+
+      <label>Peer's Answer Code (Paste here):</label>
+      <textarea id="answer-in" placeholder="Paste Answer Code here..."></textarea>
+      <button id="accept-answer-btn">Connect Host</button>
+    </div>
+
+    <!-- JOIN PANEL -->
+    <div class="card">
+      <h3>2. Joiner (Join Room)</h3>
+      <label>Peer's Offer Code (Paste here):</label>
+      <textarea id="offer-in" placeholder="Paste Offer Code here..."></textarea>
+      <button id="join-btn">Generate Answer Code</button>
+
+      <label>Your Answer Code (Send back to Host):</label>
+      <textarea id="answer-out" readonly placeholder="Click Generate Answer..."></textarea>
+    </div>
+  </div>
+
+  <!-- CHAT AREA -->
+  <div class="card">
+    <h3>Chat</h3>
+    <div id="chat-box"></div>
+    <div class="input-row">
+      <input type="text" id="msg-input" placeholder="Type a message..." disabled />
+      <button id="send-btn" disabled>Send</button>
+    </div>
+  </div>
+
+  <script>
+      // STUN server helps devices discover their public IPs
+      const config = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+      let pc = new RTCPeerConnection(config);
+      let dataChannel = null;
+
+      const statusEl = document.getElementById('status');
+      const chatBox = document.getElementById('chat-box');
+      const msgInput = document.getElementById('msg-input');
+      const sendBtn = document.getElementById('send-btn');
+
+      function logMsg(text, type = 'system') {
+          const div = document.createElement('div');
+          div.className = `msg ${type}`;
+          div.textContent = text;
+          chatBox.appendChild(div);
+          chatBox.scrollTop = chatBox.scrollHeight;
+      }
+
+      function setupDataChannel(channel) {
+          dataChannel = channel;
+          dataChannel.onopen = () => {
+              statusEl.textContent = 'Status: Connected!';
+              statusEl.className = 'connected';
+              msgInput.disabled = false;
+              sendBtn.disabled = false;
+              logMsg('Peer-to-peer data channel opened. You can chat now!');
+          };
+          dataChannel.onclose = () => {
+              statusEl.textContent = 'Status: Disconnected';
+              statusEl.className = '';
+              msgInput.disabled = true;
+              sendBtn.disabled = true;
+              logMsg('Connection closed.');
+          };
+          dataChannel.onmessage = (e) => logMsg(`Peer: ${e.data}`, 'received');
+      }
+
+      // --- HOST SIDE ---
+      document.getElementById('create-btn').onclick = async () => {
+          dataChannel = pc.createDataChannel('chat');
+          setupDataChannel(dataChannel);
+
+          pc.onicecandidate = (e) => {
+              if (!e.candidate) {
+                  // All ICE candidates gathered, produce full SDP string
+                  document.getElementById('offer-out').value = JSON.stringify(pc.localDescription);
+              }
+          };
+
+          const offer = await pc.createOffer();
+          await pc.setLocalDescription(offer);
+      };
+
+      document.getElementById('accept-answer-btn').onclick = async () => {
+          const answerSDP = JSON.parse(document.getElementById('answer-in').value);
+          await pc.setRemoteDescription(new RTCSessionDescription(answerSDP));
+      };
+
+      // --- JOINER SIDE ---
+      document.getElementById('join-btn').onclick = async () => {
+          pc.ondatachannel = (e) => setupDataChannel(e.channel);
+
+          pc.onicecandidate = (e) => {
+              if (!e.candidate) {
+                  document.getElementById('answer-out').value = JSON.stringify(pc.localDescription);
+              }
+          };
+
+          const offerSDP = JSON.parse(document.getElementById('offer-in').value);
+          await pc.setRemoteDescription(new RTCSessionDescription(offerSDP));
+
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+      };
+
+      // --- SENDING MESSAGES ---
+      function sendMessage() {
+          const text = msgInput.value.trim();
+          if (text && dataChannel && dataChannel.readyState === 'open') {
+              dataChannel.send(text);
+              logMsg(`You: ${text}`, 'sent');
+              msgInput.value = '';
+          }
+      }
+
+      sendBtn.onclick = sendMessage;
+      msgInput.onkeydown = (e) => {
+          if (e.key === 'Enter') sendMessage();
+      };
+  </script>
+</body>
 </html>
