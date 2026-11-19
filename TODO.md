@@ -167,7 +167,9 @@ Hard requirement: message text and files are never written to disk, a server, a 
 - [ ] Optional TURN server (Cloudflare) for strict networks. This also hides the IP address from the peer.
   - [x] Worker that hands out short-lived credentials (`worker/`), and the app side (`VITE_TURN_URL`).
   - [x] Show "through TURN relay" when a connection uses it.
-  - [ ] Deploy the Worker and set the `VITE_TURN_URL` repository variable.
+  - [x] Deploy the Worker.
+  - [x] Stop handing out credentials at 800 GB in 30 days, so the free 1,000 GB is never exceeded.
+  - [ ] Renew credentials of a running TURN connection before they expire (1 hour).
   - [ ] Lower video quality on TURN calls to save traffic.
 - [ ] Test with the real public relays: the 4 hardcoded relays must accept ephemeral events of kind 20784.
 - [x] Handle relays that are down or slow: publish to all relays, and succeed when any one accepts.

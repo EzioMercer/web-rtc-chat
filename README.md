@@ -93,8 +93,10 @@ e.g. `VITE_RELAYS=ws://localhost:7777 npm run dev`.
 ### TURN relay
 
 The TURN key's token must stay secret, so a small Cloudflare Worker (`worker/turn-credentials.js`) hands out
-credentials that expire after an hour. It runs on Cloudflare, set up in the dashboard, with the secrets
-`TURN_KEY_ID` and `TURN_KEY_API_TOKEN` and the variable `ALLOWED_ORIGINS`. The app's code holds only its URL
+credentials that expire after an hour. It stops at 800 GB of TURN traffic in 30 days, so the free 1,000 GB is
+never exceeded. It runs on Cloudflare, set up in the dashboard, with the secrets `TURN_KEY_ID`,
+`TURN_KEY_API_TOKEN` and `ANALYTICS_API_TOKEN` (Account Analytics: Read), and the variables `ALLOWED_ORIGINS` and
+`ACCOUNT_ID`. The app's code holds only its URL
 (`src/webrtc/config.ts`). `VITE_TURN_URL` replaces it; set it empty for direct connections only.
 `scripts/check-turn.mjs` checks that a message gets through the relay.
 
