@@ -28,6 +28,8 @@ export const createSession = (options: Options, dispatch: AppDispatch): Session 
     closing: false,
     opened: false,
     sentOffer: null,
+    attachOnOffer: false,
+    log: text => dispatch(sessionLogged({ key: options.key, text })),
   };
 
   peer.ondatachannel = ({ channel }) => {
@@ -39,6 +41,8 @@ export const createSession = (options: Options, dispatch: AppDispatch): Session 
   };
 
   peer.ontrack = ({ track, streams }) => {
+    session.log(`Receiving their ${track.kind}`);
+
     session.remoteStream = streams[0] ?? session.remoteStream ?? new MediaStream();
 
     if (!session.remoteStream.getTracks().includes(track)) {

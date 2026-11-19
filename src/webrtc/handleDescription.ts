@@ -1,3 +1,5 @@
+import { attachToOffer } from './attachToOffer.ts';
+import { errorText } from './errorText.ts';
 import { sendControl } from './sendControl.ts';
 import { sessions } from './state.ts';
 
@@ -15,17 +17,32 @@ export const handleDescription = async (key: string, description: RTCSessionDesc
   session.ignoreOffer = !session.polite && collision;
 
   if (session.ignoreOffer) {
+    session.log('Call setup: both sides offered at once; keeping ours');
+
     return;
   }
 
-  // On a collision the polite peer rolls back its own offer implicitly here.
-  await peer.setRemoteDescription(description);
+  session.log(`Call setup: got ${description.type}${collision ? ' (both offered; yielding)' : ''}`);
 
-  if (description.type === 'offer') {
-    await peer.setLocalDescription();
+  try {
+    // On a collision the polite peer rolls back its own offer implicitly here.
+    await peer.setRemoteDescription(description);
 
-    if (peer.localDescription) {
-      sendControl(key, { t: 'sdp', description: peer.localDescription.toJSON() });
+    if (description.type === 'offer' && session.attachOnOffer) {
+      session.attachOnOffer = false;
+      await attachToOffer(session);
     }
+
+    if (description.type === 'offer') {
+      await peer.setLocalDescription();
+
+      if (peer.localDescription) {
+        sendControl(key, { t: 'sdp', description: peer.localDescription.toJSON() });
+        session.log(`Call setup: sent ${peer.localDescription.type}`);
+      }
+    }
+  } catch (err) {
+    session.log(`Call setup failed (their ${description.type}): ${errorText(err)}`);
+    throw err;
   }
 };

@@ -51,12 +51,20 @@ export const ChatPane = ({ id }: Props) => {
       subtitle={`${getStatusText(status)}${contact.verified ? ' · verified' : ''}`}
       connected={connected}
       actions={(
-        <IconButton
-          icon={contact.verified ? 'shieldCheck' : 'shield'}
-          label="Safety code"
-          variant={showSafety ? 'neutral' : 'plain'}
-          onClick={() => setShowSafety(!showSafety)}
-        />
+        <>
+          <IconButton
+            icon="link"
+            label="Connection log"
+            variant={showLog ? 'neutral' : 'plain'}
+            onClick={() => setShowLog(!showLog)}
+          />
+          <IconButton
+            icon={contact.verified ? 'shieldCheck' : 'shield'}
+            label="Safety code"
+            variant={showSafety ? 'neutral' : 'plain'}
+            onClick={() => setShowSafety(!showSafety)}
+          />
+        </>
       )}
     />
   );
@@ -96,7 +104,7 @@ export const ChatPane = ({ id }: Props) => {
           </span>
         </div>
       )}
-      {showLog && status !== 'connected' && (
+      {showLog && (
         <pre className={styles.log} aria-label="Connection log">{(log ?? ['Nothing yet.']).join('\n')}</pre>
       )}
     </Conversation>

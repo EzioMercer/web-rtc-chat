@@ -45,4 +45,9 @@ export type Session = {
   opened: boolean;
   // Our offer as sent through relays, so it can be sent again (see receiveOffer).
   sentOffer: string | null;
+  // We accepted a call: our camera/microphone go into the answer to the caller's next offer (see handleDescription),
+  // so only one side ever offers and the two offers can't collide.
+  attachOnOffer: boolean;
+  // Adds a line to this conversation's connection log (Details), for troubleshooting.
+  log: (text: string) => void;
 };

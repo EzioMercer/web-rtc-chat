@@ -1,3 +1,4 @@
+import { errorText } from './errorText.ts';
 import { sendControl } from './sendControl.ts';
 import type { Session } from './types.ts';
 
@@ -14,8 +15,10 @@ export const negotiate = async (session: Session) => {
 
     if (session.peer.localDescription) {
       sendControl(session.key, { t: 'sdp', description: session.peer.localDescription.toJSON() });
+      session.log(`Call setup: sent ${session.peer.localDescription.type}`);
     }
   } catch (err) {
+    session.log(`Call setup failed (our offer): ${errorText(err)}`);
     console.error('Renegotiation failed', err);
   } finally {
     session.makingOffer = false;

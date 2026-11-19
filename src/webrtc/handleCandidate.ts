@@ -9,7 +9,7 @@ export const handleCandidate = async (key: string, candidate: RTCIceCandidateIni
   } catch (err) {
     // Candidates of an offer we ignored on purpose are expected to fail.
     if (!session?.ignoreOffer) {
-      console.error('Could not add ICE candidate', err);
+      session?.log(`Could not add a network address: ${err instanceof Error ? err.message : String(err)}`);
     }
   }
 };

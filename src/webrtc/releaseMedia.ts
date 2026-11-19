@@ -11,10 +11,13 @@ export const releaseMedia = (key: string | null) => {
     return;
   }
 
+  // Stop sending without renegotiating: both sides hang up at once, and two simultaneous renegotiations are
+  // exactly what we avoid. The next call gets fresh audio/video slots.
   if (session.peer.signalingState !== 'closed') {
-    session.senders.forEach(sender => session.peer.removeTrack(sender));
+    session.senders.forEach(sender => void sender.replaceTrack(null).catch(() => undefined));
   }
 
   session.senders = [];
+  session.attachOnOffer = false;
   session.remoteStream = null;
 };

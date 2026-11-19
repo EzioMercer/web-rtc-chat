@@ -4,6 +4,7 @@ import { receivePeerText } from '../store/thunks/chat/receivePeerText.ts';
 import { receiveRotate } from '../store/thunks/contact/receiveRotate.ts';
 import { handleCandidate } from './handleCandidate.ts';
 import { handleDescription } from './handleDescription.ts';
+import { sessions } from './state.ts';
 import type { ControlMessage } from './types.ts';
 
 // Routes a message received on `key`'s control channel.
@@ -21,12 +22,16 @@ export const handleControlMessage = (key: string, data: unknown, dispatch: AppDi
       dispatch(receivePeerText(key, String(message.text)));
       break;
     case 'sdp':
-      handleDescription(key, message.description).catch(err => console.error('Could not apply description', err));
+      handleDescription(key, message.description).catch(() => undefined);
       break;
     case 'ice':
       void handleCandidate(key, message.candidate);
       break;
     case 'call':
+      if (message.action !== 'state') {
+        sessions.get(key)?.log(`Call: they sent "${message.action}"`);
+      }
+
       dispatch(receiveCallSignal(key, message));
       break;
     case 'rotate':
