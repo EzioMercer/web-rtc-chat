@@ -1,0 +1,7 @@
+.qr {
+  align-self: center;
+  width: 240px;
+  height: 240px;
+  border-radius: 8px;
+  background: #fff;
+}

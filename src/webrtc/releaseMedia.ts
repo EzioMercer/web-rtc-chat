@@ -1,16 +1,20 @@
-import { rtc } from './state.ts';
+import { media, sessions } from './state.ts';
 
-// Stops the camera/microphone and stops sending them to the peer.
-export const releaseMedia = () => {
-  const { peer } = rtc;
+// Stops the camera/microphone and stops sending them to `key`.
+export const releaseMedia = (key: string | null) => {
+  const session = key ? sessions.get(key) : undefined;
 
-  rtc.localStream?.getTracks().forEach(track => track.stop());
+  media.localStream?.getTracks().forEach(track => track.stop());
+  media.localStream = null;
 
-  if (peer && peer.signalingState !== 'closed') {
-    rtc.senders.forEach(sender => peer.removeTrack(sender));
+  if (!session) {
+    return;
   }
 
-  rtc.senders = [];
-  rtc.localStream = null;
-  rtc.remoteStream = null;
+  if (session.peer.signalingState !== 'closed') {
+    session.senders.forEach(sender => session.peer.removeTrack(sender));
+  }
+
+  session.senders = [];
+  session.remoteStream = null;
 };

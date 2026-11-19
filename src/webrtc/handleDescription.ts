@@ -1,19 +1,20 @@
 import { sendControl } from './sendControl.ts';
-import { rtc } from './state.ts';
+import { sessions } from './state.ts';
 
 // Applies an offer or answer received over the control channel (perfect negotiation).
-export const handleDescription = async (description: RTCSessionDescriptionInit) => {
-  const { peer } = rtc;
+export const handleDescription = async (key: string, description: RTCSessionDescriptionInit) => {
+  const session = sessions.get(key);
 
-  if (!peer) {
+  if (!session) {
     return;
   }
 
-  const collision = description.type === 'offer' && (rtc.makingOffer || peer.signalingState !== 'stable');
+  const { peer } = session;
+  const collision = description.type === 'offer' && (session.makingOffer || peer.signalingState !== 'stable');
 
-  rtc.ignoreOffer = !rtc.polite && collision;
+  session.ignoreOffer = !session.polite && collision;
 
-  if (rtc.ignoreOffer) {
+  if (session.ignoreOffer) {
     return;
   }
 
@@ -24,7 +25,7 @@ export const handleDescription = async (description: RTCSessionDescriptionInit) 
     await peer.setLocalDescription();
 
     if (peer.localDescription) {
-      sendControl({ t: 'sdp', description: peer.localDescription.toJSON() });
+      sendControl(key, { t: 'sdp', description: peer.localDescription.toJSON() });
     }
   }
 };

@@ -1,12 +1,13 @@
-import { addMessage } from '../store/chat/chatSlice.ts';
 import type { AppDispatch } from '../store/store.ts';
 import { receiveCallSignal } from '../store/thunks/call/receiveCallSignal.ts';
+import { receivePeerText } from '../store/thunks/chat/receivePeerText.ts';
+import { receiveRotate } from '../store/thunks/contact/receiveRotate.ts';
 import { handleCandidate } from './handleCandidate.ts';
 import { handleDescription } from './handleDescription.ts';
 import type { ControlMessage } from './types.ts';
 
-// Routes a message received on the control channel.
-export const handleControlMessage = (data: unknown, dispatch: AppDispatch) => {
+// Routes a message received on `key`'s control channel.
+export const handleControlMessage = (key: string, data: unknown, dispatch: AppDispatch) => {
   let message: ControlMessage;
 
   try {
@@ -17,16 +18,21 @@ export const handleControlMessage = (data: unknown, dispatch: AppDispatch) => {
 
   switch (message.t) {
     case 'text':
-      dispatch(addMessage({ from: 'peer', text: String(message.text) }));
+      dispatch(receivePeerText(key, String(message.text)));
       break;
     case 'sdp':
-      handleDescription(message.description).catch(err => console.error('Could not apply description', err));
+      handleDescription(key, message.description).catch(err => console.error('Could not apply description', err));
       break;
     case 'ice':
-      void handleCandidate(message.candidate);
+      void handleCandidate(key, message.candidate);
       break;
     case 'call':
-      dispatch(receiveCallSignal(message));
+      dispatch(receiveCallSignal(key, message));
+      break;
+    case 'rotate':
+    case 'rotate-ack':
+    case 'rotate-done':
+      dispatch(receiveRotate(key, message));
       break;
   }
 };

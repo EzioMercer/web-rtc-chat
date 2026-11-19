@@ -2,6 +2,7 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { CallState } from './types.ts';
 
 const initialState: CallState = {
+  key: null,
   status: 'idle',
   video: false,
   mic: true,
@@ -15,9 +16,13 @@ const callSlice = createSlice({
   name: 'call',
   initialState,
   reducers: {
-    callStarted: (state, { payload }: PayloadAction<{ status: 'outgoing' | 'incoming'; video: boolean }>) => ({
+    callStarted: (
+      state,
+      { payload }: PayloadAction<{ key: string; status: 'outgoing' | 'incoming'; video: boolean }>,
+    ) => ({
       ...initialState,
       remoteStreamVersion: state.remoteStreamVersion,
+      key: payload.key,
       status: payload.status,
       video: payload.video,
     }),

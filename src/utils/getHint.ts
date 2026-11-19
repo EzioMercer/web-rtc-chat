@@ -1,7 +1,7 @@
-import type { ConnectionState } from '../store/connection/types.ts';
+import type { ManualState } from '../store/manual/types.ts';
 
 // What to do next, shown under the setup form.
-export const getHint = ({ role, status }: ConnectionState): string => {
+export const getHint = ({ role, status }: ManualState): string => {
   if (status === 'connecting') {
     return 'Connecting…';
   }

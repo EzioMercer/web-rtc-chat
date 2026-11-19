@@ -6,24 +6,32 @@ import type { AppThunk } from '../../store.ts';
 import { endCall } from './endCall.ts';
 import { sendCallState } from './sendCallState.ts';
 
-// Reacts to call control messages from the peer.
-export const receiveCallSignal = (signal: CallSignal): AppThunk => (dispatch, getState) => {
-  const { status } = getState().call;
+// Reacts to call control messages from the peer of conversation `key`.
+export const receiveCallSignal = (key: string, signal: CallSignal): AppThunk => (dispatch, getState) => {
+  const { status, key: callKey } = getState().call;
+
+  // Already in (or setting up) a call: report busy.
+  if (signal.action === 'invite') {
+    if (status !== 'idle') {
+      sendControl(key, { t: 'call', action: 'decline' });
+
+      return;
+    }
+
+    dispatch(callStarted({ key, status: 'incoming', video: signal.video }));
+
+    return;
+  }
+
+  // Everything else is about the current call.
+  if (callKey !== key) {
+    return;
+  }
 
   switch (signal.action) {
-    case 'invite':
-      // Already in (or setting up) a call: report busy.
-      if (status !== 'idle') {
-        sendControl({ t: 'call', action: 'decline' });
-
-        return;
-      }
-
-      dispatch(callStarted({ status: 'incoming', video: signal.video }));
-      break;
     case 'accept':
       if (status === 'outgoing') {
-        attachLocalTracks();
+        attachLocalTracks(key);
         dispatch(callActive());
         dispatch(sendCallState());
       }

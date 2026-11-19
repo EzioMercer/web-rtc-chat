@@ -19,3 +19,12 @@ export const FILE_BUFFER_LOW = 1024 * 1024;
 
 // Receiver's acknowledgement that the whole file arrived.
 export const FILE_DONE = 'done';
+
+// Conversation key of the manual (copy-paste codes) connection.
+export const MANUAL_KEY = 'manual';
+
+// Give up on reaching a contact after this long.
+export const CONNECT_TIMEOUT_MS = 20_000;
+
+// Wait this long before each automatic reconnect attempt after a connection dropped.
+export const RECONNECT_DELAYS_MS = [2000, 5000, 15_000];

@@ -1,11 +1,18 @@
 import { useEffect, useRef } from 'react';
+import type { Message } from '../../store/chat/types.ts';
 import { useAppSelector } from '../../store/useAppSelector.ts';
 import { cx } from '../../utils/cx.ts';
 import { FileBubble } from '../FileBubble/FileBubble.tsx';
 import styles from './MessageList.module.css';
 
-export const MessageList = () => {
-  const messages = useAppSelector(state => state.chat.messages);
+type Props = {
+  convKey: string;
+};
+
+const NONE: Message[] = [];
+
+export const MessageList = ({ convKey }: Props) => {
+  const messages = useAppSelector(state => state.chat.conversations[convKey] ?? NONE);
   const listRef = useRef<HTMLDivElement>(null);
 
   // Keep the newest message in view.

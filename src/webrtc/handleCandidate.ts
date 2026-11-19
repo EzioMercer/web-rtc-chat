@@ -1,12 +1,14 @@
-import { rtc } from './state.ts';
+import { sessions } from './state.ts';
 
 // Adds an ICE candidate received over the control channel.
-export const handleCandidate = async (candidate: RTCIceCandidateInit) => {
+export const handleCandidate = async (key: string, candidate: RTCIceCandidateInit) => {
+  const session = sessions.get(key);
+
   try {
-    await rtc.peer?.addIceCandidate(candidate);
+    await session?.peer.addIceCandidate(candidate);
   } catch (err) {
     // Candidates of an offer we ignored on purpose are expected to fail.
-    if (!rtc.ignoreOffer) {
+    if (!session?.ignoreOffer) {
       console.error('Could not add ICE candidate', err);
     }
   }

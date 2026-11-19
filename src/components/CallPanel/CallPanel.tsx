@@ -6,7 +6,7 @@ import { toggleMic } from '../../store/thunks/call/toggleMic.ts';
 import { useAppDispatch } from '../../store/useAppDispatch.ts';
 import { useAppSelector } from '../../store/useAppSelector.ts';
 import { cx } from '../../utils/cx.ts';
-import { rtc } from '../../webrtc/state.ts';
+import { media, sessions } from '../../webrtc/state.ts';
 import { Icon } from '../Icon/Icon.tsx';
 import { IconButton } from '../IconButton/IconButton.tsx';
 import { MediaVideo } from '../MediaVideo/MediaVideo.tsx';
@@ -22,7 +22,8 @@ const TITLES = {
 export const CallPanel = () => {
   const dispatch = useAppDispatch();
   const call = useAppSelector(state => state.call);
-  const { status, video, mic, cam, remoteMic, remoteCam, remoteStreamVersion } = call;
+  const { status, video, mic, cam, remoteMic, remoteCam, remoteStreamVersion, key } = call;
+  const remoteStream = key ? sessions.get(key)?.remoteStream ?? null : null;
 
   if (status === 'idle') {
     return null;
@@ -39,7 +40,7 @@ export const CallPanel = () => {
         {/* Always mounted while active: it also plays the peer's audio. */}
         {active && (
           <MediaVideo
-            stream={rtc.remoteStream}
+            stream={remoteStream}
             version={remoteStreamVersion}
             className={cx(styles.remote, !showRemoteVideo && styles.hidden)}
           />
@@ -57,7 +58,7 @@ export const CallPanel = () => {
             Peer is muted
           </span>
         )}
-        {showLocalVideo && <MediaVideo stream={rtc.localStream} className={styles.local} muted />}
+        {showLocalVideo && <MediaVideo stream={media.localStream} className={styles.local} muted />}
       </div>
 
       <div className={styles.controls}>

@@ -1,4 +1,4 @@
-import type { ConnectionState } from '../store/connection/types.ts';
+import type { ManualState } from '../store/manual/types.ts';
 
 export type Action = {
   label: string;
@@ -6,7 +6,7 @@ export type Action = {
 };
 
 // Label and state of the single setup button, from the connection and whether the peer's code is filled in.
-export const getAction = ({ role, status }: ConnectionState, hasPeerCode: boolean): Action => {
+export const getAction = ({ role, status }: ManualState, hasPeerCode: boolean): Action => {
   if (status === 'generating' || status === 'connecting') {
     return { label: 'Please wait…', disabled: true };
   }

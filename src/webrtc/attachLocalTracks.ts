@@ -1,12 +1,13 @@
-import { rtc } from './state.ts';
+import { media, sessions } from './state.ts';
 
-// Starts sending the local microphone/camera to the peer. Triggers renegotiation.
-export const attachLocalTracks = () => {
-  const { peer, localStream } = rtc;
+// Starts sending the local microphone/camera to `key`. Triggers renegotiation.
+export const attachLocalTracks = (key: string) => {
+  const session = sessions.get(key);
+  const { localStream } = media;
 
-  if (!peer || !localStream) {
+  if (!session || !localStream) {
     return;
   }
 
-  rtc.senders = localStream.getTracks().map(track => peer.addTrack(track, localStream));
+  session.senders = localStream.getTracks().map(track => session.peer.addTrack(track, localStream));
 };

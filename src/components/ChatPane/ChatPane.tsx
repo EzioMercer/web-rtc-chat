@@ -1,0 +1,89 @@
+import { useEffect, useState } from 'react';
+import { useSafetyWords } from '../../hooks/useSafetyWords.ts';
+import { verifiedSet } from '../../store/contacts/contactsSlice.ts';
+import { connectContact } from '../../store/thunks/contact/connectContact.ts';
+import { useAppDispatch } from '../../store/useAppDispatch.ts';
+import { useAppSelector } from '../../store/useAppSelector.ts';
+import { ChatHeader } from '../ChatHeader/ChatHeader.tsx';
+import { Conversation } from '../Conversation/Conversation.tsx';
+import { IconButton } from '../IconButton/IconButton.tsx';
+import { SafetyPanel } from '../SafetyPanel/SafetyPanel.tsx';
+import styles from './ChatPane.module.css';
+import { getStatusText } from './getStatusText.ts';
+
+// While a contact's chat is open and they are offline, check again this often.
+const RETRY_MS = 20_000;
+
+type Props = {
+  id: string;
+};
+
+export const ChatPane = ({ id }: Props) => {
+  const dispatch = useAppDispatch();
+  const contact = useAppSelector(state => state.contacts.list.find(c => c.id === id));
+  const status = useAppSelector(state => state.sessions.status[id] ?? 'idle');
+  const words = useSafetyWords(contact?.identity);
+  // Open until the contact is verified, so a new contact shows the code right away.
+  const [showSafety, setShowSafety] = useState(() => !contact?.verified);
+  const connected = status === 'connected';
+
+  useEffect(() => {
+    if (status !== 'offline') {
+      return;
+    }
+
+    const timer = window.setInterval(() => void dispatch(connectContact(id)), RETRY_MS);
+
+    return () => window.clearInterval(timer);
+  }, [dispatch, id, status]);
+
+  if (!contact) {
+    return null;
+  }
+
+  const header = (
+    <ChatHeader
+      convKey={id}
+      title={contact.name}
+      subtitle={`${getStatusText(status)}${contact.verified ? ' · verified' : ''}`}
+      connected={connected}
+      actions={(
+        <IconButton
+          icon={contact.verified ? 'shieldCheck' : 'shield'}
+          label="Safety code"
+          variant={showSafety ? 'neutral' : 'plain'}
+          onClick={() => setShowSafety(!showSafety)}
+        />
+      )}
+    />
+  );
+
+  return (
+    <Conversation convKey={id} connected={connected} header={header}>
+      {showSafety && (
+        <SafetyPanel
+          words={words}
+          verified={contact.verified}
+          onVerify={() => {
+            dispatch(verifiedSet({ id, verified: true }));
+            setShowSafety(false);
+          }}
+          onUnverify={() => dispatch(verifiedSet({ id, verified: false }))}
+        />
+      )}
+      {!showSafety && !contact.verified && (
+        <button className={styles.bar} type="button" onClick={() => setShowSafety(true)}>
+          Not verified yet. Tap to compare the safety code.
+        </button>
+      )}
+      {status === 'offline' && (
+        <div className={styles.offline}>
+          <span>They aren&apos;t reachable. They need to have the app open.</span>
+          <button className={styles.retry} type="button" onClick={() => void dispatch(connectContact(id))}>
+            Try again
+          </button>
+        </div>
+      )}
+    </Conversation>
+  );
+};

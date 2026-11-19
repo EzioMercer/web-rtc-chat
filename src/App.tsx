@@ -1,17 +1,33 @@
-import styles from './App.module.css';
-import { Chat } from './components/Chat/Chat.tsx';
-import { Header } from './components/Header/Header.tsx';
-import { Setup } from './components/Setup/Setup.tsx';
+import { useEffect } from 'react';
+import { Messenger } from './components/Messenger/Messenger.tsx';
+import { SetupScreen } from './components/SetupScreen/SetupScreen.tsx';
+import { UnlockScreen } from './components/UnlockScreen/UnlockScreen.tsx';
+import { initApp } from './store/thunks/app/initApp.ts';
+import { useAppDispatch } from './store/useAppDispatch.ts';
 import { useAppSelector } from './store/useAppSelector.ts';
 
-export const App = () => {
-  const status = useAppSelector(state => state.connection.status);
-  const inChat = status === 'connected' || status === 'disconnected';
+let started = false;
 
-  return (
-    <main className={styles.app}>
-      <Header />
-      {inChat ? <Chat /> : <Setup />}
-    </main>
-  );
+export const App = () => {
+  const dispatch = useAppDispatch();
+  const phase = useAppSelector(state => state.app.phase);
+
+  useEffect(() => {
+    // Once per page, also under StrictMode's double effects.
+    if (!started) {
+      started = true;
+      void dispatch(initApp());
+    }
+  }, [dispatch]);
+
+  switch (phase) {
+    case 'setup':
+      return <SetupScreen />;
+    case 'locked':
+      return <UnlockScreen />;
+    case 'ready':
+      return <Messenger />;
+    default:
+      return null;
+  }
 };

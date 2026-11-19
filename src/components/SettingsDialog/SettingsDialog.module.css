@@ -1,0 +1,23 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.section:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.section h3 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.section p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}

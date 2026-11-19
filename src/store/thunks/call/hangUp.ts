@@ -4,8 +4,11 @@ import { endCall } from './endCall.ts';
 
 // Ends an active call, or cancels one that is still ringing.
 export const hangUp = (): AppThunk => (dispatch, getState) => {
-  const { status } = getState().call;
+  const { status, key } = getState().call;
 
-  sendControl({ t: 'call', action: 'end' });
+  if (key) {
+    sendControl(key, { t: 'call', action: 'end' });
+  }
+
   dispatch(endCall(status === 'active' ? 'Call ended.' : 'Call cancelled.'));
 };

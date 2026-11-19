@@ -16,6 +16,40 @@ const functionStatements = [
 ];
 
 const loops = ['if', 'for', 'while', 'do', 'switch'];
+
+// Messages must never be saved or sent anywhere but the direct connection. These APIs can do that, so they are
+// banned everywhere except the one module that saves the (encrypted) identity and contacts.
+const PRIVACY_MESSAGE = 'Messages must stay in memory. Only src/storage/ may touch browser storage.';
+const bannedGlobals = [
+  'localStorage',
+  'sessionStorage',
+  'indexedDB',
+  'caches',
+  'cookieStore',
+  'fetch',
+  'XMLHttpRequest',
+  'WebSocket',
+  'EventSource',
+  'WebTransport',
+];
+
+const banGlobals = (allowed = []) => [
+  'error',
+  ...bannedGlobals.filter(name => !allowed.includes(name)).map(name => ({ name, message: PRIVACY_MESSAGE })),
+];
+
+const banProperties = (allowed = []) => [
+  'error',
+  ...bannedGlobals.filter(name => !allowed.includes(name)).flatMap(property => [
+    { object: 'window', property, message: PRIVACY_MESSAGE },
+    { object: 'globalThis', property, message: PRIVACY_MESSAGE },
+    { object: 'self', property, message: PRIVACY_MESSAGE },
+  ]),
+  { object: 'navigator', property: 'sendBeacon', message: PRIVACY_MESSAGE },
+  { object: 'navigator', property: 'storage', message: PRIVACY_MESSAGE },
+  { object: 'document', property: 'cookie', message: PRIVACY_MESSAGE },
+];
+
 const vars = ['const', 'let', 'var'];
 
 export default tseslint.config(
@@ -60,6 +94,25 @@ export default tseslint.config(
       // `Boolean(x)`, `Number(x)`, `String(x)` instead of `!!x`, `+x`, `'' + x`.
       'no-implicit-coercion': ['error', { boolean: true, number: true, string: true }],
       'one-var': ['error', 'never'],
+      'no-restricted-globals': banGlobals(),
+      'no-restricted-properties': banProperties(),
+      // Never log message content: only errors and warnings, and those must not include it.
+      'no-console': ['error', { allow: ['error', 'warn'] }],
+    },
+  },
+  {
+    files: ['src/storage/**'],
+    rules: {
+      'no-restricted-globals': banGlobals(['indexedDB']),
+      'no-restricted-properties': banProperties(['indexedDB']),
+    },
+  },
+  {
+    // Node config files, not app code.
+    files: ['*.config.{js,ts}'],
+    rules: {
+      'no-restricted-globals': 'off',
+      'no-restricted-properties': 'off',
     },
   },
 );

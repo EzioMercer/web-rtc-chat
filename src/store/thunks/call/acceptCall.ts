@@ -1,30 +1,30 @@
 import { attachLocalTracks } from '../../../webrtc/attachLocalTracks.ts';
 import { getLocalMedia } from '../../../webrtc/getLocalMedia.ts';
 import { sendControl } from '../../../webrtc/sendControl.ts';
-import { rtc } from '../../../webrtc/state.ts';
+import { media } from '../../../webrtc/state.ts';
 import { callActive } from '../../call/callSlice.ts';
 import type { AppThunk } from '../../store.ts';
 import { endCall } from './endCall.ts';
 import { sendCallState } from './sendCallState.ts';
 
 export const acceptCall = (): AppThunk<Promise<void>> => async (dispatch, getState) => {
-  const { status, video } = getState().call;
+  const { status, video, key } = getState().call;
 
-  if (status !== 'incoming') {
+  if (status !== 'incoming' || !key) {
     return;
   }
 
   try {
-    rtc.localStream = await getLocalMedia(video);
+    media.localStream = await getLocalMedia(video);
   } catch {
-    sendControl({ t: 'call', action: 'decline' });
+    sendControl(key, { t: 'call', action: 'decline' });
     dispatch(endCall('Could not access your microphone or camera.'));
 
     return;
   }
 
-  attachLocalTracks();
+  attachLocalTracks(key);
   dispatch(callActive());
-  sendControl({ t: 'call', action: 'accept' });
+  sendControl(key, { t: 'call', action: 'accept' });
   dispatch(sendCallState());
 };

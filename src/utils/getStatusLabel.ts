@@ -1,6 +1,6 @@
-import type { ConnectionState } from '../store/connection/types.ts';
+import type { ManualState } from '../store/manual/types.ts';
 
-export const getStatusLabel = ({ role, status }: ConnectionState): string => {
+export const getStatusLabel = ({ role, status }: ManualState): string => {
   switch (status) {
     case 'generating':
       return 'Generating code…';

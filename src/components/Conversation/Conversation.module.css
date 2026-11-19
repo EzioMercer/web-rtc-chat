@@ -1,0 +1,21 @@
+.conversation {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.dropZone {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--accent);
+  background: rgb(11 16 32 / 0.85);
+  color: var(--accent);
+  font-weight: 600;
+  pointer-events: none;
+}

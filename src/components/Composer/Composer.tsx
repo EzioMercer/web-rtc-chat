@@ -1,27 +1,30 @@
 import { useRef, useState, type ChangeEvent, type ClipboardEvent, type FormEvent } from 'react';
-import { sendFiles } from '../../store/thunks/sendFiles.ts';
-import { sendMessage } from '../../store/thunks/sendMessage.ts';
+import { sendFiles } from '../../store/thunks/chat/sendFiles.ts';
+import { sendMessage } from '../../store/thunks/chat/sendMessage.ts';
 import { useAppDispatch } from '../../store/useAppDispatch.ts';
-import { useAppSelector } from '../../store/useAppSelector.ts';
 import { IconButton } from '../IconButton/IconButton.tsx';
 import styles from './Composer.module.css';
 
-export const Composer = () => {
+type Props = {
+  convKey: string;
+  connected: boolean;
+};
+
+export const Composer = ({ convKey, connected }: Props) => {
   const dispatch = useAppDispatch();
-  const connected = useAppSelector(state => state.connection.status === 'connected');
   const [text, setText] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
 
-    if (dispatch(sendMessage(text))) {
+    if (dispatch(sendMessage(convKey, text))) {
       setText('');
     }
   };
 
   const pickFiles = (e: ChangeEvent<HTMLInputElement>) => {
-    dispatch(sendFiles(Array.from(e.target.files ?? [])));
+    dispatch(sendFiles(convKey, Array.from(e.target.files ?? [])));
     e.target.value = '';
   };
 
@@ -31,7 +34,7 @@ export const Composer = () => {
 
     if (files.length) {
       e.preventDefault();
-      dispatch(sendFiles(files));
+      dispatch(sendFiles(convKey, files));
     }
   };
 
@@ -48,7 +51,7 @@ export const Composer = () => {
         className={styles.input}
         type="text"
         value={text}
-        placeholder="Type a message…"
+        placeholder={connected ? 'Type a message…' : 'Not connected'}
         autoComplete="off"
         autoFocus
         disabled={!connected}

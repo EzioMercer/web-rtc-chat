@@ -14,7 +14,7 @@ export type FileMessage = {
   name: string;
   size: number;
   mime: string;
-  // Object URL of the file; on the receiving side it is set once the whole file arrived.
+  // Object URL of the file (in memory); on the receiving side it is set once the whole file arrived.
   url: string | null;
   transferred: number;
   status: 'transferring' | 'done' | 'failed';
@@ -22,6 +22,9 @@ export type FileMessage = {
 
 export type Message = TextMessage | FileMessage;
 
+// Memory only. Nothing here is ever saved.
 export type ChatState = {
-  messages: Message[];
+  // Conversation key (contact id, or the manual connection) -> messages.
+  conversations: Record<string, Message[]>;
+  unread: Record<string, number>;
 };

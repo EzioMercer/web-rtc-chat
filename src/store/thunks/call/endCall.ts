@@ -3,13 +3,18 @@ import { callEnded } from '../../call/callSlice.ts';
 import { addMessage } from '../../chat/chatSlice.ts';
 import type { AppThunk } from '../../store.ts';
 
-// Tears the call down on this side and notes `reason` in the chat.
+// Tears the call down on this side and notes `reason` in the conversation.
 export const endCall = (reason: string): AppThunk => (dispatch, getState) => {
-  if (getState().call.status === 'idle') {
+  const { status, key } = getState().call;
+
+  if (status === 'idle') {
     return;
   }
 
-  releaseMedia();
+  releaseMedia(key);
   dispatch(callEnded());
-  dispatch(addMessage({ from: 'system', text: reason }));
+
+  if (key) {
+    dispatch(addMessage({ key, from: 'system', text: reason }));
+  }
 };
