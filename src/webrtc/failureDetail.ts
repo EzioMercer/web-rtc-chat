@@ -1,3 +1,4 @@
+import { TURN_URL } from './config.ts';
 import { describeCandidates } from './describeCandidates.ts';
 import type { Session } from './types.ts';
 
@@ -12,5 +13,5 @@ export const failureDetail = (session: Session): string => {
   return 'Reached them through the relays, but no direct network path worked '
     + `(your addresses: ${describeCandidates(localDescription?.sdp)}; `
     + `theirs: ${describeCandidates(remoteDescription.sdp)}). `
-    + 'These networks need a TURN relay to connect.';
+    + (TURN_URL ? 'Even the TURN relay didn\'t work.' : 'These networks need a TURN relay to connect.');
 };

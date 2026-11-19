@@ -1,7 +1,14 @@
 // STUN server lets each browser discover its public address.
-export const RTC_CONFIG: RTCConfiguration = {
-  iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
-};
+export const STUN_SERVERS: RTCIceServer[] = [{ urls: 'stun:stun.l.google.com:19302' }];
+
+// Our Cloudflare Worker that hands out TURN credentials (see worker/). Without it, only direct connections work.
+export const TURN_URL = import.meta.env.VITE_TURN_URL;
+
+// Don't hold up a connection attempt longer than this waiting for TURN credentials.
+export const TURN_FETCH_TIMEOUT_MS = 4000;
+
+// After a failed credentials request, try again no sooner than this.
+export const TURN_RETRY_MS = 60_000;
 
 // Stop waiting for more ICE candidates after this long and use what was gathered.
 export const ICE_GATHERING_TIMEOUT_MS = 5000;

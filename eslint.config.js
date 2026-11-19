@@ -108,6 +108,23 @@ export default tseslint.config(
     },
   },
   {
+    // Fetches TURN credentials, nothing else.
+    files: ['src/turn/**'],
+    rules: {
+      'no-restricted-globals': banGlobals(['fetch']),
+      'no-restricted-properties': banProperties(['fetch']),
+    },
+  },
+  {
+    // The Cloudflare Worker runs on Cloudflare, not in the app.
+    files: ['worker/**'],
+    languageOptions: { globals: globals.serviceworker },
+    rules: {
+      'no-restricted-globals': 'off',
+      'no-restricted-properties': 'off',
+    },
+  },
+  {
     // Node config files and scripts, not app code.
     files: ['*.config.{js,ts}', 'scripts/**'],
     languageOptions: { globals: globals.node },

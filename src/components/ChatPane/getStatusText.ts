@@ -1,9 +1,9 @@
-import type { SessionStatus } from '../../store/sessions/types.ts';
+import type { SessionRoute, SessionStatus } from '../../store/sessions/types.ts';
 
-export const getStatusText = (status: SessionStatus): string => {
+export const getStatusText = (status: SessionStatus, route: SessionRoute | undefined): string => {
   switch (status) {
     case 'connected':
-      return 'Online · direct connection';
+      return route === 'relay' ? 'Online · through TURN relay' : 'Online · direct connection';
     case 'connecting':
       return 'Connecting…';
     case 'offline':

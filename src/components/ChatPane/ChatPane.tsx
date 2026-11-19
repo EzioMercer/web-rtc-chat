@@ -24,6 +24,7 @@ export const ChatPane = ({ id }: Props) => {
   const status = useAppSelector(state => state.sessions.status[id] ?? 'idle');
   const detail = useAppSelector(state => state.sessions.detail[id] ?? '');
   const log = useAppSelector(state => state.sessions.log[id]);
+  const route = useAppSelector(state => state.sessions.route[id]);
   const [showLog, setShowLog] = useState(false);
   const words = useSafetyWords(contact?.identity);
   // Open until the contact is verified, so a new contact shows the code right away.
@@ -48,7 +49,7 @@ export const ChatPane = ({ id }: Props) => {
     <ChatHeader
       convKey={id}
       title={contact.name}
-      subtitle={`${getStatusText(status)}${contact.verified ? ' · verified' : ''}`}
+      subtitle={`${getStatusText(status, route)}${contact.verified ? ' · verified' : ''}`}
       connected={connected}
       actions={(
         <>

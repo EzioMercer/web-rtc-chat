@@ -7,6 +7,7 @@ import { closeSession } from '../../../webrtc/closeSession.ts';
 import { CONTROL_LABEL } from '../../../webrtc/config.ts';
 import { createSession } from '../../../webrtc/createSession.ts';
 import { sessions } from '../../../webrtc/state.ts';
+import { ensureTurnServers } from '../../../webrtc/turnServers.ts';
 import { waitForIceGathering } from '../../../webrtc/waitForIceGathering.ts';
 import { sessionDetail, sessionStatusChanged } from '../../sessions/sessionsSlice.ts';
 import type { AppThunk } from '../../store.ts';
@@ -24,6 +25,15 @@ export const connectContact = (id: string): AppThunk<Promise<void>> => async (di
 
   const old = sessions.get(id);
 
+  dispatch(sessionStatusChanged({ key: id, status: 'connecting' }));
+  dispatch(sessionDetail({ key: id, detail: 'Preparing…' }));
+  await ensureTurnServers();
+
+  // Their offer arrived while we waited, and is being answered.
+  if (sessions.get(id) !== old) {
+    return;
+  }
+
   if (old) {
     closeSession(old);
   }
@@ -32,8 +42,6 @@ export const connectContact = (id: string): AppThunk<Promise<void>> => async (di
   const session = createSession({ key: id, sid: nanoid(), outgoing: true, polite }, dispatch);
 
   bindChannel(session, session.peer.createDataChannel(CONTROL_LABEL), dispatch);
-  dispatch(sessionStatusChanged({ key: id, status: 'connecting' }));
-  dispatch(sessionDetail({ key: id, detail: 'Preparing…' }));
 
   try {
     await session.peer.setLocalDescription(await session.peer.createOffer());

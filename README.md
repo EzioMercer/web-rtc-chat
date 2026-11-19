@@ -36,6 +36,10 @@ Live: https://eziomercer.github.io/web-rtc-chat/
 6. **Closing the tab ends everything.** Messages and received files exist only in the page's memory (the Redux
    store), and they disappear when the tab closes.
 
+Some networks block direct connections. Then the browsers send their (still end-to-end encrypted) traffic through
+a **TURN relay** on Cloudflare instead. It can't read anything and stores nothing. The status then says "through TURN
+relay".
+
 A **manual mode** is still there (Settings → Connect manually). Two people copy connection codes to each other by
 hand, without contacts or relays.
 
@@ -66,8 +70,8 @@ hand, without contacts or relays.
   contact. Comparing the safety words catches this, but only if people actually compare them.
 - **A compromised device.** Malware that can read your screen, keyboard or memory can read anything while the app
   is unlocked. With "no protection", it can also copy your identity key from disk. No app can defend against that.
-- **IP addresses.** The other person sees your IP address, because the connection is direct. Relays and the STUN
-  server see it too, as any website would. Relays can also see *when* your app is online.
+- **IP addresses.** The other person sees your IP address when the connection is direct. Relays, the STUN server
+  and the TURN relay see it too, as any website would. Relays can also see *when* your app is online.
 - **Availability.** If all 4 relays are down or block the app, contacts can't find each other. The manual mode
   still works.
 - **The code you download.** You trust that the files served from GitHub Pages are the ones in this repository.
@@ -86,6 +90,22 @@ npm run lint     # ESLint, which also checks formatting
 To test against your own relays, set `VITE_RELAYS` (comma-separated) when building or starting the dev server,
 e.g. `VITE_RELAYS=ws://localhost:7777 npm run dev`.
 
+### TURN relay (optional)
+
+The TURN key's token must stay secret, so a small Cloudflare Worker (`worker/`) hands out credentials that expire
+after a day:
+
+```sh
+cd worker
+npx wrangler login
+npx wrangler secret put TURN_KEY_ID          # from Cloudflare: Realtime → TURN Server
+npx wrangler secret put TURN_KEY_API_TOKEN
+npx wrangler deploy                          # prints the Worker's URL
+```
+
+Then set the repository variable `VITE_TURN_URL` (Settings → Secrets and variables → Actions → Variables) to that
+URL. Without it the app only makes direct connections. Only the origins in `worker/wrangler.toml` may use it.
+
 Every push to `master` builds the site and deploys it to GitHub Pages (`.github/workflows/deploy.yml`).
 
 ## Code layout
@@ -98,6 +118,8 @@ Every push to `master` builds the site and deploys it to GitHub Pages (`.github/
 | `src/nostr/` | Relay pool, daily mailboxes, encrypted publishing and listening |
 | `src/signaling/` | Signed envelopes, invites, who is polite in a pair |
 | `src/webrtc/` | One connection per contact, files, calls, perfect negotiation |
+| `src/turn/` | The only network request the app makes itself: TURN credentials |
+| `worker/` | Cloudflare Worker that hands out TURN credentials |
 | `src/store/` | Redux slices and thunks |
 | `src/components/` | React components, each with its own CSS module |
 

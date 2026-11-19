@@ -1,10 +1,11 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import type { SessionsState, SessionStatus } from './types.ts';
+import type { SessionRoute, SessionsState, SessionStatus } from './types.ts';
 
 const initialState: SessionsState = {
   status: {},
   detail: {},
   log: {},
+  route: {},
 };
 
 const LOG_LIMIT = 40;
@@ -25,12 +26,15 @@ const sessionsSlice = createSlice({
         state.log[payload.key] = [...(state.log[payload.key] ?? []), `${time()} ${payload.detail}`].slice(-LOG_LIMIT);
       }
     },
+    sessionRouteChanged: (state, { payload }: PayloadAction<{ key: string; route: SessionRoute }>) => {
+      state.route[payload.key] = payload.route;
+    },
     sessionLogged: (state, { payload }: PayloadAction<{ key: string; text: string }>) => {
       state.log[payload.key] = [...(state.log[payload.key] ?? []), `${time()} ${payload.text}`].slice(-LOG_LIMIT);
     },
   },
 });
 
-export const { sessionStatusChanged, sessionDetail, sessionLogged } = sessionsSlice.actions;
+export const { sessionStatusChanged, sessionDetail, sessionLogged, sessionRouteChanged } = sessionsSlice.actions;
 
 export const sessionsReducer = sessionsSlice.reducer;

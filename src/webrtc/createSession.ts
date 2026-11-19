@@ -4,19 +4,21 @@ import type { AppDispatch } from '../store/store.ts';
 import { manualPathFailed } from '../store/thunks/manual/manualPathFailed.ts';
 import { sessionDropped } from '../store/thunks/session/sessionDropped.ts';
 import { bindChannel } from './bindChannel.ts';
-import { CONTROL_LABEL, FILE_LABEL, MANUAL_KEY, RTC_CONFIG } from './config.ts';
+import { CONTROL_LABEL, FILE_LABEL, MANUAL_KEY, STUN_SERVERS } from './config.ts';
 import { describeCandidates } from './describeCandidates.ts';
 import { negotiate } from './negotiate.ts';
 import { receiveFile } from './receiveFile.ts';
 import { sendControl } from './sendControl.ts';
 import { sessions } from './state.ts';
+import { turnServers } from './turnServers.ts';
 import type { Session } from './types.ts';
 
 type Options = Pick<Session, 'key' | 'sid' | 'outgoing' | 'polite'>;
 
 // A new peer connection for `key`, replacing none: close the old one first.
+// Call ensureTurnServers() first, so the TURN relay is there for networks that need it.
 export const createSession = (options: Options, dispatch: AppDispatch): Session => {
-  const peer = new RTCPeerConnection(RTC_CONFIG);
+  const peer = new RTCPeerConnection({ iceServers: [...STUN_SERVERS, ...turnServers()] });
   const session: Session = {
     ...options,
     peer,

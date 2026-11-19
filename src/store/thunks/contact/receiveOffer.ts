@@ -4,6 +4,7 @@ import type { SignalMessage } from '../../../signaling/types.ts';
 import { closeSession } from '../../../webrtc/closeSession.ts';
 import { createSession } from '../../../webrtc/createSession.ts';
 import { sessions } from '../../../webrtc/state.ts';
+import { ensureTurnServers } from '../../../webrtc/turnServers.ts';
 import { waitForIceGathering } from '../../../webrtc/waitForIceGathering.ts';
 import { describeCandidates } from '../../../webrtc/describeCandidates.ts';
 import { sessionDetail, sessionLogged, sessionStatusChanged } from '../../sessions/sessionsSlice.ts';
@@ -15,6 +16,9 @@ type Offer = Extract<SignalMessage, { t: 'offer' }>;
 
 // A contact wants to connect: answer it.
 export const receiveOffer = (id: string, offer: Offer): AppThunk<Promise<void>> => async (dispatch, getState) => {
+  // Fetched before looking at the current state, which may change meanwhile.
+  await ensureTurnServers();
+
   const contact = getState().contacts.list.find(c => c.id === id);
   const existing = sessions.get(id);
 
