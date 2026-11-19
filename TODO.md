@@ -91,6 +91,8 @@ Goal: nobody who copies the device's files can send messages as you.
   - it's used as a Nostr public key in the `p` tag;
   - it changes daily and differs per direction;
   - relays can't link it to people.
+- [x] Addresses found after the offer/answer went out also go through Nostr until the direct connection opens
+  (some networks take half a minute to find them all).
 - [x] When both sides send offers at once, the polite side (decided by the identity keys) gives way, and the other
   side sends its offer again.
 - [x] Ignore anything not signed by a known contact. Reject replays with a timestamp and nonce.

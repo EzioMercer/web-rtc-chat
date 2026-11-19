@@ -27,6 +27,12 @@ export const FILE_BUFFER_LOW = 1024 * 1024;
 // Receiver's acknowledgement that the whole file arrived.
 export const FILE_DONE = 'done';
 
+// Addresses found within this long of each other go through relays in one event.
+export const LATE_CANDIDATE_BATCH_MS = 500;
+
+// At most this many addresses per relay event, so events stay small.
+export const CANDIDATES_PER_EVENT = 20;
+
 // Conversation key of the manual (copy-paste codes) connection.
 export const MANUAL_KEY = 'manual';
 

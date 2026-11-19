@@ -1,6 +1,7 @@
 import { remoteStreamChanged } from '../store/call/callSlice.ts';
 import { sessionDetail, sessionLogged } from '../store/sessions/sessionsSlice.ts';
 import type { AppDispatch } from '../store/store.ts';
+import { relayCandidate } from '../store/thunks/contact/relayCandidate.ts';
 import { manualPathFailed } from '../store/thunks/manual/manualPathFailed.ts';
 import { sessionDropped } from '../store/thunks/session/sessionDropped.ts';
 import { bindChannel } from './bindChannel.ts';
@@ -30,6 +31,9 @@ export const createSession = (options: Options, dispatch: AppDispatch): Session 
     closing: false,
     opened: false,
     sentOffer: null,
+    signaled: false,
+    lateCandidates: [],
+    lateTimer: null,
     attachOnOffer: false,
     log: text => dispatch(sessionLogged({ key: options.key, text })),
   };
@@ -56,10 +60,15 @@ export const createSession = (options: Options, dispatch: AppDispatch): Session 
 
   peer.onnegotiationneeded = () => negotiate(session);
 
-  // Candidates found during renegotiation go over the control channel (the first ones are inside the offer/answer).
+  // The first addresses are inside the offer/answer. Later ones go over the control channel, or through relays
+  // while it isn't open yet: otherwise the other side never learns them (a slow network can take half a minute).
   peer.onicecandidate = ({ candidate }) => {
-    if (candidate) {
-      sendControl(session.key, { t: 'ice', candidate: candidate.toJSON() });
+    if (!candidate || sendControl(session.key, { t: 'ice', candidate: candidate.toJSON() })) {
+      return;
+    }
+
+    if (session.signaled && !session.opened && session.key !== MANUAL_KEY) {
+      dispatch(relayCandidate(session, candidate.toJSON()));
     }
   };
 

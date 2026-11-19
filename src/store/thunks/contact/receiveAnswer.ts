@@ -1,6 +1,8 @@
 import type { SignalMessage } from '../../../signaling/types.ts';
 import { sessions } from '../../../webrtc/state.ts';
 import { describeCandidates } from '../../../webrtc/describeCandidates.ts';
+import { addRemoteCandidates } from '../../../webrtc/addRemoteCandidates.ts';
+import { takeEarlyCandidates } from '../../../webrtc/earlyCandidates.ts';
 import { sessionDetail, sessionLogged } from '../../sessions/sessionsSlice.ts';
 import type { AppThunk } from '../../store.ts';
 
@@ -20,6 +22,7 @@ export const receiveAnswer = (id: string, answer: Answer): AppThunk<Promise<void
 
   try {
     await session.peer.setRemoteDescription({ type: 'answer', sdp: answer.sdp });
+    await addRemoteCandidates(session, takeEarlyCandidates(id, answer.sid));
     dispatch(sessionDetail({ key: id, detail: 'They answered. Opening the direct connection…' }));
   } catch (err) {
     console.error('Could not apply answer', err);

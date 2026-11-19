@@ -53,6 +53,7 @@ export const connectContact = (id: string): AppThunk<Promise<void>> => async (di
     }
 
     session.sentOffer = session.peer.localDescription.sdp;
+    session.signaled = true;
 
     const relays = await sendSignal(contact, { t: 'offer', sid: session.sid, sdp: session.sentOffer });
 

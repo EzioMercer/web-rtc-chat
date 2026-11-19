@@ -7,6 +7,8 @@ import { sessions } from '../../../webrtc/state.ts';
 import { ensureTurnServers } from '../../../webrtc/turnServers.ts';
 import { waitForIceGathering } from '../../../webrtc/waitForIceGathering.ts';
 import { describeCandidates } from '../../../webrtc/describeCandidates.ts';
+import { addRemoteCandidates } from '../../../webrtc/addRemoteCandidates.ts';
+import { takeEarlyCandidates } from '../../../webrtc/earlyCandidates.ts';
 import { sessionDetail, sessionLogged, sessionStatusChanged } from '../../sessions/sessionsSlice.ts';
 import type { AppThunk } from '../../store.ts';
 import { endCall } from '../call/endCall.ts';
@@ -58,6 +60,7 @@ export const receiveOffer = (id: string, offer: Offer): AppThunk<Promise<void>> 
 
   try {
     await session.peer.setRemoteDescription({ type: 'offer', sdp: offer.sdp });
+    await addRemoteCandidates(session, takeEarlyCandidates(id, offer.sid));
     await session.peer.setLocalDescription(await session.peer.createAnswer());
     await waitForIceGathering(session.peer);
 
@@ -65,7 +68,10 @@ export const receiveOffer = (id: string, offer: Offer): AppThunk<Promise<void>> 
       return;
     }
 
-    await sendSignal(contact, { t: 'answer', sid: offer.sid, sdp: session.peer.localDescription.sdp });
+    const sdp = session.peer.localDescription.sdp;
+
+    session.signaled = true;
+    await sendSignal(contact, { t: 'answer', sid: offer.sid, sdp });
     dispatch(sessionDetail({ key: id, detail: 'Answered. Opening the direct connection…' }));
   } catch (err) {
     console.error('Could not answer contact', err);

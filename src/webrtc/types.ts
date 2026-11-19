@@ -45,6 +45,11 @@ export type Session = {
   opened: boolean;
   // Our offer as sent through relays, so it can be sent again (see receiveOffer).
   sentOffer: string | null;
+  // Our offer/answer went out: addresses found from now on are sent separately (see relayCandidate).
+  signaled: boolean;
+  // Addresses waiting to go out together through relays, and the timer that sends them.
+  lateCandidates: RTCIceCandidateInit[];
+  lateTimer: number | null;
   // We accepted a call: our camera/microphone go into the answer to the caller's next offer (see handleDescription),
   // so only one side ever offers and the two offers can't collide.
   attachOnOffer: boolean;

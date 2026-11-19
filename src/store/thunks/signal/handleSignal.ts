@@ -5,6 +5,7 @@ import { openEnvelope } from '../../../signaling/openEnvelope.ts';
 import { routes } from '../../../signaling/routes.ts';
 import { inviteClosed, requestReceived } from '../../invites/invitesSlice.ts';
 import type { AppThunk } from '../../store.ts';
+import { receiveCandidates } from '../contact/receiveCandidates.ts';
 import { receiveAnswer } from '../contact/receiveAnswer.ts';
 import { receiveOffer } from '../contact/receiveOffer.ts';
 import { refreshMailboxes } from './refreshMailboxes.ts';
@@ -49,5 +50,7 @@ export const handleSignal = (mailbox: string, plaintext: string): AppThunk<Promi
     await dispatch(receiveOffer(contact.id, body.msg));
   } else if (body.msg.t === 'answer') {
     await dispatch(receiveAnswer(contact.id, body.msg));
+  } else if (body.msg.t === 'ice') {
+    await dispatch(receiveCandidates(contact.id, body.msg));
   }
 };

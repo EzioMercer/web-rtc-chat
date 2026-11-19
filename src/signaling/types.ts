@@ -2,6 +2,8 @@
 export type SignalMessage =
   | { t: 'offer'; sid: string; sdp: string }
   | { t: 'answer'; sid: string; sdp: string }
+  // Addresses found after the offer/answer went out, while there is no direct connection to send them over yet.
+  | { t: 'ice'; sid: string; candidates: RTCIceCandidateInit[] }
   // Sent to an invite's mailbox: "I used your invite; here is the secret for our mailboxes".
   | { t: 'invite-accept'; secret: string };
 
