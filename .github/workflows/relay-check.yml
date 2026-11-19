@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   push:
     branches: [master]
-    paths: [scripts/check-relays.mjs, .github/workflows/relay-check.yml]
+    paths: [scripts/**, .github/workflows/relay-check.yml, src/nostr/**, src/signaling/**]
 
 jobs:
   check:
@@ -18,3 +18,18 @@ jobs:
           cache: npm
       - run: npm ci
       - run: node scripts/check-relays.mjs
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm install --no-save playwright@1.59.1 && npx playwright install --with-deps chromium
+      - run: npm run build
+      - run: npx vite preview --port 4173 --strictPort &
+      - run: npx wait-on -t 30000 http://localhost:4173/web-rtc-chat/ || sleep 5
+      - run: node scripts/e2e-real-relays.mjs
