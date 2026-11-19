@@ -67,14 +67,28 @@ Do this first. Every later step relies on it.
 
 ## Phase 5: UI rewrite
 
-- [ ] Two-pane layout:
-  - **left:** contact list;
-  - **right:** the conversation with the selected contact.
-- [ ] Contact list rows: name, status (online / connecting / offline), unread badge, verified mark.
+- [ ] **Desktop:** two panes, like other chat apps.
+  - **Left:** the contact list, always visible.
+  - **Right:** the conversation with the selected contact.
+- [ ] **Phone:** messenger-style.
+  - The contact list fills the screen.
+  - Opening a contact shows the chat full screen.
+  - A back button returns to the list; the browser/system back gesture does the same.
+- [ ] Contact list rows show:
+  - the name;
+  - status (online / connecting / offline);
+  - the verified mark;
+  - the unread count, shown only when there is at least one unread message.
+
+  No message preview or last message.
+- [ ] Contact management:
+  - **Rename:** the name is chosen locally and only you see it.
+  - **Delete:** with a confirmation.
+  - **Reorder:** drag and drop on desktop, long-press and drag on phones.
+  - **Favourite:** favourites stay pinned in their own group at the top of the list, and can be reordered within it.
 - [ ] "Add contact" button at the top of the list, with QR and invite-link options.
 - [ ] Right pane: the existing chat header, call panel, message list and composer, for the selected contact.
 - [ ] Empty states: no contacts yet, and no contact selected.
-- [ ] Mobile: show the list or the chat, with a back button.
 - [ ] Settings: our own contact QR and link, and the relay list.
 - [ ] Code changes:
   - one `RTCPeerConnection` per contact, replacing the `rtc` singleton with a map keyed by contact;
