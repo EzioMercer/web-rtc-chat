@@ -1,57 +1,67 @@
 # web-rtc-chat
 
-Serverless peer-to-peer chat over a WebRTC data channel, built with React, Redux Toolkit, TypeScript and Vite.
-Peers exchange connection codes by hand (copy/paste), so no signaling server is needed.
+A chat, call and file-sharing app that runs entirely in the browser. Two people connect **directly to each other**:
+there is no server in the middle that sees or keeps your messages.
 
-## How to connect
+Live: https://eziomercer.github.io/web-rtc-chat/
 
-1. **Host:** leave *Peer's code* empty and press **Host**. Send *Your code* to the peer.
-2. **Client:** paste the host's code into *Peer's code* and press **Join**. Send *Your code* back to the host.
-3. **Host:** paste the client's code into *Peer's code* and press **Connect**. The chat opens on both sides.
+## How it works, in simple words
 
-## Features
+1. **The website is just files.** GitHub Pages serves the HTML, JS and CSS once. After that, the site is never
+   contacted again. It has no backend, database or accounts.
+2. **Two browsers introduce themselves.** To connect directly, each browser has to tell the other "here's how to
+   reach me and here's my certificate fingerprint". Today this note (the *code*) is copied by hand:
+   - Person A presses **Host** and sends their code to B.
+   - B pastes it, presses **Join**, and sends their code back.
+   - A pastes it and presses **Connect**.
 
-- **Text chat** over a WebRTC data channel.
-- **Audio and video calls**: the call buttons are in the chat header. While in a call you can mute the microphone, turn the camera off, and hang up. The peer sees when you are muted or have the camera off.
-- **Files and media**: attach with the paperclip, drag and drop onto the chat, or paste (e.g. a screenshot). Images, video and audio are previewed inline; every file can be downloaded. Each file goes over its own data channel in 16 KB chunks with flow control, and shows a progress bar.
+   See [TODO.md](TODO.md) for the plan to replace this with tap-a-contact.
+3. **The browsers connect directly** using WebRTC, the same technology video-call apps use:
+   - text and files travel over WebRTC *data channels*;
+   - audio and video travel over WebRTC media tracks.
+4. **Everything after that goes over the direct link.** Starting a call, turning the camera on, and sending a file
+   all happen without exchanging codes again. This uses the
+   [perfect negotiation](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Perfect_negotiation) pattern.
+5. **Closing the tab ends everything.** Messages and received files are kept only in the page's memory (the Redux
+   store), and they disappear when the tab closes.
 
-The codes are only exchanged once. Everything after that (starting a call, renegotiating media) is signaled through the open data channel using the [perfect negotiation](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Perfect_negotiation) pattern.
+The only outside server involved is a public STUN server (Google's). It answers a single question, "what is my
+public IP address?", so the browsers can find a way to each other. It never sees any message.
 
-Calls need a secure context (HTTPS or `localhost`) for camera and microphone access.
+## Why it is safe and private
 
-## Development
+- **End-to-end encrypted, always.** WebRTC can't send anything unencrypted:
+  - data channels use DTLS;
+  - audio and video use SRTP.
+
+  The encryption keys are created inside each browser for each connection, and they never leave it. They also
+  aren't in the codes you copy. The codes only contain addresses and a certificate fingerprint.
+- **No server sees the content.** Messages go straight from one browser to the other. Nothing passes through a
+  server that could read, log or keep them.
+- **Nothing is stored.** The app doesn't use `localStorage`, `sessionStorage`, IndexedDB, cookies or caches for
+  messages. It has no analytics or trackers, and no third-party scripts.
+- **No accounts.** No email, phone number, username or password, so there is nothing to leak.
+
+### What it does *not* protect against (be honest with users)
+
+- **A swapped code.** If someone replaces the code in transit (a compromised messenger, or malware that rewrites the
+  clipboard), they can sit in the middle and read everything. The planned safety code check (📌 in
+  [TODO.md](TODO.md)) detects this: both screens show the same short code only when nobody is in the middle.
+- **A compromised device.** Malware that can read your screen, keyboard or memory can read anything. No app can
+  defend against that.
+- **IP addresses.** The other person sees your IP address, because the connection is direct. The STUN server sees
+  it too, as any website would.
+- **The code you download.** You trust that the files served from GitHub Pages are the ones in this repository.
+
+## Run it locally
 
 Requires Node.js `^20.19 || ^22.13 || >=24`.
 
 ```sh
-npm install      # also installs the git hooks (husky)
+npm install      # also installs the git hooks
 npm run dev      # dev server with hot reload
 npm run build    # typecheck + production build into dist/
-npm run preview  # serve the production build locally
-npm run lint     # ESLint (correctness + formatting via @stylistic)
-npm run lint:fix # ESLint with autofix, which also formats the code
-npm run typecheck
+npm run lint     # ESLint, which also checks formatting
 ```
 
-A husky `pre-commit` hook runs `eslint --fix` on staged files (lint-staged), then `typecheck` on the whole project. The commit is blocked if either fails.
-
-There is no Prettier. Formatting comes from `@stylistic/eslint-plugin` rules in `eslint.config.js`.
-
-## Deployment
-
-Every push to `master` triggers `.github/workflows/deploy.yml`, which builds the project and publishes `dist/` to GitHub Pages.
-In the repo settings, **Pages → Build and deployment → Source** must be set to **GitHub Actions**.
-
-## Code layout
-
-```
-src/
-  main.tsx, App.tsx      entry point and root component
-  components/<Name>/     React components, each with its own CSS module
-  store/                 Redux store, slices (connection, chat) and thunks
-  webrtc/                RTCPeerConnection / data channel helpers (kept out of the store: not serializable)
-  utils/                 pure helpers that derive UI text and state
-  styles/global.css      design tokens and base styles
-```
-
-Each file exports at most one function, named like the file (`webrtc/decodeCode.ts` exports `decodeCode`).
+Every push to `master` builds the site and deploys it to GitHub Pages (`.github/workflows/deploy.yml`).
