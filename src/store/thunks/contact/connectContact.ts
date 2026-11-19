@@ -48,6 +48,11 @@ export const connectContact = (id: string): AppThunk<Promise<void>> => async (di
 
     const relays = await sendSignal(contact, { t: 'offer', sid: session.sid, sdp: session.sentOffer });
 
+    // Replaced by their attempt while the request was on its way.
+    if (sessions.get(id) !== session) {
+      return;
+    }
+
     const detail = `Asked through ${relays} of ${RELAYS.length} relays. Waiting for an answer…`;
 
     dispatch(sessionDetail({ key: id, detail }));
