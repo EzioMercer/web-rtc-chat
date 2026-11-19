@@ -70,7 +70,8 @@ Goal: nobody who copies the device's files can send messages as you.
 ## Phase 3: Finding each other through Nostr
 
 - [ ] Add `nostr-tools`.
-- [ ] Connect to 3–5 public relays in parallel, with a configurable list.
+- [ ] Hardcode 4 public relays in the config, like the STUN server, the same for everyone. Connect to all of them
+  in parallel.
 - [ ] One shared WebSocket per relay for the whole app, not per contact:
   - all mailbox tags go in one subscription filter;
   - each signaling event is published to every relay;
@@ -119,7 +120,7 @@ Goal: nobody who copies the device's files can send messages as you.
 - [ ] "Add contact" button at the top of the list, with QR and invite-link options.
 - [ ] Right pane: the existing chat header, call panel, message list and composer, for the selected contact.
 - [ ] Empty states: no contacts yet, and no contact selected.
-- [ ] Settings: our own contact QR and link, and the relay list.
+- [ ] Settings: our own contact QR and link.
 - [ ] Code changes:
   - one `RTCPeerConnection` per contact, replacing the `rtc` singleton with a map keyed by contact;
   - a per-contact connection state and message list in Redux;
@@ -147,6 +148,7 @@ Hard requirement: message text and files are never written to disk, a server, a 
 - [ ] Optional TURN server (for example Cloudflare) for strict networks. This also hides the IP address from the
   peer.
 - [ ] Handle relays that are down or slow, by racing all relays and using whichever answers first.
+- [ ] Reconnect to a dropped relay automatically, with backoff.
 
 ## Later (not planned yet)
 
@@ -155,3 +157,5 @@ Hard requirement: message text and files are never written to disk, a server, a 
 - [ ] Safe message storage and syncing between your own devices, encrypted at rest with a non-extractable key.
 - [ ] Multiple devices per person.
 - [ ] Offline messages ("deliver when they come online"), encrypted.
+- [ ] A longer relay list with fallback when relays die. It must be the same, in the same order, for everyone, so peers
+  still meet on the same relays. Possibly fetched from a source we control, such as a file in this repo.
