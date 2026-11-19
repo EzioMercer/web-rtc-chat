@@ -5,7 +5,9 @@ import { toggleCam } from '../../store/thunks/call/toggleCam.ts';
 import { toggleMic } from '../../store/thunks/call/toggleMic.ts';
 import { useAppDispatch } from '../../store/useAppDispatch.ts';
 import { useAppSelector } from '../../store/useAppSelector.ts';
+import { useCallStats } from '../../hooks/useCallStats.ts';
 import { cx } from '../../utils/cx.ts';
+import { formatBytes } from '../../utils/formatBytes.ts';
 import { media, sessions } from '../../webrtc/state.ts';
 import { Icon } from '../Icon/Icon.tsx';
 import { IconButton } from '../IconButton/IconButton.tsx';
@@ -24,6 +26,7 @@ export const CallPanel = () => {
   const call = useAppSelector(state => state.call);
   const { status, video, mic, cam, remoteMic, remoteCam, remoteStreamVersion, key } = call;
   const remoteStream = key ? sessions.get(key)?.remoteStream ?? null : null;
+  const stats = useCallStats(key, status === 'active');
 
   if (status === 'idle') {
     return null;
@@ -61,6 +64,12 @@ export const CallPanel = () => {
         {showLocalVideo && <MediaVideo stream={media.localStream} className={styles.local} muted />}
       </div>
 
+      {stats && (
+        <span className={cx(styles.stats, stats.received === 0 && styles.statsBad)} aria-label="Call traffic">
+          {`Sending ${formatBytes(stats.sent)}/s · receiving ${formatBytes(stats.received)}/s`}
+          {stats.received === 0 && stats.sent > 0 && ' · nothing is arriving from them'}
+        </span>
+      )}
       <div className={styles.controls}>
         {status === 'incoming'
           ? (
