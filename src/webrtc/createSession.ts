@@ -1,9 +1,10 @@
 import { remoteStreamChanged } from '../store/call/callSlice.ts';
 import { sessionDetail, sessionLogged } from '../store/sessions/sessionsSlice.ts';
 import type { AppDispatch } from '../store/store.ts';
+import { manualPathFailed } from '../store/thunks/manual/manualPathFailed.ts';
 import { sessionDropped } from '../store/thunks/session/sessionDropped.ts';
 import { bindChannel } from './bindChannel.ts';
-import { CONTROL_LABEL, FILE_LABEL, RTC_CONFIG } from './config.ts';
+import { CONTROL_LABEL, FILE_LABEL, MANUAL_KEY, RTC_CONFIG } from './config.ts';
 import { describeCandidates } from './describeCandidates.ts';
 import { negotiate } from './negotiate.ts';
 import { receiveFile } from './receiveFile.ts';
@@ -75,8 +76,24 @@ export const createSession = (options: Options, dispatch: AppDispatch): Session 
   peer.onconnectionstatechange = () => {
     dispatch(sessionLogged({ key: session.key, text: `Connection: ${peer.connectionState}` }));
 
-    if (peer.connectionState === 'failed') {
+    if (peer.connectionState !== 'failed') {
+      return;
+    }
+
+    // An open connection that failed is gone.
+    if (session.opened) {
       dispatch(sessionDropped(session));
+
+      return;
+    }
+
+    // Before the first connection, "failed" isn't final: the browser still answers the other side's checks and
+    // connects as soon as they arrive (e.g. once the other side applies our code). The attempt's own timeout,
+    // or "Start over", ends it.
+    dispatch(sessionLogged({ key: session.key, text: 'No path found yet; still waiting for their side…' }));
+
+    if (session.key === MANUAL_KEY) {
+      dispatch(manualPathFailed());
     }
   };
 

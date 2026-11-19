@@ -36,7 +36,7 @@ const manualSlice = createSlice({
     },
     connectionFailed: (state) => {
       state.status = 'failed';
-      state.error = 'Connection failed. Start over to try again.';
+      state.error = 'No network path found yet. Still trying; if nothing happens, start over.';
     },
     // A step failed (e.g. a wrong code was pasted): show why and go back to the last stable status.
     stepFailed: (state, { payload }: PayloadAction<string>) => {
