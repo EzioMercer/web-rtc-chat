@@ -28,9 +28,15 @@ const turnUsageBytes = async (env) => {
     throw new Error('ACCOUNT_ID is missing or wrong');
   }
 
-  const since = new Date(Date.now() - 30 * 86_400_000).toISOString().slice(0, 10);
+  const since = new Date(Date.now() - 30 * 86_400_000).toISOString().slice(0, 19) + 'Z';
+  const until = new Date(Date.now() + 60_000).toISOString().slice(0, 19) + 'Z';
   const query = `{ viewer { accounts(filter: { accountTag: "${env.ACCOUNT_ID}" }) {
-    callsTurnUsageAdaptiveGroups(filter: { date_geq: "${since}" }, limit: 1) { sum { egressBytes } }
+    callsTurnUsageAdaptiveGroups(
+      limit: 1000,
+      filter: { datetimeMinute_gt: "${since}", datetimeMinute_lt: "${until}" }
+    ) {
+      sum { egressBytes }
+    }
   } } }`;
 
   const response = await fetch('https://api.cloudflare.com/client/v4/graphql', {
