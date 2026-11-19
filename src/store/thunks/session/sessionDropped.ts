@@ -5,7 +5,7 @@ import type { Session } from '../../../webrtc/types.ts';
 import { addMessage } from '../../chat/chatSlice.ts';
 import { connectionFailed, disconnected } from '../../manual/manualSlice.ts';
 import { failureDetail } from '../../../webrtc/failureDetail.ts';
-import { sessionDetail, sessionStatusChanged } from '../../sessions/sessionsSlice.ts';
+import { sessionDetail, sessionLogged, sessionStatusChanged } from '../../sessions/sessionsSlice.ts';
 import type { AppThunk } from '../../store.ts';
 import { endCall } from '../call/endCall.ts';
 import { scheduleReconnect } from '../contact/scheduleReconnect.ts';
@@ -49,6 +49,7 @@ export const sessionDropped = (session: Session): AppThunk => (dispatch, getStat
 
   if (unexpected) {
     dispatch(sessionDetail({ key, detail }));
+    dispatch(sessionLogged({ key, text: session.opened ? 'Direct connection closed.' : 'Every network path failed.' }));
   }
 
   if (unexpected && session.opened) {

@@ -1,9 +1,10 @@
 import { remoteStreamChanged } from '../store/call/callSlice.ts';
-import { sessionDetail } from '../store/sessions/sessionsSlice.ts';
+import { sessionDetail, sessionLogged } from '../store/sessions/sessionsSlice.ts';
 import type { AppDispatch } from '../store/store.ts';
 import { sessionDropped } from '../store/thunks/session/sessionDropped.ts';
 import { bindChannel } from './bindChannel.ts';
 import { CONTROL_LABEL, FILE_LABEL, RTC_CONFIG } from './config.ts';
+import { describeCandidates } from './describeCandidates.ts';
 import { negotiate } from './negotiate.ts';
 import { receiveFile } from './receiveFile.ts';
 import { sendControl } from './sendControl.ts';
@@ -56,12 +57,24 @@ export const createSession = (options: Options, dispatch: AppDispatch): Session 
   };
 
   peer.oniceconnectionstatechange = () => {
+    dispatch(sessionLogged({ key: session.key, text: `Network path: ${peer.iceConnectionState}` }));
+
     if (peer.iceConnectionState === 'checking' && !session.opened) {
       dispatch(sessionDetail({ key: session.key, detail: 'Trying network paths between your devices…' }));
     }
   };
 
+  peer.onicegatheringstatechange = () => {
+    if (peer.iceGatheringState === 'complete') {
+      const text = `Our addresses: ${describeCandidates(peer.localDescription?.sdp)}`;
+
+      dispatch(sessionLogged({ key: session.key, text }));
+    }
+  };
+
   peer.onconnectionstatechange = () => {
+    dispatch(sessionLogged({ key: session.key, text: `Connection: ${peer.connectionState}` }));
+
     if (peer.connectionState === 'failed') {
       dispatch(sessionDropped(session));
     }

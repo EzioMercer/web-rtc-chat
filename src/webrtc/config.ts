@@ -23,8 +23,12 @@ export const FILE_DONE = 'done';
 // Conversation key of the manual (copy-paste codes) connection.
 export const MANUAL_KEY = 'manual';
 
-// Give up on reaching a contact after this long.
-export const CONNECT_TIMEOUT_MS = 20_000;
+// Give up waiting for the contact's answer (through relays) after this long: they are offline.
+export const ANSWER_TIMEOUT_MS = 25_000;
+
+// Once both sides have each other's addresses, finding a network path through two routers can take a while.
+// The browser reports when every path failed; this is only a last resort if it never does.
+export const PATH_TIMEOUT_MS = 90_000;
 
 // Wait this long before each automatic reconnect attempt after a connection dropped.
 export const RECONNECT_DELAYS_MS = [2000, 5000, 15_000];

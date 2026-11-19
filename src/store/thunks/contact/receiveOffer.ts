@@ -5,7 +5,8 @@ import { closeSession } from '../../../webrtc/closeSession.ts';
 import { createSession } from '../../../webrtc/createSession.ts';
 import { sessions } from '../../../webrtc/state.ts';
 import { waitForIceGathering } from '../../../webrtc/waitForIceGathering.ts';
-import { sessionDetail, sessionStatusChanged } from '../../sessions/sessionsSlice.ts';
+import { describeCandidates } from '../../../webrtc/describeCandidates.ts';
+import { sessionDetail, sessionLogged, sessionStatusChanged } from '../../sessions/sessionsSlice.ts';
 import type { AppThunk } from '../../store.ts';
 import { endCall } from '../call/endCall.ts';
 import { armTimeout } from './armTimeout.ts';
@@ -25,6 +26,8 @@ export const receiveOffer = (id: string, offer: Offer): AppThunk<Promise<void>> 
     // Both sides sent offers at once. The impolite side keeps its own offer, and sends it again in case the other
     // side wasn't listening yet when it went out; the polite side drops its own and answers.
     if (!existing.opened && existing.outgoing && !existing.polite) {
+      dispatch(sessionLogged({ key: id, text: 'Both sides asked at once; keeping ours and sending it again.' }));
+
       if (existing.sentOffer) {
         await sendSignal(contact, { t: 'offer', sid: existing.sid, sdp: existing.sentOffer }).catch(() => undefined);
       }
@@ -32,7 +35,9 @@ export const receiveOffer = (id: string, offer: Offer): AppThunk<Promise<void>> 
       return;
     }
 
-    // Otherwise they reconnected (e.g. reloaded the page): the old connection is dead.
+    // Otherwise they started over (e.g. reloaded the page): the old connection is dead.
+    dispatch(sessionLogged({ key: id, text: 'They started a new attempt; dropping the previous one.' }));
+
     if (getState().call.key === id) {
       dispatch(endCall('Call ended.'));
     }
@@ -45,6 +50,7 @@ export const receiveOffer = (id: string, offer: Offer): AppThunk<Promise<void>> 
 
   dispatch(sessionStatusChanged({ key: id, status: 'connecting' }));
   dispatch(sessionDetail({ key: id, detail: 'They are asking to connect. Answering…' }));
+  dispatch(sessionLogged({ key: id, text: `Their addresses: ${describeCandidates(offer.sdp)}` }));
 
   try {
     await session.peer.setRemoteDescription({ type: 'offer', sdp: offer.sdp });

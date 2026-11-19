@@ -23,6 +23,8 @@ export const ChatPane = ({ id }: Props) => {
   const contact = useAppSelector(state => state.contacts.list.find(c => c.id === id));
   const status = useAppSelector(state => state.sessions.status[id] ?? 'idle');
   const detail = useAppSelector(state => state.sessions.detail[id] ?? '');
+  const log = useAppSelector(state => state.sessions.log[id]);
+  const [showLog, setShowLog] = useState(false);
   const words = useSafetyWords(contact?.identity);
   // Open until the contact is verified, so a new contact shows the code right away.
   const [showSafety, setShowSafety] = useState(() => !contact?.verified);
@@ -77,14 +79,25 @@ export const ChatPane = ({ id }: Props) => {
           Not verified yet. Tap to compare the safety code.
         </button>
       )}
-      {status === 'connecting' && detail && <div className={styles.offline}><span>{detail}</span></div>}
+      {status === 'connecting' && detail && (
+        <div className={styles.offline}>
+          <span>{detail}</span>
+          <button className={styles.retry} type="button" onClick={() => setShowLog(!showLog)}>Details</button>
+        </div>
+      )}
       {status === 'offline' && (
         <div className={styles.offline}>
           <span>{detail || 'They aren\'t reachable. They need to have the app open.'}</span>
-          <button className={styles.retry} type="button" onClick={() => void dispatch(connectContact(id))}>
-            Try again
-          </button>
+          <span className={styles.buttons}>
+            <button className={styles.retry} type="button" onClick={() => setShowLog(!showLog)}>Details</button>
+            <button className={styles.retry} type="button" onClick={() => void dispatch(connectContact(id))}>
+              Try again
+            </button>
+          </span>
         </div>
+      )}
+      {showLog && status !== 'connected' && (
+        <pre className={styles.log} aria-label="Connection log">{(log ?? ['Nothing yet.']).join('\n')}</pre>
       )}
     </Conversation>
   );

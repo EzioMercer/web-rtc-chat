@@ -4,7 +4,7 @@ import { getFingerprints } from '../../../webrtc/getFingerprints.ts';
 import type { Session } from '../../../webrtc/types.ts';
 import { addMessage } from '../../chat/chatSlice.ts';
 import { connected } from '../../manual/manualSlice.ts';
-import { sessionDetail, sessionStatusChanged } from '../../sessions/sessionsSlice.ts';
+import { sessionDetail, sessionLogged, sessionStatusChanged } from '../../sessions/sessionsSlice.ts';
 import type { AppThunk } from '../../store.ts';
 import { reconnectAttempts } from '../contact/reconnectAttempts.ts';
 import { startRotation } from '../contact/startRotation.ts';
@@ -27,5 +27,6 @@ export const sessionOpened = (session: Session): AppThunk<Promise<void>> => asyn
   reconnectAttempts.delete(session.key);
   dispatch(sessionStatusChanged({ key: session.key, status: 'connected' }));
   dispatch(sessionDetail({ key: session.key, detail: '' }));
+  dispatch(sessionLogged({ key: session.key, text: 'Connected directly.' }));
   dispatch(startRotation(session.key));
 };

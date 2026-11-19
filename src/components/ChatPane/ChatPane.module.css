@@ -28,3 +28,22 @@
   font-weight: 600;
   cursor: pointer;
 }
+
+.buttons {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.log {
+  max-height: 180px;
+  margin: 0;
+  padding: 8px 16px;
+  overflow: auto;
+  border-bottom: 1px solid var(--border);
+  background: var(--field);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 11px;
+  white-space: pre-wrap;
+}

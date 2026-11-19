@@ -6,4 +6,6 @@ export type SessionsState = {
   status: Record<string, SessionStatus>;
   // What is happening, or why the last attempt failed, in words for the user.
   detail: Record<string, string>;
+  // Recent connection steps, with times, for troubleshooting. Memory only.
+  log: Record<string, string[]>;
 };
