@@ -64,7 +64,6 @@ Goal: nobody who copies the device's files can send messages as you.
   in-app voice call.
 - [ ] Contact list: name (chosen locally), public identity key, mailbox secret, verified flag. Saved in IndexedDB on
   this device only.
-- [ ] Rename and delete contacts.
 - [ ] Later: a short spoken code (for example `4-tiger-violin-moon`), using a vetted protocol that turns a short
   password into a strong key (PAKE).
 
@@ -72,6 +71,10 @@ Goal: nobody who copies the device's files can send messages as you.
 
 - [ ] Add `nostr-tools`.
 - [ ] Connect to 3–5 public relays in parallel, with a configurable list.
+- [ ] One shared WebSocket per relay for the whole app, not per contact:
+  - all mailbox tags go in one subscription filter;
+  - each signaling event is published to every relay;
+  - incoming duplicates are dropped by event id.
 - [ ] Use ephemeral events (kinds 20000–29999), which relays forward without storing.
 - [ ] Encrypt every payload (NIP-44) and also sign it with the identity key.
 - [ ] Use a fresh throwaway Nostr key for every connection attempt.
