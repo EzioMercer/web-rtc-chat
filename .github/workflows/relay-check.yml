@@ -20,7 +20,8 @@ jobs:
       - run: node scripts/check-relays.mjs
 
   e2e:
-    runs-on: ubuntu-latest
+    # Playwright's browsers don't support the newest Ubuntu image yet.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -28,8 +29,8 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npm install --no-save playwright@1.59.1 && npx playwright install --with-deps chromium
+      - run: npm install --no-save playwright@1.63.0 && npx playwright install --with-deps chromium
       - run: npm run build
       - run: npx vite preview --port 4173 --strictPort &
-      - run: npx wait-on -t 30000 http://localhost:4173/web-rtc-chat/ || sleep 5
+      - run: sleep 3
       - run: node scripts/e2e-real-relays.mjs

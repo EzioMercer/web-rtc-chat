@@ -4,4 +4,6 @@ export type SessionStatus = 'idle' | 'connecting' | 'connected' | 'offline';
 
 export type SessionsState = {
   status: Record<string, SessionStatus>;
+  // What is happening, or why the last attempt failed, in words for the user.
+  detail: Record<string, string>;
 };

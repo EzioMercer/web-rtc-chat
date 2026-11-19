@@ -4,8 +4,8 @@ import { RELAYS, SIGNAL_KIND } from './config.ts';
 import { pool } from './pool.ts';
 
 // Sends `plaintext` to a mailbox, encrypted (NIP-44) from a throwaway key that is used once and forgotten.
-// Resolves when at least one relay accepted it.
-export const publishToMailbox = async (mailbox: string, plaintext: string) => {
+// Resolves with how many relays accepted it (at least one), once at least one did and the others answered or failed.
+export const publishToMailbox = async (mailbox: string, plaintext: string): Promise<number> => {
   const throwaway = generateSecretKey();
   const content = encrypt(plaintext, getConversationKey(throwaway, mailbox));
   const event = finalizeEvent({
@@ -17,9 +17,12 @@ export const publishToMailbox = async (mailbox: string, plaintext: string) => {
 
   throwaway.fill(0);
 
-  try {
-    await Promise.any(pool.publish(RELAYS, event));
-  } catch {
+  const results = await Promise.allSettled(pool.publish(RELAYS, event));
+  const accepted = results.filter(result => result.status === 'fulfilled').length;
+
+  if (!accepted) {
     throw new Error('No relay is reachable. Check your internet connection.');
   }
+
+  return accepted;
 };

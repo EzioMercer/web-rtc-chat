@@ -5,7 +5,7 @@ import { closeSession } from '../../../webrtc/closeSession.ts';
 import { createSession } from '../../../webrtc/createSession.ts';
 import { sessions } from '../../../webrtc/state.ts';
 import { waitForIceGathering } from '../../../webrtc/waitForIceGathering.ts';
-import { sessionStatusChanged } from '../../sessions/sessionsSlice.ts';
+import { sessionDetail, sessionStatusChanged } from '../../sessions/sessionsSlice.ts';
 import type { AppThunk } from '../../store.ts';
 import { endCall } from '../call/endCall.ts';
 import { armTimeout } from './armTimeout.ts';
@@ -44,6 +44,7 @@ export const receiveOffer = (id: string, offer: Offer): AppThunk<Promise<void>> 
   const session = createSession({ key: id, sid: offer.sid, outgoing: false, polite }, dispatch);
 
   dispatch(sessionStatusChanged({ key: id, status: 'connecting' }));
+  dispatch(sessionDetail({ key: id, detail: 'They are asking to connect. Answering…' }));
 
   try {
     await session.peer.setRemoteDescription({ type: 'offer', sdp: offer.sdp });
@@ -55,6 +56,7 @@ export const receiveOffer = (id: string, offer: Offer): AppThunk<Promise<void>> 
     }
 
     await sendSignal(contact, { t: 'answer', sid: offer.sid, sdp: session.peer.localDescription.sdp });
+    dispatch(sessionDetail({ key: id, detail: 'Answered. Opening the direct connection…' }));
   } catch (err) {
     console.error('Could not answer contact', err);
     closeSession(session);

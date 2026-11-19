@@ -1,4 +1,5 @@
 import { remoteStreamChanged } from '../store/call/callSlice.ts';
+import { sessionDetail } from '../store/sessions/sessionsSlice.ts';
 import type { AppDispatch } from '../store/store.ts';
 import { sessionDropped } from '../store/thunks/session/sessionDropped.ts';
 import { bindChannel } from './bindChannel.ts';
@@ -51,6 +52,12 @@ export const createSession = (options: Options, dispatch: AppDispatch): Session 
   peer.onicecandidate = ({ candidate }) => {
     if (candidate) {
       sendControl(session.key, { t: 'ice', candidate: candidate.toJSON() });
+    }
+  };
+
+  peer.oniceconnectionstatechange = () => {
+    if (peer.iceConnectionState === 'checking' && !session.opened) {
+      dispatch(sessionDetail({ key: session.key, detail: 'Trying network paths between your devices…' }));
     }
   };
 

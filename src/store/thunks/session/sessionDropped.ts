@@ -4,7 +4,8 @@ import { sessions } from '../../../webrtc/state.ts';
 import type { Session } from '../../../webrtc/types.ts';
 import { addMessage } from '../../chat/chatSlice.ts';
 import { connectionFailed, disconnected } from '../../manual/manualSlice.ts';
-import { sessionStatusChanged } from '../../sessions/sessionsSlice.ts';
+import { failureDetail } from '../../../webrtc/failureDetail.ts';
+import { sessionDetail, sessionStatusChanged } from '../../sessions/sessionsSlice.ts';
 import type { AppThunk } from '../../store.ts';
 import { endCall } from '../call/endCall.ts';
 import { scheduleReconnect } from '../contact/scheduleReconnect.ts';
@@ -24,6 +25,7 @@ export const sessionDropped = (session: Session): AppThunk => (dispatch, getStat
 
   const unexpected = !session.closing;
   const { key } = session;
+  const detail = session.opened ? 'The direct connection closed.' : failureDetail(session);
 
   closeSession(session);
 
@@ -44,6 +46,10 @@ export const sessionDropped = (session: Session): AppThunk => (dispatch, getStat
   }
 
   dispatch(sessionStatusChanged({ key, status: 'offline' }));
+
+  if (unexpected) {
+    dispatch(sessionDetail({ key, detail }));
+  }
 
   if (unexpected && session.opened) {
     dispatch(scheduleReconnect(key));

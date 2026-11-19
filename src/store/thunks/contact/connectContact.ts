@@ -1,13 +1,14 @@
 import { nanoid } from '@reduxjs/toolkit';
 import { isPolite } from '../../../signaling/isPolite.ts';
 import { sendSignal } from '../../../signaling/sendSignal.ts';
+import { RELAYS } from '../../../nostr/config.ts';
 import { bindChannel } from '../../../webrtc/bindChannel.ts';
 import { closeSession } from '../../../webrtc/closeSession.ts';
 import { CONTROL_LABEL } from '../../../webrtc/config.ts';
 import { createSession } from '../../../webrtc/createSession.ts';
 import { sessions } from '../../../webrtc/state.ts';
 import { waitForIceGathering } from '../../../webrtc/waitForIceGathering.ts';
-import { sessionStatusChanged } from '../../sessions/sessionsSlice.ts';
+import { sessionDetail, sessionStatusChanged } from '../../sessions/sessionsSlice.ts';
 import type { AppThunk } from '../../store.ts';
 import { armTimeout } from './armTimeout.ts';
 
@@ -32,6 +33,7 @@ export const connectContact = (id: string): AppThunk<Promise<void>> => async (di
 
   bindChannel(session, session.peer.createDataChannel(CONTROL_LABEL), dispatch);
   dispatch(sessionStatusChanged({ key: id, status: 'connecting' }));
+  dispatch(sessionDetail({ key: id, detail: 'Preparing…' }));
 
   try {
     await session.peer.setLocalDescription(await session.peer.createOffer());
@@ -43,11 +45,17 @@ export const connectContact = (id: string): AppThunk<Promise<void>> => async (di
     }
 
     session.sentOffer = session.peer.localDescription.sdp;
-    await sendSignal(contact, { t: 'offer', sid: session.sid, sdp: session.sentOffer });
+
+    const relays = await sendSignal(contact, { t: 'offer', sid: session.sid, sdp: session.sentOffer });
+
+    const detail = `Asked through ${relays} of ${RELAYS.length} relays. Waiting for an answer…`;
+
+    dispatch(sessionDetail({ key: id, detail }));
   } catch (err) {
     console.error('Could not reach contact', err);
     closeSession(session);
     dispatch(sessionStatusChanged({ key: id, status: 'offline' }));
+    dispatch(sessionDetail({ key: id, detail: err instanceof Error ? err.message : 'Could not send the request.' }));
 
     return;
   }

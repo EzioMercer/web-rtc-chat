@@ -22,6 +22,7 @@ export const ChatPane = ({ id }: Props) => {
   const dispatch = useAppDispatch();
   const contact = useAppSelector(state => state.contacts.list.find(c => c.id === id));
   const status = useAppSelector(state => state.sessions.status[id] ?? 'idle');
+  const detail = useAppSelector(state => state.sessions.detail[id] ?? '');
   const words = useSafetyWords(contact?.identity);
   // Open until the contact is verified, so a new contact shows the code right away.
   const [showSafety, setShowSafety] = useState(() => !contact?.verified);
@@ -76,9 +77,10 @@ export const ChatPane = ({ id }: Props) => {
           Not verified yet. Tap to compare the safety code.
         </button>
       )}
+      {status === 'connecting' && detail && <div className={styles.offline}><span>{detail}</span></div>}
       {status === 'offline' && (
         <div className={styles.offline}>
-          <span>They aren&apos;t reachable. They need to have the app open.</span>
+          <span>{detail || 'They aren\'t reachable. They need to have the app open.'}</span>
           <button className={styles.retry} type="button" onClick={() => void dispatch(connectContact(id))}>
             Try again
           </button>
