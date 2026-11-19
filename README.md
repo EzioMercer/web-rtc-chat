@@ -93,7 +93,7 @@ e.g. `VITE_RELAYS=ws://localhost:7777 npm run dev`.
 ### TURN relay (optional)
 
 The TURN key's token must stay secret, so a small Cloudflare Worker (`worker/`) hands out credentials that expire
-after a day:
+after an hour:
 
 ```sh
 cd worker

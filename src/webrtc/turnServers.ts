@@ -17,8 +17,8 @@ export const ensureTurnServers = (): Promise<void> => {
 
   pending ??= fetchIceServers(TURN_URL, TURN_FETCH_TIMEOUT_MS)
     .then(({ iceServers, ttl }) => {
-      // Refresh an hour early, so a call that starts now still has valid credentials.
-      cached = { servers: iceServers, until: Date.now() + Math.max(ttl - 3600, 60) * 1000 };
+      // Refresh 10 minutes early, so a connection that starts now gets credentials with time left.
+      cached = { servers: iceServers, until: Date.now() + Math.max(ttl - 600, 60) * 1000 };
     })
     .catch((err: unknown) => {
       console.warn('TURN relay unavailable; direct connections only', err);

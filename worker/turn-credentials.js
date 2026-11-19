@@ -2,8 +2,8 @@
 // The TURN key's API token must stay secret, so it lives here (as a Worker secret), never in the website's code.
 // Secrets: TURN_KEY_ID, TURN_KEY_API_TOKEN. Variable: ALLOWED_ORIGINS (comma-separated).
 
-// Credentials stay valid this long (seconds), so even a long call keeps its relay.
-const TTL = 86_400;
+// Credentials stay valid this long (seconds). Short, so a leaked one is useless soon.
+const TTL = 3600;
 
 // Browsers refuse port 53, so those URLs would only slow down gathering.
 const usable = url => !/:53(\?|$)/.test(url);
