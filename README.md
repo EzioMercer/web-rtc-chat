@@ -90,21 +90,13 @@ npm run lint     # ESLint, which also checks formatting
 To test against your own relays, set `VITE_RELAYS` (comma-separated) when building or starting the dev server,
 e.g. `VITE_RELAYS=ws://localhost:7777 npm run dev`.
 
-### TURN relay (optional)
+### TURN relay
 
-The TURN key's token must stay secret, so a small Cloudflare Worker (`worker/`) hands out credentials that expire
-after an hour:
-
-```sh
-cd worker
-npx wrangler login
-npx wrangler secret put TURN_KEY_ID          # from Cloudflare: Realtime → TURN Server
-npx wrangler secret put TURN_KEY_API_TOKEN
-npx wrangler deploy                          # prints the Worker's URL
-```
-
-Then set the repository variable `VITE_TURN_URL` (Settings → Secrets and variables → Actions → Variables) to that
-URL. Without it the app only makes direct connections. Only the origins in `worker/wrangler.toml` may use it.
+The TURN key's token must stay secret, so a small Cloudflare Worker (`worker/turn-credentials.js`) hands out
+credentials that expire after an hour. It runs on Cloudflare, set up in the dashboard, with the secrets
+`TURN_KEY_ID` and `TURN_KEY_API_TOKEN` and the variable `ALLOWED_ORIGINS`. The app's code holds only its URL
+(`src/webrtc/config.ts`). `VITE_TURN_URL` replaces it; set it empty for direct connections only.
+`scripts/check-turn.mjs` checks that a message gets through the relay.
 
 Every push to `master` builds the site and deploys it to GitHub Pages (`.github/workflows/deploy.yml`).
 

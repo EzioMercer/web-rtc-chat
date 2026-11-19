@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   push:
     branches: [master]
-    paths: [scripts/**, .github/workflows/relay-check.yml, src/nostr/**, src/signaling/**]
+    paths: [scripts/**, worker/**, .github/workflows/relay-check.yml, src/nostr/**, src/signaling/**]
 
 jobs:
   check:
@@ -31,6 +31,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm install --no-save playwright@1.63.0 && npx playwright install --with-deps chromium
+      - run: node scripts/check-turn.mjs
       - run: npm run build
       - run: |
           nohup npx vite preview --port 4173 --strictPort > preview.log 2>&1 &

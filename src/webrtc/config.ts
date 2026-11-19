@@ -1,8 +1,9 @@
 // STUN server lets each browser discover its public address.
 export const STUN_SERVERS: RTCIceServer[] = [{ urls: 'stun:stun.l.google.com:19302' }];
 
-// Our Cloudflare Worker that hands out TURN credentials (see worker/). Without it, only direct connections work.
-export const TURN_URL = import.meta.env.VITE_TURN_URL;
+// Our Cloudflare Worker that hands out TURN credentials (see worker/). VITE_TURN_URL replaces it; set it empty
+// to make only direct connections.
+export const TURN_URL = import.meta.env.VITE_TURN_URL ?? 'https://web-rtc-chat-turn.rovsanbadirxanov.workers.dev';
 
 // Don't hold up a connection attempt longer than this waiting for TURN credentials.
 export const TURN_FETCH_TIMEOUT_MS = 4000;

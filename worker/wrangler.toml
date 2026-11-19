@@ -3,4 +3,4 @@ main = "turn-credentials.js"
 compatibility_date = "2026-11-01"
 
 [vars]
-ALLOWED_ORIGINS = "https://eziomercer.github.io,http://localhost:5173,http://localhost:4173"
+ALLOWED_ORIGINS = "https://eziomercer.github.io"
