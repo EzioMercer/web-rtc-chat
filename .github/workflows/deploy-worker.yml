@@ -1,0 +1,33 @@
+name: Deploy TURN Worker
+
+# Uploads worker/ to Cloudflare, then checks that a message gets through the TURN relay.
+# Needs the repository secrets CLOUDFLARE_API_TOKEN ("Edit Cloudflare Workers") and CLOUDFLARE_ACCOUNT_ID.
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths: [worker/**]
+
+concurrency:
+  group: worker
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # Playwright's browsers don't support the newest Ubuntu image yet.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: worker
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm install --no-save playwright@1.63.0 && npx playwright install --with-deps chromium
+      - run: node scripts/check-turn.mjs

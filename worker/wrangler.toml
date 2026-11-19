@@ -1,6 +1,8 @@
+# Uploaded to Cloudflare by .github/workflows/deploy-worker.yml.
 name = "web-rtc-chat-turn"
 main = "turn-credentials.js"
 compatibility_date = "2026-11-01"
+workers_dev = true
 
-[vars]
-ALLOWED_ORIGINS = "https://eziomercer.github.io"
+# The variables (ALLOWED_ORIGINS, ACCOUNT_ID) and secrets are set in the Cloudflare dashboard; keep them on upload.
+keep_vars = true
