@@ -1,0 +1,40 @@
+:root {
+  --bg: #0b1020;
+  --bg-glow: #1c2650;
+  --card: #141a2e;
+  --field: #0e1426;
+  --border: #263052;
+  --text: #e8ecf8;
+  --muted: #8a94b3;
+  --accent: #6d8cff;
+  --accent-text: #ffffff;
+  --ok: #3ddc97;
+  --warn: #f5b342;
+  --error: #ff7a7a;
+  --mine: #3554d1;
+  --theirs: #222b48;
+  --radius: 10px;
+  --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(1200px 600px at 50% -200px, var(--bg-glow), var(--bg));
+  color: var(--text);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
