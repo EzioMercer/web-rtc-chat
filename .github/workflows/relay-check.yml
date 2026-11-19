@@ -1,0 +1,20 @@
+name: Check Nostr relays
+
+# Checks that the public relays accept and forward the app's signaling events.
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths: [scripts/check-relays.mjs, .github/workflows/relay-check.yml]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: node scripts/check-relays.mjs

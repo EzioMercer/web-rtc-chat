@@ -108,11 +108,13 @@ export default tseslint.config(
     },
   },
   {
-    // Node config files, not app code.
-    files: ['*.config.{js,ts}'],
+    // Node config files and scripts, not app code.
+    files: ['*.config.{js,ts}', 'scripts/**'],
+    languageOptions: { globals: globals.node },
     rules: {
       'no-restricted-globals': 'off',
       'no-restricted-properties': 'off',
+      'no-console': 'off',
     },
   },
 );

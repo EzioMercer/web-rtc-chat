@@ -1,3 +1,5 @@
+import { normalizeURL } from 'nostr-tools/utils';
+
 // Public Nostr relays, the same for everyone so peers always meet on the same ones (like the STUN server).
 const DEFAULT_RELAYS = [
   'wss://relay.damus.io',
@@ -6,7 +8,9 @@ const DEFAULT_RELAYS = [
   'wss://nostr.mom',
 ];
 
-export const RELAYS = import.meta.env.VITE_RELAYS ? import.meta.env.VITE_RELAYS.split(',') : DEFAULT_RELAYS;
+// Written the way the relay pool writes them (e.g. with a trailing slash), so its status map can be read.
+export const RELAYS = (import.meta.env.VITE_RELAYS ? import.meta.env.VITE_RELAYS.split(',') : DEFAULT_RELAYS)
+  .map(url => normalizeURL(url.trim()));
 
 // An ephemeral event kind (20000–29999): relays pass these on to listeners and don't store them.
 export const SIGNAL_KIND = 20784;
