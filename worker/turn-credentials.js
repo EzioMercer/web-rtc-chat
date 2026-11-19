@@ -32,7 +32,8 @@ export default {
     );
 
     if (!response.ok) {
-      return new Response('TURN unavailable', { status: 502, headers: cors });
+      // The status says what's wrong (401: wrong token, 404: wrong key ID); it reveals nothing secret.
+      return new Response(`TURN unavailable: Cloudflare answered ${response.status}`, { status: 502, headers: cors });
     }
 
     const { iceServers } = await response.json();
