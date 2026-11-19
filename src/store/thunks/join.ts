@@ -1,5 +1,6 @@
 import { createLocalCode } from '../../webrtc/createLocalCode.ts';
 import { getPeer } from '../../webrtc/getPeer.ts';
+import { rtc } from '../../webrtc/state.ts';
 import { codeGenerated, generationStarted } from '../connection/connectionSlice.ts';
 import type { AppThunk } from '../store.ts';
 
@@ -7,6 +8,8 @@ import type { AppThunk } from '../store.ts';
 export const join = (offer: RTCSessionDescriptionInit): AppThunk<Promise<void>> => async (dispatch) => {
   const peer = getPeer(dispatch);
 
+  // The client yields when both peers renegotiate at the same time.
+  rtc.polite = true;
   dispatch(generationStarted());
   await peer.setRemoteDescription(offer);
   await peer.setLocalDescription(await peer.createAnswer());

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useAppSelector } from '../../store/useAppSelector.ts';
 import { cx } from '../../utils/cx.ts';
+import { FileBubble } from '../FileBubble/FileBubble.tsx';
 import styles from './MessageList.module.css';
 
 export const MessageList = () => {
@@ -18,8 +19,10 @@ export const MessageList = () => {
 
   return (
     <div ref={listRef} className={styles.list}>
-      {messages.map(({ id, from, text }) => (
-        <div key={id} className={cx(styles.msg, styles[from])}>{text}</div>
+      {messages.map(message => (
+        <div key={message.id} className={cx(styles.msg, styles[message.from])}>
+          {message.kind === 'file' ? <FileBubble file={message} /> : message.text}
+        </div>
       ))}
     </div>
   );

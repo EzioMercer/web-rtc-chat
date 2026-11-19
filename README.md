@@ -9,6 +9,16 @@ Peers exchange connection codes by hand (copy/paste), so no signaling server is 
 2. **Client:** paste the host's code into *Peer's code* and press **Join**. Send *Your code* back to the host.
 3. **Host:** paste the client's code into *Peer's code* and press **Connect**. The chat opens on both sides.
 
+## Features
+
+- **Text chat** over a WebRTC data channel.
+- **Audio and video calls**: the call buttons are in the chat header. While in a call you can mute the microphone, turn the camera off, and hang up. The peer sees when you are muted or have the camera off.
+- **Files and media**: attach with the paperclip, drag and drop onto the chat, or paste (e.g. a screenshot). Images, video and audio are previewed inline; every file can be downloaded. Each file goes over its own data channel in 16 KB chunks with flow control, and shows a progress bar.
+
+The codes are only exchanged once. Everything after that (starting a call, renegotiating media) is signaled through the open data channel using the [perfect negotiation](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Perfect_negotiation) pattern.
+
+Calls need a secure context (HTTPS or `localhost`) for camera and microphone access.
+
 ## Development
 
 Requires Node.js `^20.19 || ^22.13 || >=24`.

@@ -1,4 +1,4 @@
-import { CHANNEL_LABEL } from '../../webrtc/config.ts';
+import { CONTROL_LABEL } from '../../webrtc/config.ts';
 import { bindChannel } from '../../webrtc/bindChannel.ts';
 import { createLocalCode } from '../../webrtc/createLocalCode.ts';
 import { getPeer } from '../../webrtc/getPeer.ts';
@@ -10,7 +10,7 @@ export const host = (): AppThunk<Promise<void>> => async (dispatch) => {
   const peer = getPeer(dispatch);
 
   dispatch(generationStarted());
-  bindChannel(peer.createDataChannel(CHANNEL_LABEL), dispatch);
+  bindChannel(peer.createDataChannel(CONTROL_LABEL), dispatch);
   await peer.setLocalDescription(await peer.createOffer());
   dispatch(codeGenerated({ role: 'host', code: await createLocalCode(peer) }));
 };

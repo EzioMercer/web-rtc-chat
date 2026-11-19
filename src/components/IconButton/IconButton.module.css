@@ -1,0 +1,46 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.button:not(:disabled):hover {
+  opacity: 0.85;
+}
+
+.button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.plain {
+  background: transparent;
+  color: var(--accent);
+}
+
+.neutral {
+  background: var(--theirs);
+  color: var(--text);
+}
+
+.off {
+  background: var(--text);
+  color: var(--bg);
+}
+
+.danger {
+  background: var(--danger);
+  color: #fff;
+}
+
+.success {
+  background: var(--success);
+  color: #fff;
+}

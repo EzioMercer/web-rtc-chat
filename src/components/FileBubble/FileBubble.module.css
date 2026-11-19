@@ -1,0 +1,66 @@
+.file {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 200px;
+}
+
+.media {
+  display: block;
+  max-width: 100%;
+  max-height: 320px;
+  border-radius: 8px;
+  background: #000;
+}
+
+.audio {
+  width: 260px;
+  max-width: 100%;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.meta {
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.download {
+  display: inline-flex;
+  color: inherit;
+}
+
+.progress {
+  height: 4px;
+  border-radius: 2px;
+  background: rgb(255 255 255 / 0.15);
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  background: currentColor;
+  transition: width 0.2s;
+}
+
+.failed {
+  color: var(--error);
+}
