@@ -20,11 +20,38 @@ Do this first. Every later step relies on it.
 
 ## Phase 1: Identity
 
-- [ ] On first launch, generate a long-term identity key pair with WebCrypto (Ed25519, or ECDSA P-256 as a fallback)
-  and mark it non-extractable.
-- [ ] Keep the identity key in IndexedDB. This is the only thing besides the contact list that is saved on the device.
-- [ ] Never send the identity key to a relay as-is. Relays only ever see throwaway Nostr keys (see Phase 3).
+Goal: nobody who copies the device's files can send messages as you.
+
+- [ ] On first launch, generate a long-term identity key pair with WebCrypto (Ed25519, or ECDSA P-256 as a fallback).
 - [ ] No sign-up, email, phone number or password.
+- [ ] Never send the identity key to a relay as-is. Relays only ever see throwaway Nostr keys (see Phase 3).
+- [ ] At first launch, the user picks how the identity and contact list are protected. They can switch later in
+  settings; switching only re-encrypts, so contacts notice nothing.
+  1. **Passkey (recommended, preselected):**
+     - fingerprint, face or device PIN;
+     - the passkey's PRF extension gives a stable secret;
+     - that secret derives (HKDF) an AES-GCM key, which encrypts the identity key and the contact list in IndexedDB;
+     - the passkey is tied to the `eziomercer.github.io` domain;
+     - check PRF support at setup, and if it's missing, preselect the passphrase instead.
+  2. **Passphrase:**
+     - Argon2id (vetted WASM library) turns the passphrase into an AES-GCM key;
+     - suggest a generated 4–5 word passphrase, and warn if a weak one is chosen.
+  3. **No protection:**
+     - a non-extractable key stored as-is in IndexedDB;
+     - show a clear warning: "Anyone with access to this device's files could send messages as you."
+  4. **Temporary:**
+     - nothing is saved, and identity and contacts disappear when the tab closes;
+     - meant for shared or untrusted computers.
+- [ ] Unlock screen on every app open, for options 1 and 2. After unlocking:
+  - the identity key lives in memory only, as a non-extractable `CryptoKey`;
+  - it's dropped when the tab closes.
+- [ ] Explain the trade-offs in the setup screen, in simple words:
+  - losing a device-only passkey or forgetting the passphrase means a new identity, and contacts must re-add and
+    re-verify you;
+  - while the app is unlocked, malware on the device could still misuse it.
+- [ ] Encrypted identity backup and restore, so a new device can unlock it with the passphrase or a synced passkey.
+- [ ] Losing a device: contacts re-add you in person or by invite link, and the "identity key changed" warning from
+  the pinned item tells them what happened.
 
 ## Phase 2: Adding contacts
 
@@ -123,5 +150,5 @@ Hard requirement: message text and files are never written to disk, a server, a 
 - [ ] Push notifications when the tab is closed, through a stateless Cloudflare Worker that forwards end-to-end
   encrypted web pushes.
 - [ ] Safe message storage and syncing between your own devices, encrypted at rest with a non-extractable key.
-- [ ] Identity backup (exported key or a 12-word phrase), and multiple devices per person.
+- [ ] Multiple devices per person.
 - [ ] Offline messages ("deliver when they come online"), encrypted.
