@@ -1,7 +1,11 @@
+/* Pinned to the visible screen. (A height of 100vh, or even 100dvh in some phone browsers, counts the space under
+   the browser's address bar too, and then the bottom of the app is off screen.) */
 .layout {
-  height: 100dvh;
+  position: fixed;
+  inset: 0;
   display: grid;
   grid-template-columns: minmax(260px, 340px) 1fr;
+  grid-template-rows: minmax(0, 1fr);
 }
 
 .pane {
