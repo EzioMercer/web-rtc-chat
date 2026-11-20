@@ -47,7 +47,7 @@
   min-width: 22px;
   padding: 1px 7px;
   border-radius: 999px;
-  background: var(--accent);
+  background: var(--accent-fill);
   color: var(--accent-text);
   font-size: 12px;
   font-weight: 700;

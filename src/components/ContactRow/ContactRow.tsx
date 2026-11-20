@@ -24,31 +24,27 @@ export const ContactRow = ({ contact, selected, dragging, onOpen, sortProps }: P
   const stop = (e: PointerEvent | MouseEvent) => e.stopPropagation();
 
   return (
-    <div
-      className={cx(styles.row, selected && styles.selected, dragging && styles.dragging)}
-      role="button"
-      tabIndex={0}
-      aria-label={contact.name}
-      onClick={onOpen}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter') {
-          onOpen();
-        }
-      }}
-      {...sortProps}
-    >
-      <span className={styles.avatar}>
-        {contact.name.trim().charAt(0).toUpperCase() || '?'}
-        <span className={cx(styles.dot, styles[status])} />
-      </span>
-      <span className={styles.name}>{contact.name}</span>
-      {contact.favourite && <span className={styles.star} title="Favourite"><Icon name="star" size={14} /></span>}
-      {contact.verified && (
-        <span className={styles.verified} title="Verified"><Icon name="shieldCheck" size={16} /></span>
-      )}
-      {unread > 0 && (
-        <span className={styles.unread} aria-label={`${unread} unread`}>{unread > 99 ? '99+' : unread}</span>
-      )}
+    // The row holds two buttons side by side (open the chat, and its menu), never one inside the other.
+    <div className={cx(styles.row, selected && styles.selected, dragging && styles.dragging)} {...sortProps}>
+      <button
+        className={styles.open}
+        type="button"
+        aria-label={unread > 0 ? `${contact.name}, ${unread} unread` : contact.name}
+        onClick={onOpen}
+      >
+        <span className={styles.avatar}>
+          {contact.name.trim().charAt(0).toUpperCase() || '?'}
+          <span className={cx(styles.dot, styles[status])} />
+        </span>
+        <span className={styles.name}>{contact.name}</span>
+        {contact.favourite && <span className={styles.star} title="Favourite"><Icon name="star" size={14} /></span>}
+        {contact.verified && (
+          <span className={styles.verified} title="Verified"><Icon name="shieldCheck" size={16} /></span>
+        )}
+        {unread > 0 && (
+          <span className={styles.unread} aria-hidden="true">{unread > 99 ? '99+' : unread}</span>
+        )}
+      </button>
       <button
         className={styles.more}
         type="button"
