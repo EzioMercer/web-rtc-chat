@@ -6,6 +6,8 @@ export const releaseMedia = (key: string | null) => {
 
   media.localStream?.getTracks().forEach(track => track.stop());
   media.localStream = null;
+  media.screen?.stream.getTracks().forEach(track => track.stop());
+  media.screen = null;
 
   if (!session) {
     return;
@@ -18,6 +20,7 @@ export const releaseMedia = (key: string | null) => {
   }
 
   session.senders = [];
+  session.screenSender = null;
   session.attachOnOffer = false;
   session.remoteStream = null;
 };

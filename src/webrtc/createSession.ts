@@ -29,6 +29,7 @@ export const createSession = (options: Options, dispatch: AppDispatch): Session 
     ignoreOffer: false,
     remoteStream: null,
     senders: [],
+    screenSender: null,
     closing: false,
     opened: false,
     sentOffer: null,

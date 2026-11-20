@@ -10,6 +10,8 @@ const initialState: CallState = {
   cam: true,
   remoteMic: true,
   remoteCam: true,
+  screen: false,
+  remoteScreen: false,
   remoteStreamVersion: 0,
 };
 
@@ -42,9 +44,13 @@ const callSlice = createSlice({
     camToggled: (state) => {
       state.cam = !state.cam;
     },
-    remoteMediaChanged: (state, { payload }: PayloadAction<{ mic: boolean; cam: boolean }>) => {
+    remoteMediaChanged: (state, { payload }: PayloadAction<{ mic: boolean; cam: boolean; screen: boolean }>) => {
       state.remoteMic = payload.mic;
       state.remoteCam = payload.cam;
+      state.remoteScreen = payload.screen;
+    },
+    screenChanged: (state, { payload }: PayloadAction<boolean>) => {
+      state.screen = payload;
     },
     remoteStreamChanged: (state) => {
       state.remoteStreamVersion += 1;
@@ -61,6 +67,7 @@ export const {
   camToggled,
   remoteMediaChanged,
   remoteStreamChanged,
+  screenChanged,
 } = callSlice.actions;
 
 export const callReducer = callSlice.reducer;

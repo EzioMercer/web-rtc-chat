@@ -6,4 +6,7 @@ export const sessions = new Map<string, Session>();
 // Our microphone/camera during a call (only one call at a time).
 export const media = {
   localStream: null as MediaStream | null,
+  // While we share our screen: its picture, the sender it goes out on, and what that sender sent before
+  // (our camera, or nothing in an audio call).
+  screen: null as { stream: MediaStream; sender: RTCRtpSender; before: MediaStreamTrack | null } | null,
 };

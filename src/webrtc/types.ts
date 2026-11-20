@@ -1,7 +1,8 @@
 export type CallSignal =
   | { t: 'call'; action: 'invite'; video: boolean }
   | { t: 'call'; action: 'accept' | 'decline' | 'end' }
-  | { t: 'call'; action: 'state'; mic: boolean; cam: boolean };
+  // `screen`: they share their screen (older versions don't send it).
+  | { t: 'call'; action: 'state'; mic: boolean; cam: boolean; screen?: boolean };
 
 // Replacing the shared mailbox secret, over the encrypted direct connection (never through relays):
 // rotate (new secret) -> rotate-ack -> rotate-done.
@@ -41,6 +42,8 @@ export type Session = {
   ignoreOffer: boolean;
   remoteStream: MediaStream | null;
   senders: RTCRtpSender[];
+  // In an audio call: the video sender added for sharing our screen, reused if we share again.
+  screenSender: RTCRtpSender | null;
   // We closed it on purpose, so it shouldn't reconnect.
   closing: boolean;
   // The control channel opened at least once.

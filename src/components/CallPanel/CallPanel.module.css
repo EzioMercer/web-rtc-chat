@@ -9,11 +9,13 @@
   border-bottom: 1px solid var(--border);
 }
 
-/* Full screen, or (where the browser can't, e.g. iPhone) filling the window. */
+/* Full screen, or (where the browser can't, e.g. iPhone) filling the window. The video fills it all, and the
+   buttons float over it. */
 .full {
   position: fixed;
   inset: 0;
   z-index: 20;
+  padding: 0;
   border-bottom: none;
 }
 
@@ -22,6 +24,37 @@
   min-height: 0;
   max-height: none;
   aspect-ratio: auto;
+  border-radius: 0;
+}
+
+/* Catches taps on the big video in full screen (the small picture sits above it). */
+.stageTap {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.full .bottom {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 3;
+  padding: 32px 16px calc(20px + env(safe-area-inset-bottom));
+  background: linear-gradient(transparent, rgb(0 0 0 / 0.6));
+  transition: opacity 0.25s;
+}
+
+.full .bottomHidden {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .stage {
@@ -38,16 +71,6 @@
   aspect-ratio: auto;
   height: 140px;
   background: transparent;
-}
-
-.remote {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.hidden {
-  display: none;
 }
 
 .placeholder {
@@ -75,6 +98,7 @@
 
 .badge {
   position: absolute;
+  z-index: 2;
   top: 10px;
   left: 50%;
   display: inline-flex;
@@ -88,6 +112,16 @@
   transform: translateX(-50%);
 }
 
+
+.sharing {
+  top: auto;
+  bottom: 10px;
+}
+
+.full .sharing {
+  top: calc(10px + env(safe-area-inset-top));
+  bottom: auto;
+}
 
 .title {
   margin: 0;

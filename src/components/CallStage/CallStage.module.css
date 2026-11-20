@@ -1,0 +1,42 @@
+.frame {
+  position: absolute;
+  overflow: hidden;
+  background: #000;
+}
+
+.big {
+  inset: 0;
+}
+
+.small {
+  z-index: 2;
+  max-width: 45%;
+  max-height: 60%;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: grab;
+  touch-action: none;
+}
+
+.small:active {
+  cursor: grabbing;
+}
+
+.hidden {
+  display: none;
+}
+
+.video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.small .video {
+  object-fit: cover;
+}
+
+.mirror {
+  transform: scaleX(-1);
+}

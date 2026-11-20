@@ -47,7 +47,7 @@ export const receiveCallSignal = (key: string, signal: CallSignal): AppThunk => 
       dispatch(endCall(status === 'incoming' ? 'Missed call.' : 'Call ended.'));
       break;
     case 'state':
-      dispatch(remoteMediaChanged({ mic: signal.mic, cam: signal.cam }));
+      dispatch(remoteMediaChanged({ mic: signal.mic, cam: signal.cam, screen: signal.screen === true }));
       break;
   }
 };
