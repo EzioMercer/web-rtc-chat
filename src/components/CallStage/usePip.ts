@@ -7,8 +7,12 @@ const TAP_PX = 8;
 
 const clamp = (value: number) => Math.min(Math.max(value, 0), 1);
 
-// The small picture over the big one: drag it anywhere inside the stage; a tap (no drag) calls `onTap`.
-export const usePip = (onTap: () => void) => {
+// Space kept free around the small picture, in px.
+const MARGIN = 10;
+
+// The small picture over the big one: drag it anywhere inside the stage, except the bottom `bottom` px (where
+// the buttons float in full screen); a tap (no drag) calls `onTap`.
+export const usePip = (onTap: () => void, bottom: number) => {
   // Where it sits, from 0 (left/top) to 1 (right/bottom) of the free space.
   const [pos, setPos] = useState({ x: 1, y: 1 });
   const drag = useRef<Drag | null>(null);
@@ -27,9 +31,8 @@ export const usePip = (onTap: () => void) => {
       y: e.clientY,
       startX: pos.x,
       startY: pos.y,
-      // The stage minus a 10 px margin on each side.
-      freeW: Math.max(area.width - 20 - box.width, 1),
-      freeH: Math.max(area.height - 20 - box.height, 1),
+      freeW: Math.max(area.width - 2 * MARGIN - box.width, 1),
+      freeH: Math.max(area.height - MARGIN - bottom - box.height, 1),
       moved: false,
     };
   };
@@ -66,8 +69,8 @@ export const usePip = (onTap: () => void) => {
   };
 
   const style = {
-    left: `calc(10px + (100% - 20px) * ${pos.x})`,
-    top: `calc(10px + (100% - 20px) * ${pos.y})`,
+    left: `calc(${MARGIN}px + (100% - ${2 * MARGIN}px) * ${pos.x})`,
+    top: `calc(${MARGIN}px + (100% - ${MARGIN + bottom}px) * ${pos.y})`,
     transform: `translate(${-pos.x * 100}%, ${-pos.y * 100}%)`,
   };
 

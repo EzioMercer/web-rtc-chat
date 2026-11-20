@@ -10,8 +10,6 @@
 
 .small {
   z-index: 2;
-  max-width: 45%;
-  max-height: 60%;
   border: 1px solid var(--border);
   border-radius: 8px;
   cursor: grab;

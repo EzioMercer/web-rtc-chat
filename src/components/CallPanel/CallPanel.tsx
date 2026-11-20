@@ -30,6 +30,9 @@ const AUDIO_LOSS_WARNING = 0.03;
 // In full screen, the buttons hide after this long; a tap on the video shows them again.
 const CONTROLS_HIDE_MS = 3000;
 
+// In full screen the buttons float over the bottom of the video; the small picture stays above them.
+const FULL_BOTTOM_PX = 130;
+
 export const CallPanel = () => {
   const dispatch = useAppDispatch();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -77,6 +80,7 @@ export const CallPanel = () => {
             localStream={screen ? media.screen?.stream ?? null : media.localStream}
             showLocal={showLocalVideo}
             mirrorLocal={!screen}
+            bottomInset={full ? FULL_BOTTOM_PX : 10}
           />
         )}
         {!showRemoteVideo && (
