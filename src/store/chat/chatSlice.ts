@@ -7,7 +7,20 @@ const initialState: ChatState = {
 };
 
 const push = (state: ChatState, key: string, message: Message) => {
-  (state.conversations[key] ??= []).push(message);
+  (state.conversations[key] ??= []).push({ ...message, at: message.at ?? Date.now() });
+};
+
+// Puts a message where its time belongs. Only messages that waited (written while the connection was down) move
+// up, and only past the few newer ones, so a live chat is never re-sorted.
+const insertByTime = (state: ChatState, key: string, message: Message & { at: number }) => {
+  const list = (state.conversations[key] ??= []);
+  let index = list.length;
+
+  while (index > 0 && (list[index - 1].at ?? 0) > message.at) {
+    index -= 1;
+  }
+
+  list.splice(index, 0, message);
 };
 
 const findFile = (state: ChatState, key: string, id: string) => state.conversations[key]?.find(
@@ -27,6 +40,12 @@ const chatSlice = createSlice({
       prepare: ({ key, from, text }: Keyed<Pick<TextMessage, 'from' | 'text'>>) => ({
         payload: { key, message: { kind: 'text' as const, id: nanoid(), from, text } },
       }),
+    },
+    // Their text, written `at` (already converted to our clock).
+    peerTextReceived: (state, { payload }: PayloadAction<Keyed<{ text: string; at: number }>>) => {
+      const { key, text, at } = payload;
+
+      insertByTime(state, key, { kind: 'text', id: nanoid(), from: 'peer', text, at });
     },
     messageQueued: (state, { payload }: PayloadAction<Keyed<{ id: string; text: string }>>) => {
       push(state, payload.key, { kind: 'text', id: payload.id, from: 'me', text: payload.text, pending: true });
@@ -79,6 +98,7 @@ const chatSlice = createSlice({
 
 export const {
   addMessage,
+  peerTextReceived,
   messageQueued,
   messageDelivered,
   fileAdded,

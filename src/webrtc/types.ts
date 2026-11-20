@@ -11,7 +11,9 @@ export type RotateSignal = { t: 'rotate' | 'rotate-ack' | 'rotate-done'; secret:
 // Everything sent over the control channel, as JSON.
 export type ControlMessage =
   // `id` is answered with "ack", so the sender knows it arrived (older versions send no id).
-  | { t: 'text'; text: string; id?: string }
+  // `waited`: how long (ms) it waited on the sender's side before this send (it was written while offline), so
+  // the receiver can put it in place without relying on the two devices' clocks agreeing.
+  | { t: 'text'; text: string; id?: string; waited?: number }
   | { t: 'ack'; id: string }
   | { t: 'sdp'; description: RTCSessionDescriptionInit }
   | { t: 'ice'; candidate: RTCIceCandidateInit }

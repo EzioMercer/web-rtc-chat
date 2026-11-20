@@ -6,7 +6,9 @@ import type { AppThunk } from '../../store.ts';
 export const sendPending = (key: string): AppThunk => (_dispatch, getState) => {
   getState().chat.conversations[key]?.forEach((message) => {
     if (message.kind === 'text' && message.pending) {
-      sendControl(key, { t: 'text', text: message.text, id: message.id });
+      const waited = Date.now() - (message.at ?? Date.now());
+
+      sendControl(key, { t: 'text', text: message.text, id: message.id, waited });
     }
   });
 };

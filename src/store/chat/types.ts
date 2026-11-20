@@ -5,6 +5,8 @@ export type TextMessage = {
   id: string;
   from: MessageAuthor;
   text: string;
+  // When it was written, on this device's clock (see receivePeerText for theirs).
+  at?: number;
   // Our messages: waiting for the other side to confirm it arrived (sent again when the connection reopens).
   pending?: boolean;
 };
@@ -20,6 +22,7 @@ export type FileMessage = {
   url: string | null;
   transferred: number;
   status: 'transferring' | 'done' | 'failed';
+  at?: number;
 };
 
 export type Message = TextMessage | FileMessage;
