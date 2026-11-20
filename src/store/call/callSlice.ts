@@ -5,6 +5,7 @@ const initialState: CallState = {
   key: null,
   status: 'idle',
   video: false,
+  ownVideo: false,
   mic: true,
   cam: true,
   remoteMic: true,
@@ -25,9 +26,14 @@ const callSlice = createSlice({
       key: payload.key,
       status: payload.status,
       video: payload.video,
+      ownVideo: payload.video,
     }),
     callActive: (state) => {
       state.status = 'active';
+    },
+    answeredWithAudioOnly: (state) => {
+      state.ownVideo = false;
+      state.cam = false;
     },
     callEnded: state => ({ ...initialState, remoteStreamVersion: state.remoteStreamVersion }),
     micToggled: (state) => {
@@ -49,6 +55,7 @@ const callSlice = createSlice({
 export const {
   callStarted,
   callActive,
+  answeredWithAudioOnly,
   callEnded,
   micToggled,
   camToggled,

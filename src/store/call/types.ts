@@ -5,6 +5,8 @@ export type CallState = {
   key: string | null;
   status: CallStatus;
   video: boolean;
+  // We send our camera (false when a video call was answered with audio only).
+  ownVideo: boolean;
   mic: boolean;
   cam: boolean;
   remoteMic: boolean;

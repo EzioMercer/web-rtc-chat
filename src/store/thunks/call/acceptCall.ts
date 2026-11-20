@@ -2,7 +2,7 @@ import { attachLocalTracks } from '../../../webrtc/attachLocalTracks.ts';
 import { getLocalMedia } from '../../../webrtc/getLocalMedia.ts';
 import { sendControl } from '../../../webrtc/sendControl.ts';
 import { media, sessions } from '../../../webrtc/state.ts';
-import { callActive } from '../../call/callSlice.ts';
+import { answeredWithAudioOnly, callActive } from '../../call/callSlice.ts';
 
 import type { AppThunk } from '../../store.ts';
 import { endCall } from './endCall.ts';
@@ -11,7 +11,8 @@ import { sendCallState } from './sendCallState.ts';
 // If the caller's offer doesn't arrive within this time after accepting, send our tracks with our own offer.
 const ATTACH_FALLBACK_MS = 4000;
 
-export const acceptCall = (): AppThunk<Promise<void>> => async (dispatch, getState) => {
+// Answers the incoming call. `audioOnly` answers a video call without our camera (we still see theirs).
+export const acceptCall = (audioOnly = false): AppThunk<Promise<void>> => async (dispatch, getState) => {
   const { status, video, key } = getState().call;
 
   if (status !== 'incoming' || !key) {
@@ -19,12 +20,16 @@ export const acceptCall = (): AppThunk<Promise<void>> => async (dispatch, getSta
   }
 
   try {
-    media.localStream = await getLocalMedia(video);
+    media.localStream = await getLocalMedia(video && !audioOnly);
   } catch {
     sendControl(key, { t: 'call', action: 'decline' });
     dispatch(endCall('Could not access your microphone or camera.'));
 
     return;
+  }
+
+  if (video && audioOnly) {
+    dispatch(answeredWithAudioOnly());
   }
 
   const session = sessions.get(key);

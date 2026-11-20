@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useBackToList } from '../../hooks/useBackToList.ts';
+import { useCallSounds } from '../../hooks/useCallSounds.ts';
 import { conversationRead } from '../../store/chat/chatSlice.ts';
 import { connectContact } from '../../store/thunks/contact/connectContact.ts';
 import { openInvite } from '../../store/thunks/invite/openInvite.ts';
@@ -24,6 +25,7 @@ export const Messenger = () => {
   const hasContacts = useAppSelector(state => state.contacts.list.length > 0);
 
   useBackToList();
+  useCallSounds();
 
   useEffect(() => {
     // An invite link pasted into the address bar while the app is open.

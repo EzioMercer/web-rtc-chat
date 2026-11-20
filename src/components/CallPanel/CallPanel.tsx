@@ -24,7 +24,7 @@ const TITLES = {
 export const CallPanel = () => {
   const dispatch = useAppDispatch();
   const call = useAppSelector(state => state.call);
-  const { status, video, mic, cam, remoteMic, remoteCam, remoteStreamVersion, key } = call;
+  const { status, video, ownVideo, mic, cam, remoteMic, remoteCam, remoteStreamVersion, key } = call;
   const remoteStream = key ? sessions.get(key)?.remoteStream ?? null : null;
   const stats = useCallStats(key, status === 'active');
 
@@ -34,7 +34,7 @@ export const CallPanel = () => {
 
   const active = status === 'active';
   const showRemoteVideo = active && video && remoteCam;
-  const showLocalVideo = video && cam && status !== 'incoming';
+  const showLocalVideo = ownVideo && cam && status !== 'incoming';
   const kind = video ? 'video' : 'audio';
 
   return (
@@ -75,6 +75,14 @@ export const CallPanel = () => {
           ? (
               <>
                 <IconButton icon="hangUp" label="Decline" variant="danger" onClick={() => dispatch(declineCall())} />
+                {video && (
+                  <IconButton
+                    icon="phone"
+                    label="Accept with audio only"
+                    variant="success"
+                    onClick={() => dispatch(acceptCall(true))}
+                  />
+                )}
                 <IconButton
                   icon={video ? 'video' : 'phone'}
                   label="Accept"
@@ -91,7 +99,7 @@ export const CallPanel = () => {
                   variant={mic ? 'neutral' : 'off'}
                   onClick={() => dispatch(toggleMic())}
                 />
-                {video && (
+                {ownVideo && (
                   <IconButton
                     icon={cam ? 'video' : 'videoOff'}
                     label={cam ? 'Turn camera off' : 'Turn camera on'}
