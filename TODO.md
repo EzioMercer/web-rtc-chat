@@ -168,7 +168,7 @@ Hard requirement: message text and files are never written to disk, a server, a 
   - [x] Worker that hands out short-lived credentials (`worker/`), and the app side (`VITE_TURN_URL`).
   - [x] Show "through TURN relay" when a connection uses it.
   - [x] Deploy the Worker.
-  - [x] Stop handing out credentials at 800 GB in 30 days, so the free 1,000 GB is never exceeded.
+  - [x] Stop handing out credentials at 800 GB in 31 days (longer than any billing month), so the free 1,000 GB is never exceeded.
   - [x] Renew credentials of a running TURN connection before they expire (1 hour): new credentials and a new path
     search every 5 minutes while on the relay.
   - [x] Move from the relay to a direct connection when one starts working (the same path search).

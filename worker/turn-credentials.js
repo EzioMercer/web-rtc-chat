@@ -6,8 +6,9 @@
 // Credentials stay valid this long (seconds). Short, so a leaked one is useless soon.
 const TTL = 3600;
 
-// Stop handing out credentials once the TURN traffic of the last 30 days reaches this, so the free 1,000 GB a
+// Stop handing out credentials once the TURN traffic of the last 31 days reaches this, so the free 1,000 GB a
 // month is never exceeded: credentials already out (up to TTL) and running calls still add some after the stop.
+// 31 days covers every billing month, whatever day it starts: a month never holds more than the window.
 const LIMIT_BYTES = 800e9;
 
 // Ask Cloudflare for the usage at most this often.
@@ -18,7 +19,7 @@ const usable = url => !/:53(\?|$)/.test(url);
 
 let usage = { bytes: 0, at: 0 };
 
-// TURN traffic sent out by Cloudflare (what's billed) over the last 30 days.
+// TURN traffic sent out by Cloudflare (what's billed) over the last 31 days.
 const turnUsageBytes = async (env) => {
   if (Date.now() - usage.at < USAGE_CACHE_MS) {
     return usage.bytes;
@@ -28,7 +29,7 @@ const turnUsageBytes = async (env) => {
     throw new Error('ACCOUNT_ID is missing or wrong');
   }
 
-  const since = new Date(Date.now() - 30 * 86_400_000).toISOString().slice(0, 19) + 'Z';
+  const since = new Date(Date.now() - 31 * 86_400_000).toISOString().slice(0, 19) + 'Z';
   const until = new Date(Date.now() + 60_000).toISOString().slice(0, 19) + 'Z';
   const query = `{ viewer { accounts(filter: { accountTag: "${env.ACCOUNT_ID}" }) {
     callsTurnUsageAdaptiveGroups(
