@@ -8,6 +8,7 @@ import type { AppThunk } from '../../store.ts';
 import { receiveCandidates } from '../contact/receiveCandidates.ts';
 import { receiveAnswer } from '../contact/receiveAnswer.ts';
 import { receiveOffer } from '../contact/receiveOffer.ts';
+import { receivePath } from '../contact/receivePath.ts';
 import { refreshMailboxes } from './refreshMailboxes.ts';
 
 // A decrypted event arrived in one of our mailboxes. Anything not signed by the right identity is dropped.
@@ -52,5 +53,7 @@ export const handleSignal = (mailbox: string, plaintext: string): AppThunk<Promi
     await dispatch(receiveAnswer(contact.id, body.msg));
   } else if (body.msg.t === 'ice') {
     await dispatch(receiveCandidates(contact.id, body.msg));
+  } else if (body.msg.t === 'path') {
+    await dispatch(receivePath(contact.id, body.msg));
   }
 };

@@ -4,8 +4,13 @@ import { tuneSenders } from './tuneSenders.ts';
 import { sendControl } from './sendControl.ts';
 import { sessions } from './state.ts';
 
-// Applies an offer or answer received over the control channel (perfect negotiation).
-export const handleDescription = async (key: string, description: RTCSessionDescriptionInit) => {
+// Applies an offer or answer received over the control channel (perfect negotiation). Our answer to an offer
+// goes back over the control channel, or through `reply` (e.g. through the relays, when the path is broken).
+export const handleDescription = async (
+  key: string,
+  description: RTCSessionDescriptionInit,
+  reply?: () => Promise<void>,
+) => {
   const session = sessions.get(key);
 
   if (!session) {
@@ -37,7 +42,9 @@ export const handleDescription = async (key: string, description: RTCSessionDesc
     if (description.type === 'offer') {
       await peer.setLocalDescription();
 
-      if (peer.localDescription) {
+      if (reply) {
+        await reply();
+      } else if (peer.localDescription) {
         sendControl(key, { t: 'sdp', description: peer.localDescription.toJSON() });
         session.log(`Call setup: sent ${peer.localDescription.type}`);
       }

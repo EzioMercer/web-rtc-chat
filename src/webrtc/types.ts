@@ -65,6 +65,8 @@ export type Session = {
   // We accepted a call: our camera/microphone go into the answer to the caller's next offer (see handleDescription),
   // so only one side ever offers and the two offers can't collide.
   attachOnOffer: boolean;
+  // The path broke and we are looking for a new one (through the relays), since this time; null otherwise.
+  rescueSince: number | null;
   // Adds a line to this conversation's connection log (Details), for troubleshooting.
   log: (text: string) => void;
 };

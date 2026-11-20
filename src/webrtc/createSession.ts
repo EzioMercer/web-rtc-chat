@@ -3,6 +3,7 @@ import { sessionDetail, sessionLogged } from '../store/sessions/sessionsSlice.ts
 import type { AppDispatch } from '../store/store.ts';
 import { relayCandidate } from '../store/thunks/contact/relayCandidate.ts';
 import { manualPathFailed } from '../store/thunks/manual/manualPathFailed.ts';
+import { finishRescue, rescuePath } from '../store/thunks/session/rescuePath.ts';
 import { sessionDropped } from '../store/thunks/session/sessionDropped.ts';
 import { bindChannel } from './bindChannel.ts';
 import { CONTROL_LABEL, FILE_LABEL, MANUAL_KEY, STUN_SERVERS } from './config.ts';
@@ -40,6 +41,7 @@ export const createSession = (options: Options, dispatch: AppDispatch): Session 
     route: null,
     restartedAt: Date.now(),
     attachOnOffer: false,
+    rescueSince: null,
     log: text => dispatch(sessionLogged({ key: options.key, text })),
   };
 
@@ -83,6 +85,13 @@ export const createSession = (options: Options, dispatch: AppDispatch): Session 
     if (peer.iceConnectionState === 'checking' && !session.opened) {
       dispatch(sessionDetail({ key: session.key, detail: 'Trying network paths between your devices…' }));
     }
+
+    // The open connection lost its path: look for a new one now, instead of waiting for "failed".
+    if ((peer.iceConnectionState === 'disconnected' || peer.iceConnectionState === 'failed') && session.opened) {
+      void dispatch(rescuePath(session));
+    }
+
+    dispatch(finishRescue(session));
   };
 
   peer.onicegatheringstatechange = () => {
@@ -100,7 +109,11 @@ export const createSession = (options: Options, dispatch: AppDispatch): Session 
       return;
     }
 
-    // An open connection that failed is gone.
+    // An open connection that failed is gone, unless a new path is being searched for (it has its own timeout).
+    if (session.opened && session.rescueSince !== null) {
+      return;
+    }
+
     if (session.opened) {
       dispatch(sessionDropped(session));
 
