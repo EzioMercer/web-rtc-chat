@@ -62,7 +62,15 @@ export const Composer = ({ convKey, connected }: Props) => {
         onChange={e => setText(e.target.value)}
         onPaste={paste}
       />
-      <button className={styles.send} type="submit" disabled={!canType || !text.trim()}>Send</button>
+      <button
+        className={styles.send}
+        type="submit"
+        disabled={!canType || !text.trim()}
+        // Keep the focus (and the phone keyboard) in the message field, like messaging apps do.
+        onPointerDown={e => e.preventDefault()}
+      >
+        Send
+      </button>
     </form>
   );
 };

@@ -26,6 +26,11 @@
   box-sizing: border-box;
 }
 
+/* No double-tap zoom (it made the app jump in size); pinch zoom still works. */
+html {
+  touch-action: manipulation;
+}
+
 body {
   margin: 0;
   background: radial-gradient(1200px 600px at 50% -200px, var(--bg-glow), var(--bg));

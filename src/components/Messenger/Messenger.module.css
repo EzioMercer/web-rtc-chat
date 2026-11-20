@@ -1,8 +1,12 @@
-/* Pinned to the visible screen. (A height of 100vh, or even 100dvh in some phone browsers, counts the space under
-   the browser's address bar too, and then the bottom of the app is off screen.) */
+/* Pinned to the visible screen, as tall as the window really is now (see trackWindowHeight): 100vh, or even
+   100dvh in some phone browsers, counts the space under the address bar, and some don't stretch back after the
+   keyboard closes. */
 .layout {
   position: fixed;
-  inset: 0;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: var(--window-height, 100dvh);
   display: grid;
   grid-template-columns: minmax(260px, 340px) 1fr;
   grid-template-rows: minmax(0, 1fr);
