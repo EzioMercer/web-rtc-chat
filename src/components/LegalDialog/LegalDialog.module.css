@@ -1,0 +1,23 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.section h3 {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.section p,
+.section ul {
+  margin: 0;
+}
+
+.section ul {
+  padding-left: 18px;
+}

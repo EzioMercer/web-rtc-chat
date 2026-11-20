@@ -1,8 +1,9 @@
-import type { ChangeEvent } from 'react';
+import { useState, type ChangeEvent } from 'react';
 import { restoreBackup } from '../../store/thunks/app/restoreBackup.ts';
 import { setupIdentity } from '../../store/thunks/app/setupIdentity.ts';
 import { useAppDispatch } from '../../store/useAppDispatch.ts';
 import { useAppSelector } from '../../store/useAppSelector.ts';
+import { LegalDialog } from '../LegalDialog/LegalDialog.tsx';
 import { ProtectionPicker } from '../ProtectionPicker/ProtectionPicker.tsx';
 import styles from './SetupScreen.module.css';
 
@@ -10,6 +11,7 @@ import styles from './SetupScreen.module.css';
 export const SetupScreen = () => {
   const dispatch = useAppDispatch();
   const { busy, error } = useAppSelector(state => state.app);
+  const [legal, setLegal] = useState(false);
 
   const restore = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -34,10 +36,19 @@ export const SetupScreen = () => {
         error={error}
         onSubmit={choice => dispatch(setupIdentity(choice))}
       />
+      <p className={styles.legal}>
+        By using this app, you accept the
+        {' '}
+        <button type="button" className={styles.legalLink} onClick={() => setLegal(true)}>
+          disclaimer and privacy notice
+        </button>
+        .
+      </p>
       <label className={styles.restore}>
         Restore from a backup file
         <input type="file" accept="application/json,.json" hidden onChange={restore} />
       </label>
+      {legal && <LegalDialog onClose={() => setLegal(false)} />}
     </section>
   );
 };

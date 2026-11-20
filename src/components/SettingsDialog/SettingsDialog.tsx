@@ -8,6 +8,7 @@ import { useAppSelector } from '../../store/useAppSelector.ts';
 import { MANUAL_KEY } from '../../webrtc/config.ts';
 import { Button } from '../Button/Button.tsx';
 import { Dialog } from '../Dialog/Dialog.tsx';
+import { LegalDialog } from '../LegalDialog/LegalDialog.tsx';
 import { ProtectionPicker } from '../ProtectionPicker/ProtectionPicker.tsx';
 import { downloadBackup } from './downloadBackup.ts';
 import { MODE_LABELS } from './MODE_LABELS.ts';
@@ -21,6 +22,7 @@ export const SettingsDialog = ({ onClose }: Props) => {
   const dispatch = useAppDispatch();
   const { mode, busy, error } = useAppSelector(state => state.app);
   const [changing, setChanging] = useState(false);
+  const [legal, setLegal] = useState(false);
   const [relays, setRelays] = useState(relayStatus);
   const canBackup = mode === 'passkey' || mode === 'passphrase';
 
@@ -29,6 +31,10 @@ export const SettingsDialog = ({ onClose }: Props) => {
 
     return () => window.clearInterval(timer);
   }, []);
+
+  if (legal) {
+    return <LegalDialog onClose={() => setLegal(false)} />;
+  }
 
   if (changing) {
     return (
@@ -97,6 +103,12 @@ export const SettingsDialog = ({ onClose }: Props) => {
         >
           Connect manually
         </Button>
+      </section>
+
+      <section className={styles.section}>
+        <h3>Legal</h3>
+        <p>Disclaimer, privacy notice and donations.</p>
+        <Button variant="secondary" onClick={() => setLegal(true)}>Legal</Button>
       </section>
 
       <section className={styles.section}>
