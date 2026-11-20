@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useBackToList } from '../../hooks/useBackToList.ts';
+import { reconnectRelays } from '../../nostr/listen.ts';
 import { useCallSounds } from '../../hooks/useCallSounds.ts';
 import { conversationRead } from '../../store/chat/chatSlice.ts';
 import { connectContact } from '../../store/thunks/contact/connectContact.ts';
@@ -18,7 +19,11 @@ import { RequestDialog } from '../RequestDialog/RequestDialog.tsx';
 import { Sidebar } from '../Sidebar/Sidebar.tsx';
 import styles from './Messenger.module.css';
 
+// Back from the background after longer than this: renew relay connections and reconnect.
+const BACKGROUND_RENEW_MS = 10_000;
+
 // Contacts on the left, the open conversation on the right. On phones, one of the two fills the screen.
+
 export const Messenger = () => {
   const dispatch = useAppDispatch();
   const selected = useAppSelector(state => state.ui.selected);
@@ -36,20 +41,8 @@ export const Messenger = () => {
       }
     };
 
-    // Coming back to the tab marks the open conversation as read.
-    const onVisible = () => {
-      const key = store.getState().ui.selected;
-
-      if (!document.hidden && key) {
-        dispatch(conversationRead(key));
-      }
-    };
-
-    // Free received files from memory when the page goes away.
-    const onHide = () => Object.values(store.getState().chat.conversations).forEach(revokeFiles);
-
     // The network came back (e.g. Wi-Fi to mobile data): reconnect the open conversation.
-    const onOnline = () => {
+    const reconnectSelected = () => {
       const { ui, contacts } = store.getState();
 
       if (ui.selected && contacts.list.some(c => c.id === ui.selected)) {
@@ -57,13 +50,41 @@ export const Messenger = () => {
       }
     };
 
-    window.addEventListener('online', onOnline);
+    let hiddenAt = 0;
+
+    // Coming back to the tab marks the open conversation as read. After a while in the background (phones pause
+    // apps there), the relay connections are renewed and the open conversation reconnects.
+    const onVisible = () => {
+      const key = store.getState().ui.selected;
+
+      if (document.hidden) {
+        hiddenAt = Date.now();
+
+        return;
+      }
+
+      if (key) {
+        dispatch(conversationRead(key));
+      }
+
+      if (hiddenAt && Date.now() - hiddenAt > BACKGROUND_RENEW_MS) {
+        reconnectRelays();
+        reconnectSelected();
+      }
+
+      hiddenAt = 0;
+    };
+
+    // Free received files from memory when the page goes away.
+    const onHide = () => Object.values(store.getState().chat.conversations).forEach(revokeFiles);
+
+    window.addEventListener('online', reconnectSelected);
     window.addEventListener('hashchange', onHash);
     document.addEventListener('visibilitychange', onVisible);
     window.addEventListener('pagehide', onHide);
 
     return () => {
-      window.removeEventListener('online', onOnline);
+      window.removeEventListener('online', reconnectSelected);
       window.removeEventListener('hashchange', onHash);
       document.removeEventListener('visibilitychange', onVisible);
       window.removeEventListener('pagehide', onHide);

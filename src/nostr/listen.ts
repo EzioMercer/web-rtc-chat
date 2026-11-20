@@ -69,6 +69,15 @@ const check = () => {
   }
 };
 
+// Drops every relay connection and opens fresh ones. After the phone kept the app in the background, its
+// connections can look open but be dead, and then nothing reaches us.
+export const reconnectRelays = () => {
+  state.sub?.close();
+  state.sub = null;
+  pool.close(RELAYS);
+  subscribe();
+};
+
 // Listens on exactly these mailboxes (public key -> secret key) and passes decrypted signals to `handler`.
 export const listen = (mailboxes: Map<string, Uint8Array>, handler: Handler) => {
   const same = mailboxes.size === state.mailboxes.size && [...mailboxes.keys()].every(pk => state.mailboxes.has(pk));

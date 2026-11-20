@@ -57,5 +57,8 @@ export const ANSWER_TIMEOUT_MS = 25_000;
 // The browser's own "failed" comes too early (see createSession), so this decides when to give up.
 export const PATH_TIMEOUT_MS = 45_000;
 
+// Getting ready to connect (TURN credentials) takes a few seconds at most; longer means it got stuck.
+export const PREPARE_TIMEOUT_MS = 15_000;
+
 // Wait this long before each automatic reconnect attempt after a connection dropped.
 export const RECONNECT_DELAYS_MS = [2000, 5000, 15_000];
