@@ -7,30 +7,16 @@ Live: https://eziomercer.github.io/web-rtc-chat/
 
 ## Features
 
-- **No account.** No sign-up, email, phone number or password. Works in any modern browser, on phones and computers,
-  with nothing to install.
-- **Contacts:**
-  - add someone with a QR code in person, or a single-use invite link remotely;
-  - compare 4 safety words to make sure nobody is in the middle, then mark the contact as verified;
-  - rename, favourite, reorder and delete contacts.
-- **Chat:**
-  - text messages with delivery ticks;
-  - messages written while the other side is offline are sent when they come back, in the order they were written;
-  - tap a message (right-click on a computer) to copy it;
-  - send files, pictures and videos of any size.
-- **Calls:**
-  - audio and video calls, with a ringtone, and the option to answer a video call with audio only;
-  - full screen, where the buttons hide until you tap the screen or move the mouse;
-  - your own video in a small picture you can drag anywhere, or tap to swap with theirs;
-  - share your screen (on computers; phone browsers don't allow it).
-- **Connection:**
-  - direct between the two devices, or through a TURN relay when a network blocks direct connections;
-  - when the network path breaks (e.g. Wi-Fi drops), a new one is searched for at once, so chat and calls go on;
-  - reconnects by itself when the network comes back or the app returns from the background.
-- **Protection:** passkey, passphrase, no protection, or temporary; change it any time. Encrypted backup to move your
-  identity to another device.
-- **Manual mode** (Settings → Connect manually): connect by copying codes by hand, without contacts or relays.
-- **Legal notice** under Settings → Legal.
+- 💬 Private chat, straight from one browser to another
+- 📞 Audio and video calls
+- 🖥️ Screen sharing
+- 📎 Files, photos and videos of any size
+- 🔒 End-to-end encrypted, messages are never stored
+- 👤 No account, phone number or email
+- 📱 Works on phones and computers, nothing to install
+- ➕ Add contacts with a QR code or an invite link
+- ✅ Safety words to check nobody is in the middle
+- 🔁 Survives short network drops and reconnects by itself
 
 ## How it works, in simple words
 
