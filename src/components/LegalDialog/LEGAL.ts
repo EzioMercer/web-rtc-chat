@@ -12,7 +12,7 @@ export const LEGAL: LegalSection[] = [
     title: 'Disclaimer',
     paragraphs: [
       'This is a free, non-commercial, open-source project, shared so others don\'t have to build the same thing '
-      + 'from scratch. It is run by one person in their spare time, not by a company.',
+      + 'from scratch. It is run by one person, EzioMercer ("the author"), in their spare time, not by a company.',
       'THE APP AND ITS CODE ARE PROVIDED "AS IS" AND "AS AVAILABLE", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR '
       + 'IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, '
       + 'SECURITY AND NON-INFRINGEMENT.',
