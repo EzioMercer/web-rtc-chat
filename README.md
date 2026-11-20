@@ -74,19 +74,3 @@ hand, without contacts or relays.
 - **Availability.** If all 4 relays are down or block the app, contacts can't find each other. The manual mode
   still works.
 - **The code you download.** You trust that the files served from GitHub Pages are the ones in this repository.
-
-## TURN relay
-
-The TURN key's token must stay secret, so a small Cloudflare Worker (`worker/turn-credentials.js`) hands out
-credentials that expire after an hour. Open connections get new ones before that, so calls don't drop. It stops at
-800 GB of TURN traffic in 30 days, so the free 1,000 GB is never exceeded.
-
-- Every change to `worker/` is uploaded by `.github/workflows/deploy-worker.yml`, which then checks that a message
-  gets through the relay (`scripts/check-turn.mjs`). It needs the repository secrets `CLOUDFLARE_API_TOKEN` and
-  `CLOUDFLARE_ACCOUNT_ID`.
-- The Worker's settings live in the Cloudflare dashboard: the secrets `TURN_KEY_ID`, `TURN_KEY_API_TOKEN` and
-  `ANALYTICS_API_TOKEN` (Account Analytics: Read), and the variables `ALLOWED_ORIGINS` and `ACCOUNT_ID`.
-- The app's code holds only its URL (`src/webrtc/config.ts`). `VITE_TURN_URL` replaces it; set it empty for direct
-  connections only.
-
-Every push to `master` builds the site and deploys it to GitHub Pages (`.github/workflows/deploy.yml`).
