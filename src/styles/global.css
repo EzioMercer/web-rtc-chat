@@ -26,8 +26,9 @@
   box-sizing: border-box;
 }
 
-/* No double-tap zoom (it made the app jump in size); pinch zoom still works. */
-html {
+/* No double-tap zoom (it made the app jump in size); pinch zoom still works. Set on every element: a scrolling
+   area (like the message list) doesn't take it from the page. */
+* {
   touch-action: manipulation;
 }
 
