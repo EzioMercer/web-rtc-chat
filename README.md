@@ -61,11 +61,9 @@ hand, without contacts or relays.
 - **Messages are never stored.** Not on a server, a relay, or your device.
   - The only things saved, in IndexedDB, are your identity key and your contact list (names, public keys, mailbox
     secrets). They are encrypted with your passkey or passphrase key.
-  - An ESLint rule bans every storage and network API (`localStorage`, `indexedDB`, `fetch`, `WebSocket`,
-    `sendBeacon`, cookies, …) outside `src/storage/`, so this can't break by accident.
 - **No accounts, analytics, trackers or third-party scripts.**
 
-### What it does *not* protect against (be honest with users)
+### What it does *not* protect against
 
 - **Skipping the safety check.** If someone intercepted the invite link and used it first, they could pose as your
   contact. Comparing the safety words catches this, but only if people actually compare them.
@@ -77,25 +75,11 @@ hand, without contacts or relays.
   still works.
 - **The code you download.** You trust that the files served from GitHub Pages are the ones in this repository.
 
-## Run it locally
-
-Requires Node.js `^20.19 || ^22.13 || >=24`.
-
-```sh
-npm install      # also installs the git hooks
-npm run dev      # dev server with hot reload
-npm run build    # typecheck + production build into dist/
-npm run lint     # ESLint, which also checks formatting
-```
-
-To test against your own relays, set `VITE_RELAYS` (comma-separated) when building or starting the dev server,
-e.g. `VITE_RELAYS=ws://localhost:7777 npm run dev`.
-
-### TURN relay
+## TURN relay
 
 The TURN key's token must stay secret, so a small Cloudflare Worker (`worker/turn-credentials.js`) hands out
-credentials that expire after an hour. Open connections get new ones before that, so calls don't drop. It stops at 800 GB of TURN traffic in 30 days, so the free 1,000 GB is
-never exceeded.
+credentials that expire after an hour. Open connections get new ones before that, so calls don't drop. It stops at
+800 GB of TURN traffic in 30 days, so the free 1,000 GB is never exceeded.
 
 - Every change to `worker/` is uploaded by `.github/workflows/deploy-worker.yml`, which then checks that a message
   gets through the relay (`scripts/check-turn.mjs`). It needs the repository secrets `CLOUDFLARE_API_TOKEN` and
@@ -106,20 +90,3 @@ never exceeded.
   connections only.
 
 Every push to `master` builds the site and deploys it to GitHub Pages (`.github/workflows/deploy.yml`).
-
-## Code layout
-
-| Folder | What it does |
-|---|---|
-| `src/identity/` | Identity key and the 4 protection modes (passkey PRF, Argon2id passphrase, device key, temporary) |
-| `src/storage/` | The only module allowed to touch browser storage |
-| `src/crypto/` | Small WebCrypto helpers (AES-GCM, HKDF, SHA-256, base64, safety words) |
-| `src/nostr/` | Relay pool, daily mailboxes, encrypted publishing and listening |
-| `src/signaling/` | Signed envelopes, invites, who is polite in a pair |
-| `src/webrtc/` | One connection per contact, files, calls, perfect negotiation |
-| `src/turn/` | The only network request the app makes itself: TURN credentials |
-| `worker/` | Cloudflare Worker that hands out TURN credentials |
-| `src/store/` | Redux slices and thunks |
-| `src/components/` | React components, each with its own CSS module |
-
-See [TODO.md](TODO.md) for what's done and what's next.
