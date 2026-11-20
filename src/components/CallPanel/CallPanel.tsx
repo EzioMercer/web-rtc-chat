@@ -33,6 +33,9 @@ const CONTROLS_HIDE_MS = 3000;
 // In full screen the buttons float over the bottom of the video; the small picture stays above them.
 const FULL_BOTTOM_PX = 130;
 
+// Mouse movement restarts the hide timer at most this often.
+const MOVE_THROTTLE_MS = 300;
+
 export const CallPanel = () => {
   const dispatch = useAppDispatch();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -44,6 +47,7 @@ export const CallPanel = () => {
   const stats = useCallStats(key, status === 'active');
   const [controlsShown, setControlsShown] = useState(true);
   const hideTimer = useRef(0);
+  const movedAt = useRef(0);
 
   // Shows the buttons, and hides them again a little later (only full screen ever hides them). Any press on the
   // buttons, including the one that enters full screen, calls this.
@@ -69,7 +73,17 @@ export const CallPanel = () => {
   const lossy = (stats?.audioLoss ?? 0) >= AUDIO_LOSS_WARNING;
 
   return (
-    <div ref={panelRef} className={cx(styles.panel, full && styles.full)}>
+    <div
+      ref={panelRef}
+      className={cx(styles.panel, full && styles.full, hidden && styles.noCursor)}
+      // With a mouse, moving it shows the buttons (and the pointer) for a while.
+      onPointerMove={(e) => {
+        if (full && e.pointerType === 'mouse' && e.timeStamp - movedAt.current > MOVE_THROTTLE_MS) {
+          movedAt.current = e.timeStamp;
+          showControls();
+        }
+      }}
+    >
       <div className={cx(styles.stage, !videoStage && styles.audioStage)}>
         {/* Mounted for the whole call: it also plays the peer's audio. */}
         {active && (
@@ -97,11 +111,16 @@ export const CallPanel = () => {
           </span>
         )}
         {screen && <span className={cx(styles.badge, styles.sharing)}>You are sharing your screen</span>}
-        {/* In full screen, a tap on the video shows or hides the buttons (the small picture is above it). */}
+        {/* In full screen, a tap on the video shows or hides the buttons (the small picture is above it). A mouse
+            shows them by moving instead. */}
         {full && (
           <div
             className={styles.stageTap}
-            onClick={() => {
+            onPointerUp={(e) => {
+              if (e.pointerType === 'mouse') {
+                return;
+              }
+
               if (controlsShown) {
                 window.clearTimeout(hideTimer.current);
                 setControlsShown(false);
