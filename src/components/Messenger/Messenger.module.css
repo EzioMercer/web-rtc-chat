@@ -1,11 +1,8 @@
-/* Pinned to the visible screen, as tall as the window really is now (see trackWindowHeight): 100vh, or even
-   100dvh in some phone browsers, counts the space under the address bar, and some don't stretch back after the
-   keyboard closes. */
+/* Exactly as tall as the window really is now (see trackWindowHeight): 100vh, or even 100dvh in some phone
+   browsers, counts the space under the address bar, and some don't stretch back after the keyboard closes. It
+   stays a normal part of the page (not fixed over it), so browser gestures such as double tap measure it
+   correctly. */
 .layout {
-  position: fixed;
-  top: 0;
-  right: 0;
-  left: 0;
   height: var(--window-height, 100dvh);
   display: grid;
   grid-template-columns: minmax(260px, 340px) 1fr;

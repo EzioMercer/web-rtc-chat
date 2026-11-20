@@ -7,11 +7,13 @@
   --text: #e8ecf8;
   --muted: #8a94b3;
   --accent: #6d8cff;
+  /* Buttons and badges: dark enough for white text (contrast 4.7). */
+  --accent-fill: #4a68e8;
   --accent-text: #ffffff;
   --ok: #3ddc97;
   --warn: #f5b342;
   --error: #ff7a7a;
-  --danger: #e5484d;
+  --danger: #d1343a;
   --success: #2fb37a;
   --mine: #3554d1;
   --theirs: #222b48;
@@ -24,12 +26,6 @@
 *::before,
 *::after {
   box-sizing: border-box;
-}
-
-/* No double-tap zoom (it made the app jump in size); pinch zoom still works. Set on every element: a scrolling
-   area (like the message list) doesn't take it from the page. */
-* {
-  touch-action: manipulation;
 }
 
 body {
