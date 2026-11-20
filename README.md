@@ -5,6 +5,33 @@ there is no server in the middle that sees or keeps your messages.
 
 Live: https://eziomercer.github.io/web-rtc-chat/
 
+## Features
+
+- **No account.** No sign-up, email, phone number or password. Works in any modern browser, on phones and computers,
+  with nothing to install.
+- **Contacts:**
+  - add someone with a QR code in person, or a single-use invite link remotely;
+  - compare 4 safety words to make sure nobody is in the middle, then mark the contact as verified;
+  - rename, favourite, reorder and delete contacts.
+- **Chat:**
+  - text messages with delivery ticks;
+  - messages written while the other side is offline are sent when they come back, in the order they were written;
+  - tap a message (right-click on a computer) to copy it;
+  - send files, pictures and videos of any size.
+- **Calls:**
+  - audio and video calls, with a ringtone, and the option to answer a video call with audio only;
+  - full screen, where the buttons hide until you tap the screen or move the mouse;
+  - your own video in a small picture you can drag anywhere, or tap to swap with theirs;
+  - share your screen (on computers; phone browsers don't allow it).
+- **Connection:**
+  - direct between the two devices, or through a TURN relay when a network blocks direct connections;
+  - when the network path breaks (e.g. Wi-Fi drops), a new one is searched for at once, so chat and calls go on;
+  - reconnects by itself when the network comes back or the app returns from the background.
+- **Protection:** passkey, passphrase, no protection, or temporary; change it any time. Encrypted backup to move your
+  identity to another device.
+- **Manual mode** (Settings → Connect manually): connect by copying codes by hand, without contacts or relays.
+- **Legal notice** under Settings → Legal.
+
 ## How it works, in simple words
 
 1. **The website is just files.** GitHub Pages serves the HTML, JS and CSS once. It has no backend, database or
@@ -39,7 +66,9 @@ Live: https://eziomercer.github.io/web-rtc-chat/
 Some networks block direct connections. Then the browsers send their (still end-to-end encrypted) traffic through
 a **TURN relay** on Cloudflare instead. It can't read anything and stores nothing. The status then says "through TURN
 relay". While on the relay, video quality is lowered to save traffic, and every 5 minutes the app looks for a
-direct path again and moves to it when it works.
+direct path again and moves to it when it works. If an open connection loses its path (for example, Wi-Fi drops),
+the app searches for a new one right away, direct or through TURN. The request goes through the Nostr relays,
+because the broken connection can't carry it. If nothing is found within 15 seconds, it reconnects from scratch.
 
 A **manual mode** is still there (Settings → Connect manually). Two people copy connection codes to each other by
 hand, without contacts or relays.
