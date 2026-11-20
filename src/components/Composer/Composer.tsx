@@ -4,6 +4,7 @@ import { sendMessage } from '../../store/thunks/chat/sendMessage.ts';
 import { useAppDispatch } from '../../store/useAppDispatch.ts';
 import { MANUAL_KEY } from '../../webrtc/config.ts';
 import { IconButton } from '../IconButton/IconButton.tsx';
+import { hasKeyboard } from '../../utils/hasKeyboard.ts';
 import styles from './Composer.module.css';
 
 type Props = {
@@ -56,7 +57,7 @@ export const Composer = ({ convKey, connected }: Props) => {
         value={text}
         placeholder={connected ? 'Type a message…' : (canType ? 'Offline: sent when they\'re online' : 'Not connected')}
         autoComplete="off"
-        autoFocus
+        autoFocus={hasKeyboard()}
         disabled={!canType}
         onChange={e => setText(e.target.value)}
         onPaste={paste}
