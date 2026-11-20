@@ -12,7 +12,7 @@ type Props = {
 
 const NONE: Message[] = [];
 
-// A press longer than this is the browser's text selection, not a tap.
+// A touch held longer than this is the phone's text selection, not a tap.
 const TAP_MS = 400;
 
 // Chat text has a menu; files have their own buttons, and notes from the app have nothing to do.
@@ -22,25 +22,30 @@ export const MessageList = ({ convKey }: Props) => {
   const messages = useAppSelector(state => state.chat.conversations[convKey] ?? NONE);
   const listRef = useRef<HTMLDivElement>(null);
   const [menu, setMenu] = useState<string | null>(null);
-  const pressedAt = useRef(0);
+  const press = useRef({ at: 0, touch: false });
 
-  // A tap opens the message menu. A long press or a text selection is left to the browser and its own menu.
+  const textSelected = () => !(window.getSelection()?.isCollapsed ?? true);
+
+  // On a phone, a tap opens the message menu; a long press (selecting text) is left to the phone and its menu.
   const tap = (e: MouseEvent, id: string) => {
-    const selected = !(window.getSelection()?.isCollapsed ?? true);
-
-    // A double or triple click selects words, not a menu.
-    if (e.detail > 1) {
-      setMenu(null);
-
-      return;
-    }
-
-    if (selected || e.timeStamp - pressedAt.current > TAP_MS) {
+    if (!press.current.touch || textSelected() || e.timeStamp - press.current.at > TAP_MS) {
       return;
     }
 
     e.stopPropagation();
     setMenu(current => (current === id ? null : id));
+  };
+
+  // With a mouse or touchpad, the right button (or two-finger tap) opens it instead of the browser's menu, unless
+  // text is selected: then the browser's menu can copy the selection. On a phone a long press also sends this
+  // event; that one is left to the phone.
+  const contextMenu = (e: MouseEvent, id: string) => {
+    if (press.current.touch || textSelected()) {
+      return;
+    }
+
+    e.preventDefault();
+    setMenu(id);
   };
 
   // Keep the newest message in view.
@@ -59,9 +64,10 @@ export const MessageList = ({ convKey }: Props) => {
           key={message.id}
           className={cx(styles.msg, styles[message.from], tappable(message) && styles.tappable)}
           onPointerDown={(e) => {
-            pressedAt.current = e.timeStamp;
+            press.current = { at: e.timeStamp, touch: e.pointerType !== 'mouse' };
           }}
           onClick={tappable(message) ? e => tap(e, message.id) : undefined}
+          onContextMenu={tappable(message) ? e => contextMenu(e, message.id) : undefined}
         >
           {message.kind === 'file' ? <FileBubble file={message} /> : message.text}
           {message.kind === 'text' && message.from === 'me' && (
