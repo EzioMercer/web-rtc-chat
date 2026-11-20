@@ -28,6 +28,13 @@ export const MessageList = ({ convKey }: Props) => {
   const tap = (e: MouseEvent, id: string) => {
     const selected = !(window.getSelection()?.isCollapsed ?? true);
 
+    // A double or triple click selects words, not a menu.
+    if (e.detail > 1) {
+      setMenu(null);
+
+      return;
+    }
+
     if (selected || e.timeStamp - pressedAt.current > TAP_MS) {
       return;
     }
