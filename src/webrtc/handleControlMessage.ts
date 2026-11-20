@@ -1,3 +1,4 @@
+import { messageDelivered } from '../store/chat/chatSlice.ts';
 import type { AppDispatch } from '../store/store.ts';
 import { receiveCallSignal } from '../store/thunks/call/receiveCallSignal.ts';
 import { receivePeerText } from '../store/thunks/chat/receivePeerText.ts';
@@ -19,7 +20,13 @@ export const handleControlMessage = (key: string, data: unknown, dispatch: AppDi
 
   switch (message.t) {
     case 'text':
-      dispatch(receivePeerText(key, String(message.text)));
+      dispatch(receivePeerText(key, String(message.text), message.id));
+      break;
+    case 'ack':
+      if (typeof message.id === 'string') {
+        dispatch(messageDelivered({ key, id: message.id }));
+      }
+
       break;
     case 'sdp':
       handleDescription(key, message.description).catch(() => undefined);

@@ -1,5 +1,5 @@
 import { getRoute } from '../../../webrtc/getRoute.ts';
-import { limitVideo } from '../../../webrtc/limitVideo.ts';
+import { tuneSenders } from '../../../webrtc/tuneSenders.ts';
 import type { Session } from '../../../webrtc/types.ts';
 import { sessionRouteChanged } from '../../sessions/sessionsSlice.ts';
 import type { AppThunk } from '../../store.ts';
@@ -23,5 +23,5 @@ export const checkRoute = (session: Session): AppThunk<Promise<void>> => async (
   }
 
   dispatch(sessionRouteChanged({ key: session.key, route }));
-  await limitVideo(session);
+  await tuneSenders(session);
 };

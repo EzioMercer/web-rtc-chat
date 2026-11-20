@@ -108,8 +108,8 @@ export default tseslint.config(
     },
   },
   {
-    // Fetches TURN credentials, nothing else.
-    files: ['src/turn/**'],
+    // Fetches TURN credentials, and the site's own version number (from GitHub Pages, which serves the app anyway).
+    files: ['src/turn/**', 'src/update/**'],
     rules: {
       'no-restricted-globals': banGlobals(['fetch']),
       'no-restricted-properties': banProperties(['fetch']),

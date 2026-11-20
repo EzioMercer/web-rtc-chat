@@ -5,6 +5,7 @@ import { ContactList } from '../ContactList/ContactList.tsx';
 import { Icon } from '../Icon/Icon.tsx';
 import { IconButton } from '../IconButton/IconButton.tsx';
 import { SettingsDialog } from '../SettingsDialog/SettingsDialog.tsx';
+import { UpdateNotice } from '../UpdateNotice/UpdateNotice.tsx';
 import styles from './Sidebar.module.css';
 
 export const Sidebar = () => {
@@ -23,6 +24,7 @@ export const Sidebar = () => {
         </Button>
       </div>
       <ContactList />
+      <UpdateNotice />
       {dialog === 'add' && <AddContactDialog onClose={() => setDialog(null)} />}
       {dialog === 'settings' && <SettingsDialog onClose={() => setDialog(null)} />}
     </aside>

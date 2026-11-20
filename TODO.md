@@ -187,3 +187,13 @@ Hard requirement: message text and files are never written to disk, a server, a 
 - [ ] Offline messages ("deliver when they come online"), encrypted.
 - [ ] A longer relay list with fallback when relays die. It must be the same, in the same order, for everyone, so peers
   still meet on the same relays. Possibly fetched from a source we control, such as a file in this repo.
+
+## Calls and messages (done)
+
+- [x] Ringtone for incoming calls and a ringback tone while calling (Web Audio, no files).
+- [x] Answer a video call with audio only.
+- [x] Delivery confirmation: each message waits for an "ack"; unconfirmed ones are sent again when the connection
+  reopens (duplicates are ignored). Messages typed while the contact is offline go out when they come online.
+- [x] Voice gets priority over video on a busy network; the call shows when much of their audio is lost.
+- [x] Full screen for video calls; drag the own-camera preview anywhere over their video.
+- [x] Say when a new version is out (version.json, checked every 30 minutes); reloading stays optional.

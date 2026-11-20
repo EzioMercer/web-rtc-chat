@@ -28,6 +28,16 @@ const chatSlice = createSlice({
         payload: { key, message: { kind: 'text' as const, id: nanoid(), from, text } },
       }),
     },
+    messageQueued: (state, { payload }: PayloadAction<Keyed<{ id: string; text: string }>>) => {
+      push(state, payload.key, { kind: 'text', id: payload.id, from: 'me', text: payload.text, pending: true });
+    },
+    messageDelivered: (state, { payload }: PayloadAction<Keyed<{ id: string }>>) => {
+      const message = state.conversations[payload.key]?.find(m => m.id === payload.id);
+
+      if (message?.kind === 'text') {
+        delete message.pending;
+      }
+    },
     fileAdded: (state, { payload }: PayloadAction<Keyed<{ file: Omit<FileMessage, 'kind'> }>>) => {
       push(state, payload.key, { ...payload.file, kind: 'file' });
     },
@@ -69,6 +79,8 @@ const chatSlice = createSlice({
 
 export const {
   addMessage,
+  messageQueued,
+  messageDelivered,
   fileAdded,
   fileProgress,
   fileCompleted,

@@ -5,12 +5,15 @@ import { toggleCam } from '../../store/thunks/call/toggleCam.ts';
 import { toggleMic } from '../../store/thunks/call/toggleMic.ts';
 import { useAppDispatch } from '../../store/useAppDispatch.ts';
 import { useAppSelector } from '../../store/useAppSelector.ts';
+import { useRef } from 'react';
 import { useCallStats } from '../../hooks/useCallStats.ts';
+import { useFullScreen } from '../../hooks/useFullScreen.ts';
 import { cx } from '../../utils/cx.ts';
 import { formatBytes } from '../../utils/formatBytes.ts';
 import { media, sessions } from '../../webrtc/state.ts';
 import { Icon } from '../Icon/Icon.tsx';
 import { IconButton } from '../IconButton/IconButton.tsx';
+import { LocalPreview } from '../LocalPreview/LocalPreview.tsx';
 import { MediaVideo } from '../MediaVideo/MediaVideo.tsx';
 import styles from './CallPanel.module.css';
 
@@ -21,8 +24,13 @@ const TITLES = {
   idle: '',
 };
 
+// Show a warning when this share of their audio is lost on the way.
+const AUDIO_LOSS_WARNING = 0.03;
+
 export const CallPanel = () => {
   const dispatch = useAppDispatch();
+  const panelRef = useRef<HTMLDivElement>(null);
+  const { full, toggleFull } = useFullScreen(panelRef);
   const call = useAppSelector(state => state.call);
   const { status, video, ownVideo, mic, cam, remoteMic, remoteCam, remoteStreamVersion, key } = call;
   const remoteStream = key ? sessions.get(key)?.remoteStream ?? null : null;
@@ -36,9 +44,11 @@ export const CallPanel = () => {
   const showRemoteVideo = active && video && remoteCam;
   const showLocalVideo = ownVideo && cam && status !== 'incoming';
   const kind = video ? 'video' : 'audio';
+  const nothing = stats?.received === 0;
+  const lossy = (stats?.audioLoss ?? 0) >= AUDIO_LOSS_WARNING;
 
   return (
-    <div className={styles.panel}>
+    <div ref={panelRef} className={cx(styles.panel, full && styles.full)}>
       <div className={cx(styles.stage, !video && styles.audioStage)}>
         {/* Always mounted while active: it also plays the peer's audio. */}
         {active && (
@@ -61,13 +71,14 @@ export const CallPanel = () => {
             Peer is muted
           </span>
         )}
-        {showLocalVideo && <MediaVideo stream={media.localStream} className={styles.local} muted />}
+        {showLocalVideo && <LocalPreview stream={media.localStream} />}
       </div>
 
       {stats && (
-        <span className={cx(styles.stats, stats.received === 0 && styles.statsBad)} aria-label="Call traffic">
+        <span className={cx(styles.stats, (nothing || lossy) && styles.statsBad)} aria-label="Call traffic">
           {`Sending ${formatBytes(stats.sent)}/s · receiving ${formatBytes(stats.received)}/s`}
-          {stats.received === 0 && stats.sent > 0 && ' · nothing is arriving from them'}
+          {nothing && stats.sent > 0 && ' · nothing is arriving from them'}
+          {lossy && ` · ${Math.round(stats.audioLoss * 100)}% of their audio lost (bad network)`}
         </span>
       )}
       <div className={styles.controls}>
@@ -105,6 +116,14 @@ export const CallPanel = () => {
                     label={cam ? 'Turn camera off' : 'Turn camera on'}
                     variant={cam ? 'neutral' : 'off'}
                     onClick={() => dispatch(toggleCam())}
+                  />
+                )}
+                {video && (
+                  <IconButton
+                    icon={full ? 'minimize' : 'maximize'}
+                    label={full ? 'Exit full screen' : 'Full screen'}
+                    variant="neutral"
+                    onClick={toggleFull}
                   />
                 )}
                 <IconButton icon="hangUp" label="Hang up" variant="danger" onClick={() => dispatch(hangUp())} />

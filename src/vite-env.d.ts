@@ -7,6 +7,9 @@ interface ImportMetaEnv {
   readonly VITE_TURN_URL?: string;
 }
 
+// Identifies the running build (see vite.config.ts).
+declare const __APP_VERSION__: string;
+
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }

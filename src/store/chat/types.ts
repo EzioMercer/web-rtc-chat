@@ -5,6 +5,8 @@ export type TextMessage = {
   id: string;
   from: MessageAuthor;
   text: string;
+  // Our messages: waiting for the other side to confirm it arrived (sent again when the connection reopens).
+  pending?: boolean;
 };
 
 export type FileMessage = {

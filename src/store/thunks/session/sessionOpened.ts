@@ -8,6 +8,7 @@ import { sessionDetail, sessionStatusChanged } from '../../sessions/sessionsSlic
 import type { AppThunk } from '../../store.ts';
 import { reconnectAttempts } from '../contact/reconnectAttempts.ts';
 import { startRotation } from '../contact/startRotation.ts';
+import { sendPending } from '../chat/sendPending.ts';
 import { checkRoute } from './checkRoute.ts';
 import { watchPaths } from './watchPaths.ts';
 
@@ -22,6 +23,8 @@ export const sessionOpened = (session: Session): AppThunk<Promise<void>> => asyn
 
   ice?.addEventListener('selectedcandidatepairchange', () => void dispatch(checkRoute(session)));
   dispatch(watchPaths());
+
+  dispatch(sendPending(session.key));
 
   if (session.key === MANUAL_KEY) {
     // No identities here, so the safety words come from the two certificate fingerprints.

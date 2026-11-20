@@ -9,7 +9,9 @@ export type RotateSignal = { t: 'rotate' | 'rotate-ack' | 'rotate-done'; secret:
 
 // Everything sent over the control channel, as JSON.
 export type ControlMessage =
-  | { t: 'text'; text: string }
+  // `id` is answered with "ack", so the sender knows it arrived (older versions send no id).
+  | { t: 'text'; text: string; id?: string }
+  | { t: 'ack'; id: string }
   | { t: 'sdp'; description: RTCSessionDescriptionInit }
   | { t: 'ice'; candidate: RTCIceCandidateInit }
   | CallSignal

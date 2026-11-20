@@ -29,6 +29,15 @@ export const MessageList = ({ convKey }: Props) => {
       {messages.map(message => (
         <div key={message.id} className={cx(styles.msg, styles[message.from])}>
           {message.kind === 'file' ? <FileBubble file={message} /> : message.text}
+          {message.kind === 'text' && message.from === 'me' && (
+            <span
+              className={cx(styles.tick, message.pending && styles.pending)}
+              title={message.pending ? 'Not delivered yet' : 'Delivered'}
+              aria-label={message.pending ? 'Not delivered yet' : 'Delivered'}
+            >
+              {message.pending ? '◷' : '✓'}
+            </span>
+          )}
         </div>
       ))}
     </div>
