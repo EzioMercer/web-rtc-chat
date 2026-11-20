@@ -67,7 +67,7 @@ export const connectContact = (id: string): AppThunk<Promise<void>> => async (di
 
   try {
     await session.peer.setLocalDescription(await session.peer.createOffer());
-    await waitForIceGathering(session.peer);
+    await waitForIceGathering(session.peer, true);
 
     // An offer from them arrived meanwhile and replaced this attempt.
     if (sessions.get(id) !== session || !session.peer.localDescription) {

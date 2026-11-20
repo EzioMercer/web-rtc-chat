@@ -27,6 +27,9 @@ export const TURN_VIDEO_BITRATE = 500_000;
 // Stop waiting for more ICE candidates after this long and use what was gathered.
 export const ICE_GATHERING_TIMEOUT_MS = 5000;
 
+// Contacts: send the request after this long at most; addresses found later follow through the relays.
+export const ICE_GATHERING_EARLY_MS = 1500;
+
 // Carries chat text and in-band signaling (renegotiation for calls, call control).
 export const CONTROL_LABEL = 'control';
 

@@ -62,7 +62,7 @@ export const receiveOffer = (id: string, offer: Offer): AppThunk<Promise<void>> 
     await session.peer.setRemoteDescription({ type: 'offer', sdp: offer.sdp });
     await addRemoteCandidates(session, takeEarlyCandidates(id, offer.sid));
     await session.peer.setLocalDescription(await session.peer.createAnswer());
-    await waitForIceGathering(session.peer);
+    await waitForIceGathering(session.peer, true);
 
     if (sessions.get(id) !== session || !session.peer.localDescription) {
       return;
