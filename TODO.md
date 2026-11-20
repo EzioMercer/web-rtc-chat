@@ -164,13 +164,15 @@ Hard requirement: message text and files are never written to disk, a server, a 
 - [x] Reconnect automatically after a drop, or when the network comes back. This makes a fresh connection over
   Nostr (3 tries at 2s, 5s and 15s) rather than an ICE restart.
 - [x] While a contact's chat is open and they're offline, check again every 20 seconds.
-- [ ] Optional TURN server (Cloudflare) for strict networks. This also hides the IP address from the peer.
+- [x] Optional TURN server (Cloudflare) for strict networks. This also hides the IP address from the peer.
   - [x] Worker that hands out short-lived credentials (`worker/`), and the app side (`VITE_TURN_URL`).
   - [x] Show "through TURN relay" when a connection uses it.
   - [x] Deploy the Worker.
   - [x] Stop handing out credentials at 800 GB in 30 days, so the free 1,000 GB is never exceeded.
-  - [ ] Renew credentials of a running TURN connection before they expire (1 hour).
-  - [ ] Lower video quality on TURN calls to save traffic.
+  - [x] Renew credentials of a running TURN connection before they expire (1 hour): new credentials and a new path
+    search every 5 minutes while on the relay.
+  - [x] Move from the relay to a direct connection when one starts working (the same path search).
+  - [x] Lower video quality on TURN calls to save traffic (500 kbit/s).
 - [ ] Test with the real public relays: the 4 hardcoded relays must accept ephemeral events of kind 20784.
 - [x] Handle relays that are down or slow: publish to all relays, and succeed when any one accepts.
 - [x] Reconnect to a dropped relay automatically: the pool backs off, and every 30 seconds relays that never

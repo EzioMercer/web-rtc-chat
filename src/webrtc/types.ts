@@ -50,6 +50,11 @@ export type Session = {
   // Addresses waiting to go out together through relays, and the timer that sends them.
   lateCandidates: RTCIceCandidateInit[];
   lateTimer: number | null;
+  // TURN servers the connection was set up with (see watchPaths).
+  iceServers: RTCIceServer[];
+  // How the open connection travels (null until it opens), and when we last looked for a new path.
+  route: 'direct' | 'relay' | null;
+  restartedAt: number;
   // We accepted a call: our camera/microphone go into the answer to the caller's next offer (see handleDescription),
   // so only one side ever offers and the two offers can't collide.
   attachOnOffer: boolean;

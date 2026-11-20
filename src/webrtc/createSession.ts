@@ -19,7 +19,8 @@ type Options = Pick<Session, 'key' | 'sid' | 'outgoing' | 'polite'>;
 // A new peer connection for `key`, replacing none: close the old one first.
 // Call ensureTurnServers() first, so the TURN relay is there for networks that need it.
 export const createSession = (options: Options, dispatch: AppDispatch): Session => {
-  const peer = new RTCPeerConnection({ iceServers: [...STUN_SERVERS, ...turnServers()] });
+  const iceServers = turnServers();
+  const peer = new RTCPeerConnection({ iceServers: [...STUN_SERVERS, ...iceServers] });
   const session: Session = {
     ...options,
     peer,
@@ -34,6 +35,9 @@ export const createSession = (options: Options, dispatch: AppDispatch): Session 
     signaled: false,
     lateCandidates: [],
     lateTimer: null,
+    iceServers,
+    route: null,
+    restartedAt: Date.now(),
     attachOnOffer: false,
     log: text => dispatch(sessionLogged({ key: options.key, text })),
   };

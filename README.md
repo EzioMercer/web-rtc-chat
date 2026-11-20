@@ -38,7 +38,8 @@ Live: https://eziomercer.github.io/web-rtc-chat/
 
 Some networks block direct connections. Then the browsers send their (still end-to-end encrypted) traffic through
 a **TURN relay** on Cloudflare instead. It can't read anything and stores nothing. The status then says "through TURN
-relay".
+relay". While on the relay, video quality is lowered to save traffic, and every 5 minutes the app looks for a
+direct path again and moves to it when it works.
 
 A **manual mode** is still there (Settings → Connect manually). Two people copy connection codes to each other by
 hand, without contacts or relays.
@@ -93,7 +94,7 @@ e.g. `VITE_RELAYS=ws://localhost:7777 npm run dev`.
 ### TURN relay
 
 The TURN key's token must stay secret, so a small Cloudflare Worker (`worker/turn-credentials.js`) hands out
-credentials that expire after an hour. It stops at 800 GB of TURN traffic in 30 days, so the free 1,000 GB is
+credentials that expire after an hour. Open connections get new ones before that, so calls don't drop. It stops at 800 GB of TURN traffic in 30 days, so the free 1,000 GB is
 never exceeded.
 
 - Every change to `worker/` is uploaded by `.github/workflows/deploy-worker.yml`, which then checks that a message

@@ -11,6 +11,19 @@ export const TURN_FETCH_TIMEOUT_MS = 4000;
 // After a failed credentials request, try again no sooner than this.
 export const TURN_RETRY_MS = 60_000;
 
+// Ask for new TURN credentials this long before the old ones expire, so open connections can move to them in time.
+export const TURN_RENEW_EARLY_S = 20 * 60;
+
+// How often open connections are checked: which path they use, and whether TURN credentials need renewing.
+export const PATH_CHECK_MS = 60_000;
+
+// While a connection goes through the TURN relay, look for a new path this often: a direct one if it works now,
+// otherwise the relay again with fresh credentials.
+export const TURN_RESTART_MS = 5 * 60_000;
+
+// Video limit (bits per second) while a call goes through the TURN relay, where traffic counts toward the limit.
+export const TURN_VIDEO_BITRATE = 500_000;
+
 // Stop waiting for more ICE candidates after this long and use what was gathered.
 export const ICE_GATHERING_TIMEOUT_MS = 5000;
 

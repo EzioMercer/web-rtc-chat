@@ -1,5 +1,6 @@
 import { attachToOffer } from './attachToOffer.ts';
 import { errorText } from './errorText.ts';
+import { limitVideo } from './limitVideo.ts';
 import { sendControl } from './sendControl.ts';
 import { sessions } from './state.ts';
 
@@ -41,6 +42,9 @@ export const handleDescription = async (key: string, description: RTCSessionDesc
         session.log(`Call setup: sent ${peer.localDescription.type}`);
       }
     }
+
+    // Video tracks may have just started: keep them within the relay limit.
+    await limitVideo(session);
   } catch (err) {
     session.log(`Call setup failed (their ${description.type}): ${errorText(err)}`);
     throw err;
