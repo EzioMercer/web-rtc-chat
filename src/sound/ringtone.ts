@@ -34,6 +34,15 @@ const getContext = () => {
   return context;
 };
 
+// The sound engine is paused whenever nothing rings. A running one during a call can make phones play the call
+// through the music path instead of the call path, and then their echo cancelling stops working (the other side
+// hears itself).
+const pause = () => {
+  if (!ringing) {
+    void context?.suspend().catch(() => undefined);
+  }
+};
+
 // A bell-like note: a few sine partials that fade out quickly.
 const playNote = (ctx: AudioContext, output: AudioNode, freq: number, at: number): AudioScheduledSourceNode[] => (
   [[1, 1], [2.76, 0.25], [5.4, 0.08]].map(([ratio, level]) => {
@@ -108,6 +117,7 @@ export const stopRinging = () => {
   ringing.sources.forEach(source => source.stop());
   ringing.output.disconnect();
   ringing = null;
+  pause();
   navigator.vibrate?.(0);
 };
 
@@ -131,11 +141,11 @@ export const startRinging = (ring: Ring) => {
   }
 };
 
-// Audio may only start after the user interacts with the page. Prepare it on the first click or key press, so a
-// call that comes in later can ring.
+// Audio may only start after the user interacts with the page. Allow it on the first click or key press (then
+// pause it again), so a call that comes in later can ring.
 export const unlockSound = () => {
   const unlock = () => {
-    void getContext().resume().catch(() => undefined);
+    void getContext().resume().then(pause, () => undefined);
     window.removeEventListener('pointerdown', unlock);
     window.removeEventListener('keydown', unlock);
   };
