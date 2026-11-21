@@ -14,7 +14,6 @@ Only open items. Everything done is described in the README.
 ## Maybe
 
 - [ ] Show the "new version" notice only for releases marked as important, not for every update.
-- [ ] Web app manifest, so the app can be installed on the home screen.
 - [ ] CI: run the browser tests weekly, and cache the Playwright browsers.
 - [ ] Donation link in the legal notice, once a platform is chosen (ask an accountant about taxes first).
 
