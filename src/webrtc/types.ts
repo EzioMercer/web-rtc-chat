@@ -1,3 +1,5 @@
+import type { MediaNote } from '../store/chat/types.ts';
+
 export type CallSignal =
   | { t: 'call'; action: 'invite'; video: boolean }
   | { t: 'call'; action: 'accept' | 'decline' | 'end' }
@@ -26,6 +28,8 @@ export type FileMeta = {
   name: string;
   size: number;
   mime: string;
+  // Voice and video messages (older versions show them as plain files).
+  note?: MediaNote;
 };
 
 // One direct connection, to a contact (key = contact id) or the manual one (key = MANUAL_KEY).

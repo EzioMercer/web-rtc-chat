@@ -8,6 +8,8 @@ Only open items. Everything done is described in the README.
   which phone and browser causes it.
 - [ ] Field test the new path search (switching to TURN when the direct path breaks) on real phones: turn Wi-Fi off
   and on during a call.
+- [ ] Field test voice and video messages on real phones, above all an iPhone (Safari) with an Android phone
+  (Chrome and Firefox): each side must play what the other recorded.
 - [ ] Two devices on the same Wi-Fi with "AP isolation" (guest networks often have it) can't connect directly; check
   that they fall back to TURN quickly.
 

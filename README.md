@@ -12,7 +12,8 @@ Live: https://eziomercer.github.io/web-rtc-chat/
 - 💬 Private chat, straight from one browser to another
 - 📞 Audio and video calls
 - 🖥️ Screen sharing
-- 📎 Files, photos and videos of any size
+- 🎙️ Voice messages and round video messages: tap the button to switch, hold to record, let go to send
+- 📎 Files, photos and videos of any size (up to 10 MB when the connection goes through the TURN relay)
 - 🔒 End-to-end encrypted, messages are never stored
 - 👤 No account, phone number or email
 - 📱 Works on phones and computers, nothing to install
@@ -53,7 +54,8 @@ Live: https://eziomercer.github.io/web-rtc-chat/
 
 Some networks block direct connections. Then the browsers send their (still end-to-end encrypted) traffic through
 a **TURN relay** on Cloudflare instead. It can't read anything and stores nothing. The status then says "through TURN
-relay". While on the relay, video quality is lowered to save traffic, and every 5 minutes the app looks for a
+relay". While on the relay, video quality is lowered and files (also voice and video messages) can be up to 10 MB,
+to save traffic. Every 5 minutes the app looks for a
 direct path again and moves to it when it works. If an open connection loses its path (for example, Wi-Fi drops),
 the app searches for a new one right away, direct or through TURN. The request goes through the Nostr relays,
 because the broken connection can't carry it. If nothing is found within 15 seconds, it reconnects from scratch.

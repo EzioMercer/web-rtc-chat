@@ -18,6 +18,9 @@ const TAP_MS = 400;
 // Chat text has a menu; files have their own buttons, and notes from the app have nothing to do.
 const tappable = (message: Message) => message.kind === 'text' && message.from !== 'system';
 
+// Round video messages stand on their own, without a bubble around them.
+const bare = (message: Message) => message.kind === 'file' && message.note?.type === 'video';
+
 export const MessageList = ({ convKey }: Props) => {
   const messages = useAppSelector(state => state.chat.conversations[convKey] ?? NONE);
   const listRef = useRef<HTMLDivElement>(null);
@@ -62,7 +65,12 @@ export const MessageList = ({ convKey }: Props) => {
       {messages.map(message => (
         <div
           key={message.id}
-          className={cx(styles.msg, styles[message.from], tappable(message) && styles.tappable)}
+          className={cx(
+            styles.msg,
+            styles[message.from],
+            tappable(message) && styles.tappable,
+            bare(message) && styles.bare,
+          )}
           onPointerDown={(e) => {
             press.current = { at: e.timeStamp, touch: e.pointerType !== 'mouse' };
           }}

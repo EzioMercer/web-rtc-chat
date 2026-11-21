@@ -76,11 +76,12 @@ const chatSlice = createSlice({
         file.status = 'done';
       }
     },
-    fileFailed: (state, { payload }: PayloadAction<Keyed<{ id: string }>>) => {
+    fileFailed: (state, { payload }: PayloadAction<Keyed<{ id: string; error?: string }>>) => {
       const file = findFile(state, payload.key, payload.id);
 
       if (file) {
         file.status = 'failed';
+        file.error = payload.error;
       }
     },
     unreadAdded: (state, { payload }: PayloadAction<string>) => {

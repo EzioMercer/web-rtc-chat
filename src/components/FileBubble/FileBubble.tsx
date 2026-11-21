@@ -1,15 +1,18 @@
 import type { FileMessage } from '../../store/chat/types.ts';
 import { formatBytes } from '../../utils/formatBytes.ts';
 import { Icon } from '../Icon/Icon.tsx';
+import { VideoNoteBubble } from '../VideoNoteBubble/VideoNoteBubble.tsx';
+import { VoiceBubble } from '../VoiceBubble/VoiceBubble.tsx';
 import styles from './FileBubble.module.css';
 
 type Props = {
   file: FileMessage;
 };
 
-// Inline preview for images, video and audio; a download card for everything else.
+// Voice and video messages have their own player; files get an inline preview for images, video and audio, and a
+// download card.
 export const FileBubble = ({ file }: Props) => {
-  const { name, size, mime, url, transferred, status, from } = file;
+  const { name, size, mime, url, transferred, status, from, error, note } = file;
   const percent = size ? Math.round((transferred / size) * 100) : 100;
   const verb = from === 'me' ? 'Sending' : 'Receiving';
 
@@ -33,6 +36,14 @@ export const FileBubble = ({ file }: Props) => {
     return null;
   };
 
+  if (note?.type === 'voice') {
+    return <VoiceBubble file={file} />;
+  }
+
+  if (note?.type === 'video') {
+    return <VideoNoteBubble file={file} />;
+  }
+
   return (
     <div className={styles.file}>
       {preview()}
@@ -42,7 +53,14 @@ export const FileBubble = ({ file }: Props) => {
           <span className={styles.name} title={name}>{name}</span>
           <span className={styles.meta}>
             {status === 'transferring' && `${verb}… ${percent}% · `}
-            {status === 'failed' && <span className={styles.failed}>Failed · </span>}
+            {status === 'failed' && (
+              <span className={styles.failed}>
+                {error ?? 'Failed'}
+                {' '}
+                ·
+                {' '}
+              </span>
+            )}
             {formatBytes(size)}
           </span>
         </div>

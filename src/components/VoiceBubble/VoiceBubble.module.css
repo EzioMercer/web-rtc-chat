@@ -1,0 +1,66 @@
+.voice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 240px;
+  max-width: 100%;
+}
+
+.play {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  padding: 0 0 0 1px;
+  border: none;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.92);
+  color: #1a2342;
+  cursor: pointer;
+}
+
+.play:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.wave {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 28px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.bar {
+  flex: 1;
+  min-width: 2px;
+  border-radius: 1px;
+  background: currentColor;
+  opacity: 0.4;
+}
+
+.played {
+  opacity: 1;
+}
+
+.meta {
+  font-size: 12px;
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+}
+
+.failed {
+  color: var(--error);
+}

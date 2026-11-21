@@ -1,10 +1,15 @@
 import { useRef, useState, type ChangeEvent, type ClipboardEvent, type FormEvent } from 'react';
+import { useRecording } from '../../hooks/useRecording.ts';
 import { sendFiles } from '../../store/thunks/chat/sendFiles.ts';
 import { sendMessage } from '../../store/thunks/chat/sendMessage.ts';
 import { useAppDispatch } from '../../store/useAppDispatch.ts';
+import { useAppSelector } from '../../store/useAppSelector.ts';
+import { hasKeyboard } from '../../utils/hasKeyboard.ts';
 import { MANUAL_KEY } from '../../webrtc/config.ts';
 import { IconButton } from '../IconButton/IconButton.tsx';
-import { hasKeyboard } from '../../utils/hasKeyboard.ts';
+import { RecordButton } from '../RecordButton/RecordButton.tsx';
+import { RecordingBar } from '../RecordingBar/RecordingBar.tsx';
+import { VideoNotePreview } from '../VideoNotePreview/VideoNotePreview.tsx';
 import styles from './Composer.module.css';
 
 type Props = {
@@ -16,8 +21,15 @@ export const Composer = ({ convKey, connected }: Props) => {
   const dispatch = useAppDispatch();
   const [text, setText] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // The microphone and camera are busy during a call.
+  const inCall = useAppSelector(state => state.call.status !== 'idle');
+  const recording = useRecording(convKey);
+  const { phase, recorder } = recording;
   // A contact's messages wait while offline and go out when the connection opens; files need the connection.
   const canType = connected || convKey !== MANUAL_KEY;
+  const offlineText = canType ? 'Offline: sent when they\'re online' : 'Not connected';
+  // Like chat apps: the Send button while there's text, the record button otherwise.
+  const showSend = text.trim() !== '' && phase === 'idle';
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -28,7 +40,7 @@ export const Composer = ({ convKey, connected }: Props) => {
   };
 
   const pickFiles = (e: ChangeEvent<HTMLInputElement>) => {
-    dispatch(sendFiles(convKey, Array.from(e.target.files ?? [])));
+    void dispatch(sendFiles(convKey, Array.from(e.target.files ?? [])));
     e.target.value = '';
   };
 
@@ -38,39 +50,59 @@ export const Composer = ({ convKey, connected }: Props) => {
 
     if (files.length) {
       e.preventDefault();
-      dispatch(sendFiles(convKey, files));
+      void dispatch(sendFiles(convKey, files));
     }
   };
 
   return (
     <form className={styles.composer} onSubmit={submit}>
       <input ref={fileInputRef} type="file" multiple hidden onChange={pickFiles} />
-      <IconButton
-        icon="paperclip"
-        label="Attach files"
-        disabled={!connected}
-        onClick={() => fileInputRef.current?.click()}
-      />
-      <input
-        className={styles.input}
-        type="text"
-        value={text}
-        placeholder={connected ? 'Type a message…' : (canType ? 'Offline: sent when they\'re online' : 'Not connected')}
-        autoComplete="off"
-        autoFocus={hasKeyboard()}
-        disabled={!canType}
-        onChange={e => setText(e.target.value)}
-        onPaste={paste}
-      />
-      <button
-        className={styles.send}
-        type="submit"
-        disabled={!canType || !text.trim()}
-        // Keep the focus (and the phone keyboard) in the message field, like messaging apps do.
-        onPointerDown={e => e.preventDefault()}
-      >
-        Send
-      </button>
+      <div className={styles.field}>
+        <IconButton
+          icon="paperclip"
+          label="Attach files"
+          disabled={!connected}
+          onClick={() => fileInputRef.current?.click()}
+        />
+        <input
+          className={styles.input}
+          type="text"
+          value={text}
+          placeholder={connected ? 'Type a message…' : offlineText}
+          autoComplete="off"
+          autoFocus={hasKeyboard()}
+          disabled={!canType}
+          onChange={e => setText(e.target.value)}
+          onPaste={paste}
+        />
+        {phase !== 'idle' && (
+          <RecordingBar phase={phase} recorder={recorder} slideX={recording.slide.x} onCancel={recording.cancel} />
+        )}
+      </div>
+      {showSend
+        ? (
+            <button
+              className={styles.send}
+              type="submit"
+              disabled={!canType}
+              // Keep the focus (and the phone keyboard) in the message field, like messaging apps do.
+              onPointerDown={e => e.preventDefault()}
+            >
+              Send
+            </button>
+          )
+        : (
+            <RecordButton
+              mode={recording.mode}
+              phase={phase}
+              recorder={recorder}
+              slide={recording.slide}
+              hint={recording.hint}
+              disabled={phase === 'idle' && (!connected || inCall)}
+              handlers={recording.buttonProps}
+            />
+          )}
+      {recorder?.video && <VideoNotePreview recorder={recorder} />}
     </form>
   );
 };

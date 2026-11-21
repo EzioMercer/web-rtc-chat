@@ -11,6 +11,14 @@ export type TextMessage = {
   pending?: boolean;
 };
 
+// A voice or video message recorded in the app. `duration` is in ms (recorded WebM files don't say how long they are);
+// `wave` is the loudness over time for voice messages, 0-31 per bar.
+export type MediaNote = {
+  type: 'voice' | 'video';
+  duration: number;
+  wave?: number[];
+};
+
 export type FileMessage = {
   kind: 'file';
   id: string;
@@ -22,6 +30,10 @@ export type FileMessage = {
   url: string | null;
   transferred: number;
   status: 'transferring' | 'done' | 'failed';
+  // Why it failed, in words for the user.
+  error?: string;
+  // Set for voice and video messages.
+  note?: MediaNote;
   at?: number;
 };
 

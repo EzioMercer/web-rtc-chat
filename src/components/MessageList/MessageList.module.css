@@ -48,3 +48,8 @@
   position: relative;
   cursor: pointer;
 }
+
+.bare {
+  padding: 0;
+  background: none;
+}

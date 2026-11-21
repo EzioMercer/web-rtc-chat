@@ -46,6 +46,11 @@ export const ICON_PATHS = {
     'M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7.1l-1.8 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7.1l1.8-1.7',
   ].join(' '),
   chat: 'M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z',
+  trash: 'M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M10 11v6M14 11v6',
+  send: 'M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z',
+  chevronLeft: 'M15 18l-6-6 6-6',
+  chevronUp: 'M18 15l-6-6-6 6',
+  volumeOff: 'M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6',
 };
 
 export type IconName = keyof typeof ICON_PATHS;

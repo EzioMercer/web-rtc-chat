@@ -41,6 +41,10 @@ export const FILE_CHUNK_SIZE = 16 * 1024;
 export const FILE_BUFFER_HIGH = 4 * 1024 * 1024;
 export const FILE_BUFFER_LOW = 1024 * 1024;
 
+// Largest file (or voice/video message) that may go through the TURN relay, where every byte is paid for. Like the
+// free tier of popular chat apps. On a direct connection there is no limit.
+export const TURN_FILE_LIMIT = 10 * 1024 * 1024;
+
 // Receiver's acknowledgement that the whole file arrived.
 export const FILE_DONE = 'done';
 
