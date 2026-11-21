@@ -1,3 +1,5 @@
+<img src="public/favicon.svg" width="96" height="96" alt="P2P WebRTC Chat logo">
+
 # web-rtc-chat
 
 A chat, call and file-sharing app that runs entirely in the browser. Two people connect **directly to each other**:

@@ -4,6 +4,7 @@ import { setupIdentity } from '../../store/thunks/app/setupIdentity.ts';
 import { useAppDispatch } from '../../store/useAppDispatch.ts';
 import { useAppSelector } from '../../store/useAppSelector.ts';
 import { LegalDialog } from '../LegalDialog/LegalDialog.tsx';
+import { Logo } from '../Logo/Logo.tsx';
 import { ProtectionPicker } from '../ProtectionPicker/ProtectionPicker.tsx';
 import styles from './SetupScreen.module.css';
 
@@ -25,7 +26,10 @@ export const SetupScreen = () => {
 
   return (
     <section className={styles.screen}>
-      <h1 className={styles.title}>P2P Chat</h1>
+      <h1 className={styles.title}>
+        <Logo size={56} />
+        P2P Chat
+      </h1>
       <p className={styles.lead}>
         No sign-up, email or phone number. Your identity is a key created on this device.
         Choose how to protect it:
