@@ -13,7 +13,7 @@ export const parseInviteLink = (text: string): InvitePayload | null => {
   try {
     const payload = JSON.parse(new TextDecoder().decode(b64ToBytes(match[1]))) as Partial<InvitePayload>;
 
-    if (payload.v !== 2 || !isSecret(payload.c) || !isSecret(payload.s) || typeof payload.e !== 'number') {
+    if (payload.v !== 3 || !isSecret(payload.c) || !isSecret(payload.s) || typeof payload.e !== 'number') {
       return null;
     }
 

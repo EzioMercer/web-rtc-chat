@@ -8,8 +8,10 @@ export type Contact = {
   verified: boolean;
   // The safety code both sides worked out while adding each other (see inviteSafety).
   safety: string;
-  // Their public identity key. Everything they send through relays must be signed by it.
+  // Their public key for us. Everything they send through relays must be signed by it.
   identity: string;
+  // Our public key for them (the private half is in contactKeys). Nobody else gets it.
+  myKey: string;
   // Shared mailbox secrets we listen on, newest first (old ones stay briefly while we rotate).
   secrets: string[];
   // The shared secret we use to reach them.

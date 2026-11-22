@@ -1,4 +1,4 @@
-// The only place that touches browser storage. It holds the encrypted identity and contact list, never messages.
+// The only place that touches browser storage. It holds the encrypted contacts, keys and settings, never messages.
 const DB_NAME = 'web-rtc-chat';
 const STORE = 'kv';
 

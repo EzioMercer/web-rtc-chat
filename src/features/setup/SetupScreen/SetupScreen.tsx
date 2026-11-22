@@ -31,8 +31,8 @@ export const SetupScreen = () => {
         P2P Chat
       </h1>
       <p className={styles.lead}>
-        No sign-up, email or phone number. Your identity is a key created on this device.
-        Choose how to protect it:
+        No sign-up, email or phone number. Your identity is keys created on this device, a new one for each contact.
+        Choose how to protect them:
       </p>
       <ProtectionPicker
         submitLabel="Create my identity"

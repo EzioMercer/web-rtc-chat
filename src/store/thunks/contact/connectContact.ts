@@ -62,7 +62,7 @@ export const connectContact = (id: string): AppThunk<Promise<void>> => async (di
     closeSession(old);
   }
 
-  const polite = isPolite(contact.identity);
+  const polite = isPolite(contact);
   const session = createSession({ key: id, sid: nanoid(), outgoing: true, polite }, dispatch);
 
   bindChannel(session, session.peer.createDataChannel(CONTROL_LABEL), dispatch);

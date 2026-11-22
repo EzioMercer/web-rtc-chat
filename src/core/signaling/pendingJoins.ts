@@ -2,7 +2,9 @@
 // only, for a few seconds.
 export const pendingJoins = new Map<string, {
   sk: Uint8Array;
-  // From the invite link: the revealed key and nonce must hash to it.
+  // From the invite link: the revealed key must hash to it.
   commitment: string;
-  done: (identity: string, nonce: string) => void;
+  // Our new key for the inviter, which their reveal is addressed to.
+  myKey: string;
+  done: (identity: string) => void;
 }>();

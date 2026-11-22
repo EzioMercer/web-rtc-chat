@@ -2,9 +2,10 @@
 export const activeInvites = new Map<string, {
   sk: Uint8Array;
   expiresAt: number;
-  // What the link shows instead of our key, and the nonce that goes with it (see inviteCommitment).
+  // Where our new key for whoever uses it is kept (contactKeys), and the id their contact will get.
+  id: string;
+  // What the link shows instead of that key (see inviteCommitment).
   commitment: string;
-  nonce: string;
   // Where the joiner waits for us to reveal our key.
   revealMailbox: string;
 }>();

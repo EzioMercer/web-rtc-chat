@@ -1,5 +1,5 @@
-import { requestDone } from '../../../store/invites/invitesSlice.ts';
 import { acceptRequest } from '../../../store/thunks/invite/acceptRequest.ts';
+import { rejectRequest } from '../../../store/thunks/invite/rejectRequest.ts';
 import { useAppDispatch } from '../../../store/useAppDispatch.ts';
 import { useAppSelector } from '../../../store/useAppSelector.ts';
 import { ContactNameForm } from '../ContactNameForm/ContactNameForm.tsx';
@@ -14,7 +14,7 @@ export const RequestDialog = () => {
     return null;
   }
 
-  const reject = () => dispatch(requestDone(request.id));
+  const reject = () => dispatch(rejectRequest(request.id));
 
   return (
     <Dialog title="Someone used your invite" onClose={reject}>

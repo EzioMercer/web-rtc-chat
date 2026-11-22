@@ -71,8 +71,11 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
   (`EchoPrompt`) and its `useEchoGuard` turns the microphone off while they talk. Both only read
   `getStats()` levels: no Web Audio during calls (it breaks phones' echo filters).
 - **Nothing a user writes is ever stored on a server or relay.** The device may store anything the app needs,
-  encrypted with the vault key (`core/identity`, through `core/storage/kv.ts`). Today that is the identity, contacts
-  and device settings; messages live only in memory. Settings are per device: never synced, never in backups.
+  encrypted with the vault key (`core/identity`, through `core/storage/kv.ts`). Today that is the contacts, our key
+  for each contact and device settings; messages live only in memory. Settings are per device: never synced, never
+  in backups.
+- **Keys:** there is no single identity key. Every contact gets its own key pair (`contactKeys`, private halves
+  never in Redux): we sign relay notes to them with it, and `Contact.myKey` is its public half.
 
 ## Code style (lint enforces most of it: run `npx eslint .` and `npx tsc --noEmit`)
 
@@ -94,9 +97,13 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
   `VITE_TURN_URL= npx vite --port 5173 --strictPort &` then `node scripts/e2e-media.mjs`.
 - `scripts/e2e-move.mjs` (same dev server): a call moves to a new connection, goes back when it breaks, and stays when
   the test fails.
-- `scripts/e2e-real-relays.mjs` (built app, real relays), `scripts/check-turn.mjs`, `scripts/check-relays.mjs`.
+- `scripts/e2e-real-relays.mjs` (built app, `npx vite preview --port 4173`, real relays): Chromium adds Firefox and
+  WebKit with invites, checks safety codes, one saved key per contact and a reconnect after reload.
+- `scripts/check-turn.mjs`, `scripts/check-relays.mjs`.
 - Scripts import `playwright`. In the cloud container it is preinstalled outside the project: link it with
   `ln -sfn /opt/node-tools/node_modules/playwright node_modules/playwright` (never run `playwright install`).
+  Firefox and WebKit (Safari's engine) are installed too, by the environment's setup script: use `firefox` /
+  `webkit` from `playwright` to check a feature in other browsers.
 - Tricks: `--use-fake-device-for-media-stream` and `--use-file-for-fake-audio-capture=x.wav` for a fake
   camera/microphone; in the dev server, `await import('/web-rtc-chat/src/core/webrtc/state.ts')` from
   `page.evaluate` reaches the live sessions (e.g. set `session.route = SessionRoute.Relay` to test the TURN limit).

@@ -1,4 +1,6 @@
-import { vault } from '../../../core/identity/vault.ts';
+import { nanoid } from '@reduxjs/toolkit';
+import { contactKeys } from '../../../core/identity/contactKeys.ts';
+import { newContactKey } from '../../../core/identity/newContactKey.ts';
 import { deriveInviteMailbox } from '../../../core/nostr/deriveInviteMailbox.ts';
 import { deriveRevealMailbox } from '../../../core/nostr/deriveRevealMailbox.ts';
 import { publishToMailbox } from '../../../core/nostr/publishToMailbox.ts';
@@ -14,8 +16,9 @@ import { selectConversation } from '../chat/selectConversation.ts';
 import { refreshMailboxes } from '../signal/refreshMailboxes.ts';
 import { saveContact } from './saveContact.ts';
 
-// We used someone's invite: send them, signed, our key and the secret for our mailboxes, then wait for them to
-// reveal their key (it must match the link) and save them as a contact. They connect to us once they accept.
+// We used someone's invite: send them, signed with a new key just for them, that key and the secret for our
+// mailboxes, then wait for them to reveal their key (it must match the link) and save them as a contact. They
+// connect to us once they accept.
 export const acceptReceivedInvite = (name: string, replaceId: string | null): AppThunk<Promise<void>> => async (
   dispatch,
   getState,
@@ -32,16 +35,18 @@ export const acceptReceivedInvite = (name: string, replaceId: string | null): Ap
     return;
   }
 
+  const id = nanoid();
+  const key = await newContactKey();
   const secret = newSecret();
-  const nonce = newSecret();
   const revealMailbox = await deriveRevealMailbox(invite.secret);
   let timer = 0;
-  const revealed = new Promise<{ identity: string; nonce: string } | null>((resolve) => {
+  const revealed = new Promise<string | null>((resolve) => {
     timer = window.setTimeout(() => resolve(null), REVEAL_TIMEOUT_MS);
     pendingJoins.set(revealMailbox.pk, {
       sk: revealMailbox.sk,
       commitment: invite.commitment,
-      done: (identity, theirNonce) => resolve({ identity, nonce: theirNonce }),
+      myKey: key.publicKey,
+      done: resolve,
     });
   });
 
@@ -51,6 +56,8 @@ export const acceptReceivedInvite = (name: string, replaceId: string | null): Ap
     await dispatch(refreshMailboxes());
   };
 
+  contactKeys.set(id, key);
+
   try {
     // Listen before sending, so the reveal isn't missed.
     await dispatch(refreshMailboxes());
@@ -59,20 +66,22 @@ export const acceptReceivedInvite = (name: string, replaceId: string | null): Ap
 
     await publishToMailbox(
       mailbox.pk,
-      await sealEnvelope(invite.commitment, { t: SignalType.InviteAccept, secret, nonce }),
+      await sealEnvelope(key, invite.commitment, { t: SignalType.InviteAccept, secret }),
     );
   } catch (err) {
+    contactKeys.delete(id);
     await finish();
     dispatch(inviteError(err instanceof Error ? err.message : 'Could not send the request.'));
 
     return;
   }
 
-  const reveal = await revealed;
+  const identity = await revealed;
 
   await finish();
 
-  if (!reveal) {
+  if (!identity) {
+    contactKeys.delete(id);
     dispatch(inviteError(
       'Their app didn\'t answer. Ask them to keep the app open and send you a new invite (each one works once).',
     ));
@@ -80,10 +89,10 @@ export const acceptReceivedInvite = (name: string, replaceId: string | null): Ap
     return;
   }
 
-  const safety = await inviteSafety(reveal.identity, vault.publicKey, reveal.nonce, nonce);
-  const id = dispatch(saveContact({ name, identity: reveal.identity, secret, safety, replaceId }));
+  const safety = await inviteSafety(identity, key.publicKey);
+  const contactId = dispatch(saveContact({ id, name, identity, secret, safety, replaceId }));
 
   dispatch(receivedInviteDone());
   await dispatch(refreshMailboxes());
-  dispatch(selectConversation(id));
+  dispatch(selectConversation(contactId));
 };

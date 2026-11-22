@@ -1,4 +1,3 @@
-import { vault } from '../../../core/identity/vault.ts';
 import { newSecret } from '../../../core/signaling/newSecret.ts';
 import { sendControl } from '../../../core/webrtc/sendControl.ts';
 import { secretProposed } from '../../contacts/contactsSlice.ts';
@@ -11,7 +10,7 @@ import { ControlType } from '../../../core/webrtc/types.ts';
 export const startRotation = (id: string): AppThunk => (dispatch, getState) => {
   const contact = getState().contacts.list.find(c => c.id === id);
 
-  if (!contact || vault.publicKey > contact.identity) {
+  if (!contact || contact.myKey > contact.identity) {
     return;
   }
 

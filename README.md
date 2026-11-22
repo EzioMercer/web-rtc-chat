@@ -27,16 +27,18 @@ Live: https://eziomercer.github.io/web-rtc-chat/
 
 1. **The website is just files.** GitHub Pages serves the HTML, JS and CSS once. It has no backend, database or
    accounts.
-2. **Your identity is a key, not an account.** On first launch the app creates a key pair on your device. There is
-   no sign-up, email, phone number or password. You choose how the key is protected on this device:
+2. **Your identity is keys, not an account.** For each contact the app creates a new key pair on your device, so no
+   two contacts see the same key and they can't tell they know the same person. There is no sign-up, email, phone
+   number or password. You choose how the keys are protected on this device:
    - **passkey:** fingerprint, face or device PIN (recommended);
    - **passphrase;**
    - **no protection;**
    - **temporary:** nothing is saved.
 3. **Adding a contact happens once.**
    - You show an invite as a QR code, or send it as a link. It is single-use and expires after 10 minutes.
-   - The link doesn't contain your key, only a hash of it with a random number. Your friend opens it and sends
-     their key first; only then does your app reveal yours, and theirs checks it against the hash. You accept them.
+   - Each invite has a new key for whoever uses it. The link doesn't contain that key, only a hash of it. Your
+     friend opens it and sends their new key first; only then does your app reveal yours, and theirs checks it
+     against the hash. You accept them.
    - Both screens then show the same **safety code** of 4 emojis. You compare them in person or on a voice call. If
      they match, nobody is in the middle, and you mark the contact as verified.
    - Because each side sends its key before seeing the other's, someone in the middle can't search for a key that
@@ -46,7 +48,7 @@ Live: https://eziomercer.github.io/web-rtc-chat/
    - Browsers can't accept incoming connections, so they need a meeting point. The app uses 4 public
      [Nostr](https://nostr.com/) relays, hardcoded like the STUN server.
    - A relay only passes on the short "here's how to reach me" note needed to start a WebRTC connection.
-   - That note is encrypted, signed with your identity key and sent from a throwaway key. It goes to a mailbox
+   - That note is encrypted, signed with your key for that contact and sent from a throwaway key. It goes to a mailbox
      address that changes every day and that only the two of you can compute.
    - The events are *ephemeral*: relays forward them without storing them.
 5. **Then the browsers connect directly** using WebRTC:
@@ -81,17 +83,18 @@ hand, without contacts or relays.
 
   The encryption keys are created inside each browser for each connection and never leave it.
 - **Nobody can pretend to be your contact.**
-  - Every connection request is signed with the sender's identity key, and the app drops anything not signed by the
+  - Every connection request is signed with the sender's key for you, and the app drops anything not signed by the
     contact you saved.
   - The request carries the certificate fingerprint of the direct connection, so a relay can't swap in its own.
-  - The safety code proves that the identity keys are the right ones.
+  - The safety code proves that the keys are the right ones.
 - **Relays see almost nothing.** They see encrypted, throwaway-signed notes addressed to random-looking mailboxes
   that change daily. They don't see who talks to whom, or any content, and they don't store the notes.
 - **Messages never touch a server.** No server or relay ever stores (or sees) them. Only your own device may keep
   things, and only encrypted.
-  - Today the only things saved, in IndexedDB, are your identity key, your contact list (names, public keys,
-    mailbox secrets) and your settings. Messages are kept only in memory. They are encrypted with your passkey or passphrase key. With "no protection" the
-    key is saved right next to them, so anyone with a copy of the browser's files can open them.
+  - Today the only things saved, in IndexedDB, are your contact list (names, both public keys, mailbox secrets),
+    your private key for each contact and your settings. They are encrypted with your passkey or passphrase key.
+    With "no protection" the key is saved right next to them, so anyone with a copy of the browser's files can open
+    them. Messages are kept only in memory.
 - **No accounts, analytics, trackers or third-party scripts.**
 
 ### What it does *not* protect against
@@ -99,7 +102,7 @@ hand, without contacts or relays.
 - **Skipping the safety check.** If someone intercepted the invite link and used it first, they could pose as your
   contact. Comparing the safety code catches this, but only if people actually compare it.
 - **A compromised device.** Malware that can read your screen, keyboard or memory can read anything while the app
-  is unlocked. With "no protection", it can also copy your identity key from disk. No app can defend against that.
+  is unlocked. With "no protection", it can also copy your keys from disk. No app can defend against that.
 - **IP addresses.** The other person sees your IP address when the connection is direct. Relays, the STUN server
   and the TURN relay see it too, as any website would. Relays can also see *when* your app is online.
 - **Availability.** If all 4 relays are down or block the app, contacts can't find each other. The manual mode

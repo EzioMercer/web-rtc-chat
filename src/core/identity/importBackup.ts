@@ -12,9 +12,9 @@ export const importBackup = async (text: string) => {
     throw new Error('That is not a backup file.');
   }
 
-  const { app, meta, identity, contacts } = backup;
+  const { app, meta, contacts, keys } = backup;
 
-  if (app !== 'web-rtc-chat' || !meta?.publicKey || !identity?.iv || !identity.data) {
+  if (app !== 'web-rtc-chat' || !meta || !contacts?.iv || !contacts.data || typeof keys !== 'object') {
     throw new Error('That is not a backup file.');
   }
 
@@ -23,10 +23,7 @@ export const importBackup = async (text: string) => {
   }
 
   await kv.clear();
-  await kv.set(STORAGE_KEYS.identity, identity);
   await kv.set(STORAGE_KEYS.meta, meta);
-
-  if (contacts) {
-    await kv.set(STORAGE_KEYS.contacts, contacts);
-  }
+  await kv.set(STORAGE_KEYS.contacts, contacts);
+  await kv.set(STORAGE_KEYS.keys, keys);
 };

@@ -1,4 +1,3 @@
-import { vault } from '../../../core/identity/vault.ts';
 import { deriveMailbox } from '../../../core/nostr/deriveMailbox.ts';
 import { listen } from '../../../core/nostr/listen.ts';
 import { utcDay } from '../../../core/nostr/utcDay.ts';
@@ -27,7 +26,7 @@ export const refreshMailboxes = (): AppThunk<Promise<void>> => async (dispatch, 
   for (const contact of getState().contacts.list) {
     for (const secret of contact.secrets) {
       for (const day of days) {
-        const mailbox = await deriveMailbox(secret, vault.publicKey, day);
+        const mailbox = await deriveMailbox(secret, contact.myKey, day);
 
         keys.set(mailbox.pk, mailbox.sk);
         next.set(mailbox.pk, { kind: RouteKind.Contact, id: contact.id });

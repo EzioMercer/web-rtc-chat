@@ -17,15 +17,15 @@ export type SignalMessage =
   // The open connection lost its network path: a new path search (ICE restart) for connection `sid`, sent here
   // because the connection itself can't carry it any more.
   | { t: SignalType.Path; sid: string; type: 'offer' | 'answer'; sdp: string }
-  // Sent to an invite's mailbox: "I used your invite; here is the secret for our mailboxes", with a fresh nonce for
-  // the safety code (see inviteSafety).
-  | { t: SignalType.InviteAccept; secret: string; nonce: string }
-  // The inviter's answer: the nonce that, with the sender's key, hashes to the invite's commitment.
-  | { t: SignalType.InviteReveal; nonce: string };
+  // Sent to an invite's mailbox: "I used your invite; here is the secret for our mailboxes", signed with the
+  // joiner's new key for the inviter.
+  | { t: SignalType.InviteAccept; secret: string }
+  // The inviter's answer, signed with the key that hashes to the invite's commitment.
+  | { t: SignalType.InviteReveal };
 
 export type SignedBody = {
-  // Public identity keys of the sender and the recipient. An InviteAccept goes to the invite's commitment instead,
-  // because the joiner doesn't know the inviter's key yet.
+  // The sender's and the recipient's public keys for each other. An InviteAccept goes to the invite's commitment
+  // instead, because the joiner doesn't know the inviter's key yet.
   from: string;
   to: string;
   // Unix seconds, and a random value, so a recorded signal can't be replayed.

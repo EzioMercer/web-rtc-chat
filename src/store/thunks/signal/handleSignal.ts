@@ -9,7 +9,7 @@ import { receiveInviteAccept } from '../invite/receiveInviteAccept.ts';
 import { receiveInviteReveal } from '../invite/receiveInviteReveal.ts';
 import { SignalType } from '../../../core/signaling/types.ts';
 
-// A decrypted event arrived in one of our mailboxes. Anything not signed by the right identity is dropped.
+// A decrypted event arrived in one of our mailboxes. Anything not signed by the right key is dropped.
 export const handleSignal = (mailbox: string, plaintext: string): AppThunk<Promise<void>> => async (
   dispatch,
   getState,
@@ -33,7 +33,7 @@ export const handleSignal = (mailbox: string, plaintext: string): AppThunk<Promi
   }
 
   const contact = getState().contacts.list.find(c => c.id === route.id);
-  const body = contact ? await openEnvelope(plaintext, contact.identity) : null;
+  const body = contact ? await openEnvelope(plaintext, contact.identity, contact.myKey) : null;
 
   if (!contact || !body) {
     return;

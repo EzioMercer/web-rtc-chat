@@ -8,6 +8,7 @@ export type ReceivedInvite = {
 
 // Someone used our invite and wants to be added.
 export type ContactRequest = {
+  // Also where our key for them is kept until then (contactKeys), and their contact id if they are new.
   id: string;
   identity: string;
   secret: string;

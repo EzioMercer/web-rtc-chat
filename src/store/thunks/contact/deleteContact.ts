@@ -1,3 +1,4 @@
+import { contactKeys } from '../../../core/identity/contactKeys.ts';
 import { closeSession } from '../../../core/webrtc/closeSession.ts';
 import { sessions } from '../../../core/webrtc/state.ts';
 import { contactDeleted } from '../../contacts/contactsSlice.ts';
@@ -26,4 +27,5 @@ export const deleteContact = (id: string): AppThunk => (dispatch, getState) => {
   dispatch(sessionStatusChanged({ key: id, status: SessionStatus.Idle }));
   dispatch(clearConversation(id));
   dispatch(contactDeleted(id));
+  contactKeys.delete(id);
 };

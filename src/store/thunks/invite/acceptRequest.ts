@@ -13,12 +13,12 @@ export const acceptRequest = (requestId: string, name: string, replaceId: string
       return;
     }
 
-    const { identity, secret, safety } = request;
-    const id = dispatch(saveContact({ name, identity, secret, safety, replaceId }));
+    const { id, identity, secret, safety } = request;
+    const contactId = dispatch(saveContact({ id, name, identity, secret, safety, replaceId }));
 
     dispatch(requestDone(requestId));
     // Listen on the new mailbox before sending the offer, so the answer isn't missed.
     await dispatch(refreshMailboxes());
-    dispatch(selectConversation(id));
+    dispatch(selectConversation(contactId));
   }
 ;

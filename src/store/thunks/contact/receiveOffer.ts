@@ -54,7 +54,7 @@ export const receiveOffer = (id: string, offer: Offer): AppThunk<Promise<void>> 
     closeSession(existing);
   }
 
-  const polite = isPolite(contact.identity);
+  const polite = isPolite(contact);
   const session = createSession({ key: id, sid: offer.sid, outgoing: false, polite }, dispatch);
 
   dispatch(sessionStatusChanged({ key: id, status: SessionStatus.Connecting }));

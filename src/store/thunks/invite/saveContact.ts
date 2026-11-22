@@ -1,4 +1,4 @@
-import { nanoid } from '@reduxjs/toolkit';
+import { contactKeys } from '../../../core/identity/contactKeys.ts';
 import { closeSession } from '../../../core/webrtc/closeSession.ts';
 import { sessions } from '../../../core/webrtc/state.ts';
 import { addMessage } from '../../chat/chatSlice.ts';
@@ -10,6 +10,8 @@ import { SessionStatus } from '../../sessions/types.ts';
 import { MessageAuthor } from '../../chat/types.ts';
 
 type NewContact = {
+  // Where our new key for them is (contactKeys), and their id if they are new.
+  id: string;
   name: string;
   identity: string;
   secret: string;
@@ -18,24 +20,33 @@ type NewContact = {
   replaceId: string | null;
 };
 
-// Adds a contact, or updates one. Returns its id.
-export const saveContact = ({ name, identity, secret, safety, replaceId }: NewContact): AppThunk<string> => (
+// Adds a contact, or replaces one. Returns its id.
+export const saveContact = ({ id, name, identity, secret, safety, replaceId }: NewContact): AppThunk<string> => (
   dispatch,
   getState,
 ) => {
-  const { list } = getState().contacts;
-  // Adding the same person again only refreshes the shared secret.
-  const old = list.find(c => c.identity === identity) ?? list.find(c => c.id === replaceId);
+  const key = contactKeys.get(id);
+
+  if (!key) {
+    throw new Error('Our key for this contact is missing.');
+  }
+
+  const old = getState().contacts.list.find(c => c.id === replaceId);
   const contact: Contact = {
-    id: old?.id ?? nanoid(),
+    id: old?.id ?? id,
     name: name.trim() || old?.name || 'New contact',
     favourite: old?.favourite ?? false,
-    verified: old?.identity === identity ? old.verified : false,
+    verified: false,
     identity,
+    myKey: key.publicKey,
     safety,
     secrets: [secret],
     sendSecret: secret,
   };
+
+  // Saved with the contact list (see persistence), so it must be in place first.
+  contactKeys.delete(id);
+  contactKeys.set(contact.id, key);
 
   if (!old) {
     dispatch(contactAdded(contact));
@@ -43,25 +54,22 @@ export const saveContact = ({ name, identity, secret, safety, replaceId }: NewCo
     return contact.id;
   }
 
-  dispatch(contactReplaced({ id: old.id, contact }));
+  const session = sessions.get(old.id);
 
-  if (old.identity !== identity) {
-    const session = sessions.get(old.id);
-
-    // The connection belonged to the old key.
-    if (session) {
-      closeSession(session);
-      dispatch(sessionStatusChanged({ key: old.id, status: SessionStatus.Idle }));
-    }
-
-    dispatch(addMessage({
-      key: old.id,
-      from: MessageAuthor.System,
-      text: old.verified
-        ? `⚠ ${contact.name}'s identity key changed. Compare the safety code again before trusting this chat.`
-        : `${contact.name}'s identity key changed. Compare the safety code.`,
-    }));
+  // The connection belonged to the old keys.
+  if (session) {
+    closeSession(session);
+    dispatch(sessionStatusChanged({ key: old.id, status: SessionStatus.Idle }));
   }
+
+  dispatch(contactReplaced({ id: old.id, contact }));
+  dispatch(addMessage({
+    key: old.id,
+    from: MessageAuthor.System,
+    text: old.verified
+      ? `⚠ ${contact.name}'s keys changed. Compare the safety code again before trusting this chat.`
+      : `${contact.name}'s keys changed. Compare the safety code.`,
+  }));
 
   return contact.id;
 };
