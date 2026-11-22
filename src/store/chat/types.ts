@@ -55,6 +55,8 @@ export type FileMessage = {
   error?: string;
   // Set for voice and video messages.
   note?: MediaNote;
+  // Sent zipped: this many bytes travel (and count toward the TURN limit) instead of `size`.
+  packed?: number;
   at?: number;
 };
 

@@ -1,9 +1,11 @@
+import { unzipText } from '../compression/unzipText.ts';
+
 // Unpacks a code made by `encodeCode`. Throws `Invalid code` for anything else.
-export const decodeCode = (code: string): RTCSessionDescriptionInit => {
+export const decodeCode = async (code: string): Promise<RTCSessionDescriptionInit> => {
   let desc: unknown;
 
   try {
-    desc = JSON.parse(atob(code.trim()));
+    desc = JSON.parse(await unzipText(code));
   } catch {
     throw new Error('Invalid code');
   }

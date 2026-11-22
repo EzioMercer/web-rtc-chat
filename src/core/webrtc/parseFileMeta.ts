@@ -38,16 +38,18 @@ export const parseFileMeta = (data: unknown): FileMeta | null => {
       && typeof meta.name === 'string'
       && typeof meta.size === 'number'
       && meta.size >= 0
-      && typeof meta.mime === 'string';
+      && typeof meta.mime === 'string'
+      // Zipped: how many bytes come (without it the data couldn't be read, so the file is refused).
+      && (meta.packed === undefined || (Number.isSafeInteger(meta.packed) && meta.packed > 0));
 
     if (!valid) {
       return null;
     }
 
     const note = parseNote(meta.note);
-    const { id, name, size, mime } = meta as FileMeta;
+    const { id, name, size, mime, packed } = meta as FileMeta;
 
-    return { id, name, size, mime, ...(note ? { note } : {}) };
+    return { id, name, size, mime, ...(note ? { note } : {}), ...(packed ? { packed } : {}) };
   } catch {
     return null;
   }

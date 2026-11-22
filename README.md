@@ -14,7 +14,8 @@ Live: https://eziomercer.github.io/web-rtc-chat/
 - 🖥️ Screen sharing
 - 🔇 Echo guard: if the other person hears their own voice back, the app notices and offers to fix it
 - 🎙️ Voice messages and round video messages: tap the button to switch, hold to record, let go to send
-- 📎 Files, photos and videos of any size (up to 10 MB when the connection goes through the TURN relay)
+- 📎 Files, photos and videos of any size (up to 10 MB when the connection goes through the TURN relay); text files
+  are sent zipped, often 5-10 times smaller
 - 🔒 End-to-end encrypted, messages are never stored
 - 👤 No account, phone number or email
 - 📱 Works on phones and computers, nothing to install

@@ -12,8 +12,10 @@ type Props = {
 // Voice and video messages have their own player; files get an inline preview for images, video and audio, and a
 // download card.
 export const FileBubble = ({ file }: Props) => {
-  const { name, size, mime, url, transferred, status, from, error, note } = file;
-  const percent = size ? Math.round((transferred / size) * 100) : 100;
+  const { name, size, mime, url, transferred, status, from, error, note, packed } = file;
+  // `transferred` counts what travels: the zipped bytes when it was sent zipped.
+  const total = packed ?? size;
+  const percent = total ? Math.round((transferred / total) * 100) : 100;
   const verb = from === 'me' ? 'Sending' : 'Receiving';
 
   const preview = () => {
@@ -62,6 +64,7 @@ export const FileBubble = ({ file }: Props) => {
               </span>
             )}
             {formatBytes(size)}
+            {packed !== undefined && ` · sent zipped, ${formatBytes(packed)}`}
           </span>
         </div>
         {status === FileStatus.Done && url && (

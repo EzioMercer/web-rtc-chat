@@ -1,3 +1,4 @@
+import { unzipText } from '../compression/unzipText.ts';
 import { verifyText } from '../identity/verifyText.ts';
 import { vault } from '../identity/vault.ts';
 import { MAX_SKEW_S } from '../nostr/config.ts';
@@ -23,11 +24,11 @@ const isFresh = (ts: number, nonce: string): boolean => {
   return true;
 };
 
-// Checks a received signal: addressed to us, fresh, not replayed, and signed by `from`
+// Unzips and checks a received signal (see sealEnvelope): addressed to us, fresh, not replayed, and signed by `from`
 // (`expectedFrom` when we know who must have sent it). Returns null for anything else.
 export const openEnvelope = async (text: string, expectedFrom: string | null): Promise<SignedBody | null> => {
   try {
-    const { body, sig } = JSON.parse(text) as Envelope;
+    const { body, sig } = JSON.parse(await unzipText(text)) as Envelope;
     const parsed = JSON.parse(body) as SignedBody;
 
     if (parsed.to !== vault.publicKey || typeof parsed.from !== 'string' || !parsed.msg) {

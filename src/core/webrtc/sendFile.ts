@@ -5,20 +5,31 @@ import { waitForDrain } from './waitForDrain.ts';
 
 type Options = {
   note?: MediaNote;
+  // The file zipped (see packFile): sent instead of the file.
+  zipped?: Blob | null;
   onProgress: (sent: number) => void;
   // Checked before every chunk: a reason to stop sending (in words for the user), or null to go on.
   shouldStop: () => string | null;
 };
 
-// Streams `file` over its own data channel. Resolves once the peer confirms it received everything.
+// Streams `file` (or its zipped form) over its own data channel. Resolves once the peer confirms it received
+// everything.
 export const sendFile = (
   peer: RTCPeerConnection,
   id: string,
   file: File,
-  { note, onProgress, shouldStop }: Options,
+  { note, zipped, onProgress, shouldStop }: Options,
 ): Promise<void> => new Promise((resolve, reject) => {
   const channel = peer.createDataChannel(FILE_LABEL, { ordered: true });
-  const meta: FileMeta = { id, name: file.name, size: file.size, mime: file.type, ...(note ? { note } : {}) };
+  const data = zipped ?? file;
+  const meta: FileMeta = {
+    id,
+    name: file.name,
+    size: file.size,
+    mime: file.type,
+    ...(note ? { note } : {}),
+    ...(zipped ? { packed: zipped.size } : {}),
+  };
   let confirmed = false;
   let stopped: string | null = null;
 
@@ -43,7 +54,7 @@ export const sendFile = (
     try {
       channel.send(JSON.stringify(meta));
 
-      for (let offset = 0; offset < file.size; offset += FILE_CHUNK_SIZE) {
+      for (let offset = 0; offset < data.size; offset += FILE_CHUNK_SIZE) {
         if (channel.bufferedAmount > FILE_BUFFER_HIGH) {
           await waitForDrain(channel);
         }
@@ -56,8 +67,8 @@ export const sendFile = (
           return;
         }
 
-        channel.send(await file.slice(offset, offset + FILE_CHUNK_SIZE).arrayBuffer());
-        onProgress(Math.min(offset + FILE_CHUNK_SIZE, file.size));
+        channel.send(await data.slice(offset, offset + FILE_CHUNK_SIZE).arrayBuffer());
+        onProgress(Math.min(offset + FILE_CHUNK_SIZE, data.size));
       }
     } catch (err) {
       reject(err);
