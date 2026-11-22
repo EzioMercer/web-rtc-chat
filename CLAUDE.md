@@ -70,8 +70,9 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
 - **Echo guard:** the side that hears its own voice back (`useEchoDetector`) sends `echo`; the other side is asked
   (`EchoPrompt`) and its `useEchoGuard` turns the microphone off while they talk. Both only read
   `getStats()` levels: no Web Audio during calls (it breaks phones' echo filters).
-- **Nothing a user writes is ever stored.** Only the identity, contacts and device settings are saved, encrypted
-  (`core/identity`). Settings are per device: never synced, never in backups.
+- **Nothing a user writes is ever stored on a server or relay.** The device may store anything the app needs,
+  encrypted with the vault key (`core/identity`, through `core/storage/kv.ts`). Today that is the identity, contacts
+  and device settings; messages live only in memory. Settings are per device: never synced, never in backups.
 
 ## Code style (lint enforces most of it: run `npx eslint .` and `npx tsc --noEmit`)
 

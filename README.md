@@ -16,7 +16,7 @@ Live: https://eziomercer.github.io/web-rtc-chat/
 - 🎙️ Voice messages and round video messages: tap the button to switch, hold to record, let go to send
 - 📎 Files, photos and videos of any size (up to 10 MB when the connection goes through the TURN relay); text files
   are sent zipped, often 5-10 times smaller
-- 🔒 End-to-end encrypted, messages are never stored
+- 🔒 End-to-end encrypted, messages never touch a server
 - 👤 No account, phone number or email
 - 📱 Works on phones and computers, nothing to install
 - ➕ Add contacts with a QR code or an invite link
@@ -87,9 +87,10 @@ hand, without contacts or relays.
   - The safety code proves that the identity keys are the right ones.
 - **Relays see almost nothing.** They see encrypted, throwaway-signed notes addressed to random-looking mailboxes
   that change daily. They don't see who talks to whom, or any content, and they don't store the notes.
-- **Messages are never stored.** Not on a server, a relay, or your device.
-  - The only things saved, in IndexedDB, are your identity key, your contact list (names, public keys, mailbox
-    secrets) and your settings. They are encrypted with your passkey or passphrase key. With "no protection" the
+- **Messages never touch a server.** No server or relay ever stores (or sees) them. Only your own device may keep
+  things, and only encrypted.
+  - Today the only things saved, in IndexedDB, are your identity key, your contact list (names, public keys,
+    mailbox secrets) and your settings. Messages are kept only in memory. They are encrypted with your passkey or passphrase key. With "no protection" the
     key is saved right next to them, so anyone with a copy of the browser's files can open them.
 - **No accounts, analytics, trackers or third-party scripts.**
 
