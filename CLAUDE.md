@@ -92,7 +92,7 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
   `ln -sfn /opt/node-tools/node_modules/playwright node_modules/playwright` (never run `playwright install`).
 - Tricks: `--use-fake-device-for-media-stream` and `--use-file-for-fake-audio-capture=x.wav` for a fake
   camera/microphone; in the dev server, `await import('/web-rtc-chat/src/core/webrtc/state.ts')` from
-  `page.evaluate` reaches the live sessions (e.g. set `session.route = 'relay'` to test the TURN limit).
+  `page.evaluate` reaches the live sessions (e.g. set `session.route = SessionRoute.Relay` to test the TURN limit).
 
 ## Working with the owner
 
