@@ -1,7 +1,7 @@
-import { attachLocalTracks } from '../../../webrtc/attachLocalTracks.ts';
-import { getLocalMedia } from '../../../webrtc/getLocalMedia.ts';
-import { sendControl } from '../../../webrtc/sendControl.ts';
-import { media, sessions } from '../../../webrtc/state.ts';
+import { attachLocalTracks } from '../../../core/webrtc/attachLocalTracks.ts';
+import { getLocalMedia } from '../../../core/webrtc/getLocalMedia.ts';
+import { sendControl } from '../../../core/webrtc/sendControl.ts';
+import { media, sessions } from '../../../core/webrtc/state.ts';
 import { answeredWithAudioOnly, callActive } from '../../call/callSlice.ts';
 
 import type { AppThunk } from '../../store.ts';

@@ -1,6 +1,6 @@
-import { unlockIdentity } from '../../../identity/unlockIdentity.ts';
-import { loadSettings } from '../../../identity/loadSettings.ts';
-import { vault } from '../../../identity/vault.ts';
+import { unlockIdentity } from '../../../core/identity/unlockIdentity.ts';
+import { loadSettings } from '../../../core/identity/loadSettings.ts';
+import { vault } from '../../../core/identity/vault.ts';
 import { busyStarted, failed, unlocked } from '../../app/appSlice.ts';
 import { contactsLoaded } from '../../contacts/contactsSlice.ts';
 import { settingsLoaded } from '../../settings/settingsSlice.ts';

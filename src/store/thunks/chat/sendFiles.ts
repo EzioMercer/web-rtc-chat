@@ -1,8 +1,8 @@
 import { nanoid } from '@reduxjs/toolkit';
 import { formatBytes } from '../../../utils/formatBytes.ts';
-import { overRelayLimit, RELAY_LIMIT_TEXT } from '../../../webrtc/overRelayLimit.ts';
-import { sendFile } from '../../../webrtc/sendFile.ts';
-import { sessions } from '../../../webrtc/state.ts';
+import { overRelayLimit, RELAY_LIMIT_TEXT } from '../../../core/webrtc/overRelayLimit.ts';
+import { sendFile } from '../../../core/webrtc/sendFile.ts';
+import { sessions } from '../../../core/webrtc/state.ts';
 import { addMessage, fileAdded, fileCompleted, fileFailed, fileProgress } from '../../chat/chatSlice.ts';
 import type { MediaNote } from '../../chat/types.ts';
 import type { AppThunk } from '../../store.ts';

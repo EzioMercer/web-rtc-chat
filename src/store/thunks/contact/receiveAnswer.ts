@@ -1,8 +1,8 @@
-import type { SignalMessage } from '../../../signaling/types.ts';
-import { sessions } from '../../../webrtc/state.ts';
-import { describeCandidates } from '../../../webrtc/describeCandidates.ts';
-import { addRemoteCandidates } from '../../../webrtc/addRemoteCandidates.ts';
-import { takeEarlyCandidates } from '../../../webrtc/earlyCandidates.ts';
+import type { SignalMessage } from '../../../core/signaling/types.ts';
+import { sessions } from '../../../core/webrtc/state.ts';
+import { describeCandidates } from '../../../core/webrtc/describeCandidates.ts';
+import { addRemoteCandidates } from '../../../core/webrtc/addRemoteCandidates.ts';
+import { takeEarlyCandidates } from '../../../core/webrtc/earlyCandidates.ts';
 import { sessionDetail, sessionLogged } from '../../sessions/sessionsSlice.ts';
 import type { AppThunk } from '../../store.ts';
 

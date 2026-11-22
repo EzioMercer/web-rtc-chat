@@ -19,7 +19,7 @@ const loops = ['if', 'for', 'while', 'do', 'switch'];
 
 // Messages must never be saved or sent anywhere but the direct connection. These APIs can do that, so they are
 // banned everywhere except the one module that saves the (encrypted) identity and contacts.
-const PRIVACY_MESSAGE = 'Messages must stay in memory. Only src/storage/ may touch browser storage.';
+const PRIVACY_MESSAGE = 'Messages must stay in memory. Only src/core/storage/ may touch browser storage.';
 const bannedGlobals = [
   'localStorage',
   'sessionStorage',
@@ -101,7 +101,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['src/storage/**'],
+    files: ['src/core/storage/**'],
     rules: {
       'no-restricted-globals': banGlobals(['indexedDB']),
       'no-restricted-properties': banProperties(['indexedDB']),
@@ -109,7 +109,7 @@ export default tseslint.config(
   },
   {
     // Fetches TURN credentials, and the site's own version number (from GitHub Pages, which serves the app anyway).
-    files: ['src/turn/**', 'src/update/**'],
+    files: ['src/core/turn/**', 'src/core/update/**'],
     rules: {
       'no-restricted-globals': banGlobals(['fetch']),
       'no-restricted-properties': banProperties(['fetch']),

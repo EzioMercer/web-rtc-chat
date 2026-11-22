@@ -1,5 +1,5 @@
-import { sessions } from '../../../webrtc/state.ts';
-import { MANUAL_KEY } from '../../../webrtc/config.ts';
+import { sessions } from '../../../core/webrtc/state.ts';
+import { MANUAL_KEY } from '../../../core/webrtc/config.ts';
 import { connecting } from '../../manual/manualSlice.ts';
 import type { AppThunk } from '../../store.ts';
 

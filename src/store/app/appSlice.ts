@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import type { ProtectionMode, StoredMode } from '../../identity/types.ts';
+import type { ProtectionMode, StoredMode } from '../../core/identity/types.ts';
 import type { AppState } from './types.ts';
 
 const initialState: AppState = {

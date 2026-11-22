@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   push:
     branches: [master]
-    paths: [scripts/**, .github/workflows/relay-check.yml, src/nostr/**, src/signaling/**]
+    paths: [scripts/**, .github/workflows/relay-check.yml, src/core/nostr/**, src/core/signaling/**]
 
 jobs:
   check:

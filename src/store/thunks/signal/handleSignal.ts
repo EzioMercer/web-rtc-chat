@@ -1,8 +1,8 @@
 import { nanoid } from '@reduxjs/toolkit';
-import { activeInvites } from '../../../signaling/activeInvites.ts';
-import { isSecret } from '../../../signaling/isSecret.ts';
-import { openEnvelope } from '../../../signaling/openEnvelope.ts';
-import { routes } from '../../../signaling/routes.ts';
+import { activeInvites } from '../../../core/signaling/activeInvites.ts';
+import { isSecret } from '../../../core/signaling/isSecret.ts';
+import { openEnvelope } from '../../../core/signaling/openEnvelope.ts';
+import { routes } from '../../../core/signaling/routes.ts';
 import { inviteClosed, requestReceived } from '../../invites/invitesSlice.ts';
 import type { AppThunk } from '../../store.ts';
 import { receiveCandidates } from '../contact/receiveCandidates.ts';

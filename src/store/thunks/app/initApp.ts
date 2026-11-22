@@ -1,4 +1,4 @@
-import { readMeta } from '../../../identity/readMeta.ts';
+import { readMeta } from '../../../core/identity/readMeta.ts';
 import { lockedFound, setupNeeded } from '../../app/appSlice.ts';
 import type { AppThunk } from '../../store.ts';
 import { takeInviteFromUrl } from './takeInviteFromUrl.ts';

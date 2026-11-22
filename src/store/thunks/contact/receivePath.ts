@@ -1,9 +1,9 @@
-import { sendSignal } from '../../../signaling/sendSignal.ts';
-import type { SignalMessage } from '../../../signaling/types.ts';
-import { errorText } from '../../../webrtc/errorText.ts';
-import { handleDescription } from '../../../webrtc/handleDescription.ts';
-import { sessions } from '../../../webrtc/state.ts';
-import { waitForIceGathering } from '../../../webrtc/waitForIceGathering.ts';
+import { sendSignal } from '../../../core/signaling/sendSignal.ts';
+import type { SignalMessage } from '../../../core/signaling/types.ts';
+import { errorText } from '../../../core/webrtc/errorText.ts';
+import { handleDescription } from '../../../core/webrtc/handleDescription.ts';
+import { sessions } from '../../../core/webrtc/state.ts';
+import { waitForIceGathering } from '../../../core/webrtc/waitForIceGathering.ts';
 import type { AppThunk } from '../../store.ts';
 import { finishRescue, refreshIceServers, startRescue } from '../session/rescuePath.ts';
 

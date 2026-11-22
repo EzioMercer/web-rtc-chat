@@ -1,4 +1,4 @@
-import { sendControl } from '../../../webrtc/sendControl.ts';
+import { sendControl } from '../../../core/webrtc/sendControl.ts';
 import type { AppThunk } from '../../store.ts';
 
 // The connection (re)opened: send every message the other side hasn't confirmed yet, in order. If one already

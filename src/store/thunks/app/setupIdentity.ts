@@ -1,5 +1,5 @@
-import { createIdentity } from '../../../identity/createIdentity.ts';
-import type { ProtectionChoice } from '../../../identity/types.ts';
+import { createIdentity } from '../../../core/identity/createIdentity.ts';
+import type { ProtectionChoice } from '../../../core/identity/types.ts';
 import { busyStarted, failed, unlocked } from '../../app/appSlice.ts';
 import { contactsLoaded } from '../../contacts/contactsSlice.ts';
 import type { AppThunk } from '../../store.ts';

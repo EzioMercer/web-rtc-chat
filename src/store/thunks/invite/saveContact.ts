@@ -1,6 +1,6 @@
 import { nanoid } from '@reduxjs/toolkit';
-import { closeSession } from '../../../webrtc/closeSession.ts';
-import { sessions } from '../../../webrtc/state.ts';
+import { closeSession } from '../../../core/webrtc/closeSession.ts';
+import { sessions } from '../../../core/webrtc/state.ts';
 import { addMessage } from '../../chat/chatSlice.ts';
 import { contactAdded, contactReplaced } from '../../contacts/contactsSlice.ts';
 import type { Contact } from '../../contacts/types.ts';

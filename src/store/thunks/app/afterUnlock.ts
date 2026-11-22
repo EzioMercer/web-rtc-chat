@@ -1,4 +1,4 @@
-import { utcDay } from '../../../nostr/utcDay.ts';
+import { utcDay } from '../../../core/nostr/utcDay.ts';
 import type { AppThunk } from '../../store.ts';
 import { openInvite } from '../invite/openInvite.ts';
 import { refreshMailboxes } from '../signal/refreshMailboxes.ts';

@@ -1,6 +1,6 @@
-import { getRoute } from '../../../webrtc/getRoute.ts';
-import { tuneSenders } from '../../../webrtc/tuneSenders.ts';
-import type { Session } from '../../../webrtc/types.ts';
+import { getRoute } from '../../../core/webrtc/getRoute.ts';
+import { tuneSenders } from '../../../core/webrtc/tuneSenders.ts';
+import type { Session } from '../../../core/webrtc/types.ts';
 import { sessionRouteChanged } from '../../sessions/sessionsSlice.ts';
 import type { AppThunk } from '../../store.ts';
 

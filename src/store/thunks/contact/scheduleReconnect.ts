@@ -1,4 +1,4 @@
-import { RECONNECT_DELAYS_MS } from '../../../webrtc/config.ts';
+import { RECONNECT_DELAYS_MS } from '../../../core/webrtc/config.ts';
 import type { AppThunk } from '../../store.ts';
 import { connectContact } from './connectContact.ts';
 import { reconnectAttempts } from './reconnectAttempts.ts';

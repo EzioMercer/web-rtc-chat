@@ -1,5 +1,5 @@
-import { importBackup } from '../../../identity/importBackup.ts';
-import { readMeta } from '../../../identity/readMeta.ts';
+import { importBackup } from '../../../core/identity/importBackup.ts';
+import { readMeta } from '../../../core/identity/readMeta.ts';
 import { busyStarted, failed, lockedFound } from '../../app/appSlice.ts';
 import type { AppThunk } from '../../store.ts';
 import { errorMessage } from './errorMessage.ts';

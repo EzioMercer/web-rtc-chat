@@ -1,6 +1,6 @@
-import { isSecret } from '../../../signaling/isSecret.ts';
-import { sendControl } from '../../../webrtc/sendControl.ts';
-import type { RotateSignal } from '../../../webrtc/types.ts';
+import { isSecret } from '../../../core/signaling/isSecret.ts';
+import { sendControl } from '../../../core/webrtc/sendControl.ts';
+import type { RotateSignal } from '../../../core/webrtc/types.ts';
 import { secretAdopted, secretConfirmed } from '../../contacts/contactsSlice.ts';
 import type { AppThunk } from '../../store.ts';
 

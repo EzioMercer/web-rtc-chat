@@ -1,4 +1,4 @@
-import { releaseMedia } from '../../../webrtc/releaseMedia.ts';
+import { releaseMedia } from '../../../core/webrtc/releaseMedia.ts';
 import { callEnded } from '../../call/callSlice.ts';
 import { addMessage } from '../../chat/chatSlice.ts';
 import type { AppThunk } from '../../store.ts';

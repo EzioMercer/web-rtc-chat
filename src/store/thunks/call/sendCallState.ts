@@ -1,4 +1,4 @@
-import { sendControl } from '../../../webrtc/sendControl.ts';
+import { sendControl } from '../../../core/webrtc/sendControl.ts';
 import type { AppThunk } from '../../store.ts';
 
 // Tells the peer whether our microphone and camera are on, and whether we share our screen, so it can show it.

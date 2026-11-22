@@ -1,10 +1,10 @@
-import { sendSignal } from '../../../signaling/sendSignal.ts';
-import { MANUAL_KEY, RESCUE_TIMEOUT_MS, STUN_SERVERS } from '../../../webrtc/config.ts';
-import { errorText } from '../../../webrtc/errorText.ts';
-import { sessions } from '../../../webrtc/state.ts';
-import { ensureTurnServers, turnServers } from '../../../webrtc/turnServers.ts';
-import type { Session } from '../../../webrtc/types.ts';
-import { waitForIceGathering } from '../../../webrtc/waitForIceGathering.ts';
+import { sendSignal } from '../../../core/signaling/sendSignal.ts';
+import { MANUAL_KEY, RESCUE_TIMEOUT_MS, STUN_SERVERS } from '../../../core/webrtc/config.ts';
+import { errorText } from '../../../core/webrtc/errorText.ts';
+import { sessions } from '../../../core/webrtc/state.ts';
+import { ensureTurnServers, turnServers } from '../../../core/webrtc/turnServers.ts';
+import type { Session } from '../../../core/webrtc/types.ts';
+import { waitForIceGathering } from '../../../core/webrtc/waitForIceGathering.ts';
 import type { AppThunk } from '../../store.ts';
 import { checkRoute } from './checkRoute.ts';
 import { sessionDropped } from './sessionDropped.ts';

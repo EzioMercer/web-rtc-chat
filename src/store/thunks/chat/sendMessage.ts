@@ -1,6 +1,6 @@
 import { nanoid } from '@reduxjs/toolkit';
-import { MANUAL_KEY } from '../../../webrtc/config.ts';
-import { sendControl } from '../../../webrtc/sendControl.ts';
+import { MANUAL_KEY } from '../../../core/webrtc/config.ts';
+import { sendControl } from '../../../core/webrtc/sendControl.ts';
 import { messageQueued } from '../../chat/chatSlice.ts';
 import type { AppThunk } from '../../store.ts';
 import { connectContact } from '../contact/connectContact.ts';

@@ -1,9 +1,9 @@
-import { sendSignal } from '../../../signaling/sendSignal.ts';
-import { CANDIDATES_PER_EVENT, LATE_CANDIDATE_BATCH_MS } from '../../../webrtc/config.ts';
-import { describeCandidateList } from '../../../webrtc/describeCandidateList.ts';
-import { errorText } from '../../../webrtc/errorText.ts';
-import { sessions } from '../../../webrtc/state.ts';
-import type { Session } from '../../../webrtc/types.ts';
+import { sendSignal } from '../../../core/signaling/sendSignal.ts';
+import { CANDIDATES_PER_EVENT, LATE_CANDIDATE_BATCH_MS } from '../../../core/webrtc/config.ts';
+import { describeCandidateList } from '../../../core/webrtc/describeCandidateList.ts';
+import { errorText } from '../../../core/webrtc/errorText.ts';
+import { sessions } from '../../../core/webrtc/state.ts';
+import type { Session } from '../../../core/webrtc/types.ts';
 import type { AppThunk } from '../../store.ts';
 
 // An address of ours found after the offer/answer went out, before the direct connection opened.

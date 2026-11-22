@@ -1,8 +1,8 @@
-import { ANSWER_TIMEOUT_MS, PATH_TIMEOUT_MS } from '../../../webrtc/config.ts';
-import { closeSession } from '../../../webrtc/closeSession.ts';
-import { failureDetail } from '../../../webrtc/failureDetail.ts';
-import { sessions } from '../../../webrtc/state.ts';
-import type { Session } from '../../../webrtc/types.ts';
+import { ANSWER_TIMEOUT_MS, PATH_TIMEOUT_MS } from '../../../core/webrtc/config.ts';
+import { closeSession } from '../../../core/webrtc/closeSession.ts';
+import { failureDetail } from '../../../core/webrtc/failureDetail.ts';
+import { sessions } from '../../../core/webrtc/state.ts';
+import type { Session } from '../../../core/webrtc/types.ts';
 import { sessionDetail, sessionLogged, sessionStatusChanged } from '../../sessions/sessionsSlice.ts';
 import type { AppThunk } from '../../store.ts';
 import { reconnectAttempts } from './reconnectAttempts.ts';

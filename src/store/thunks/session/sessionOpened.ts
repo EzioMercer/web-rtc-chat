@@ -1,7 +1,7 @@
-import { safetyWords } from '../../../signaling/safetyWords.ts';
-import { MANUAL_KEY } from '../../../webrtc/config.ts';
-import { getFingerprints } from '../../../webrtc/getFingerprints.ts';
-import type { Session } from '../../../webrtc/types.ts';
+import { safetyWords } from '../../../core/signaling/safetyWords.ts';
+import { MANUAL_KEY } from '../../../core/webrtc/config.ts';
+import { getFingerprints } from '../../../core/webrtc/getFingerprints.ts';
+import type { Session } from '../../../core/webrtc/types.ts';
 import { addMessage } from '../../chat/chatSlice.ts';
 import { connected } from '../../manual/manualSlice.ts';
 import { sessionDetail, sessionStatusChanged } from '../../sessions/sessionsSlice.ts';

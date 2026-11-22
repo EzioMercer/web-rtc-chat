@@ -1,5 +1,5 @@
-import { changeProtection } from '../../../identity/changeProtection.ts';
-import type { ProtectionChoice } from '../../../identity/types.ts';
+import { changeProtection } from '../../../core/identity/changeProtection.ts';
+import type { ProtectionChoice } from '../../../core/identity/types.ts';
 import { busyStarted, failed, unlocked } from '../../app/appSlice.ts';
 import type { AppThunk } from '../../store.ts';
 import { errorMessage } from './errorMessage.ts';

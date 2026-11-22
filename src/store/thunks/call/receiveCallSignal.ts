@@ -1,7 +1,7 @@
-import { attachLocalTracks } from '../../../webrtc/attachLocalTracks.ts';
-import { sendControl } from '../../../webrtc/sendControl.ts';
-import type { CallSignal } from '../../../webrtc/types.ts';
-import { echoGuardFor } from '../../../utils/echoGuardFor.ts';
+import { attachLocalTracks } from '../../../core/webrtc/attachLocalTracks.ts';
+import { sendControl } from '../../../core/webrtc/sendControl.ts';
+import type { CallSignal } from '../../../core/webrtc/types.ts';
+import { echoGuardFor } from '../../../features/calls/echoGuardFor.ts';
 import { callActive, callStarted, echoReported, remoteMediaChanged } from '../../call/callSlice.ts';
 import type { AppThunk } from '../../store.ts';
 import { endCall } from './endCall.ts';

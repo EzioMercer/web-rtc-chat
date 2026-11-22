@@ -1,9 +1,9 @@
-import { vault } from '../../../identity/vault.ts';
-import { deriveInviteMailbox } from '../../../nostr/deriveInviteMailbox.ts';
-import { activeInvites } from '../../../signaling/activeInvites.ts';
-import { buildInviteLink } from '../../../signaling/buildInviteLink.ts';
-import { INVITE_TTL_MS } from '../../../signaling/config.ts';
-import { newSecret } from '../../../signaling/newSecret.ts';
+import { vault } from '../../../core/identity/vault.ts';
+import { deriveInviteMailbox } from '../../../core/nostr/deriveInviteMailbox.ts';
+import { activeInvites } from '../../../core/signaling/activeInvites.ts';
+import { buildInviteLink } from '../../../core/signaling/buildInviteLink.ts';
+import { INVITE_TTL_MS } from '../../../core/signaling/config.ts';
+import { newSecret } from '../../../core/signaling/newSecret.ts';
 import { inviteClosed, inviteCreated } from '../../invites/invitesSlice.ts';
 import type { AppThunk } from '../../store.ts';
 import { refreshMailboxes } from '../signal/refreshMailboxes.ts';

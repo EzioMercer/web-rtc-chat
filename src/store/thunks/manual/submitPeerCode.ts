@@ -1,4 +1,4 @@
-import { decodeCode } from '../../../webrtc/decodeCode.ts';
+import { decodeCode } from '../../../core/webrtc/decodeCode.ts';
 import { stepFailed } from '../../manual/manualSlice.ts';
 import type { AppThunk } from '../../store.ts';
 import { connect } from './connect.ts';

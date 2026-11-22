@@ -1,7 +1,7 @@
-import { deriveInviteMailbox } from '../../../nostr/deriveInviteMailbox.ts';
-import { publishToMailbox } from '../../../nostr/publishToMailbox.ts';
-import { newSecret } from '../../../signaling/newSecret.ts';
-import { sealEnvelope } from '../../../signaling/sealEnvelope.ts';
+import { deriveInviteMailbox } from '../../../core/nostr/deriveInviteMailbox.ts';
+import { publishToMailbox } from '../../../core/nostr/publishToMailbox.ts';
+import { newSecret } from '../../../core/signaling/newSecret.ts';
+import { sealEnvelope } from '../../../core/signaling/sealEnvelope.ts';
 import { inviteError, receivedInviteDone } from '../../invites/invitesSlice.ts';
 import type { AppThunk } from '../../store.ts';
 import { selectConversation } from '../chat/selectConversation.ts';

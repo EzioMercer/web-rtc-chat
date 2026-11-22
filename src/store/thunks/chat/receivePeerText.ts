@@ -1,4 +1,4 @@
-import { sendControl } from '../../../webrtc/sendControl.ts';
+import { sendControl } from '../../../core/webrtc/sendControl.ts';
 import { peerTextReceived } from '../../chat/chatSlice.ts';
 import type { AppThunk } from '../../store.ts';
 import { countUnread } from './countUnread.ts';

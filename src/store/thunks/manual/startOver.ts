@@ -1,6 +1,6 @@
-import { MANUAL_KEY } from '../../../webrtc/config.ts';
-import { closeSession } from '../../../webrtc/closeSession.ts';
-import { sessions } from '../../../webrtc/state.ts';
+import { MANUAL_KEY } from '../../../core/webrtc/config.ts';
+import { closeSession } from '../../../core/webrtc/closeSession.ts';
+import { sessions } from '../../../core/webrtc/state.ts';
 import { manualReset } from '../../manual/manualSlice.ts';
 import type { AppThunk } from '../../store.ts';
 import { endCall } from '../call/endCall.ts';

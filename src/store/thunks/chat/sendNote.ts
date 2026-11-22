@@ -1,4 +1,4 @@
-import type { Recording } from '../../../media/startRecorder.ts';
+import type { Recording } from '../../../core/media/startRecorder.ts';
 import type { MediaNote } from '../../chat/types.ts';
 import type { AppThunk } from '../../store.ts';
 import { sendFiles } from './sendFiles.ts';

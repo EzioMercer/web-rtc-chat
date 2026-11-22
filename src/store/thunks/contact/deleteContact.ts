@@ -1,5 +1,5 @@
-import { closeSession } from '../../../webrtc/closeSession.ts';
-import { sessions } from '../../../webrtc/state.ts';
+import { closeSession } from '../../../core/webrtc/closeSession.ts';
+import { sessions } from '../../../core/webrtc/state.ts';
 import { contactDeleted } from '../../contacts/contactsSlice.ts';
 import { sessionStatusChanged } from '../../sessions/sessionsSlice.ts';
 import type { AppThunk } from '../../store.ts';

@@ -1,4 +1,4 @@
-import { setTracksEnabled } from '../../../webrtc/setTracksEnabled.ts';
+import { setTracksEnabled } from '../../../core/webrtc/setTracksEnabled.ts';
 import { camToggled } from '../../call/callSlice.ts';
 import type { AppThunk } from '../../store.ts';
 import { sendCallState } from './sendCallState.ts';

@@ -1,7 +1,7 @@
-import type { SignalMessage } from '../../../signaling/types.ts';
-import { addRemoteCandidates } from '../../../webrtc/addRemoteCandidates.ts';
-import { keepEarlyCandidates } from '../../../webrtc/earlyCandidates.ts';
-import { sessions } from '../../../webrtc/state.ts';
+import type { SignalMessage } from '../../../core/signaling/types.ts';
+import { addRemoteCandidates } from '../../../core/webrtc/addRemoteCandidates.ts';
+import { keepEarlyCandidates } from '../../../core/webrtc/earlyCandidates.ts';
+import { sessions } from '../../../core/webrtc/state.ts';
 import type { AppThunk } from '../../store.ts';
 
 type Ice = Extract<SignalMessage, { t: 'ice' }>;

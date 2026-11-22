@@ -1,5 +1,5 @@
-import { vault } from '../../../identity/vault.ts';
-import { parseInviteLink } from '../../../signaling/parseInviteLink.ts';
+import { vault } from '../../../core/identity/vault.ts';
+import { parseInviteLink } from '../../../core/signaling/parseInviteLink.ts';
 import { inviteError, inviteReceived } from '../../invites/invitesSlice.ts';
 import type { AppThunk } from '../../store.ts';
 

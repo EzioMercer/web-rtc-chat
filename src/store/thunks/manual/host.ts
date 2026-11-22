@@ -1,8 +1,8 @@
-import { bindChannel } from '../../../webrtc/bindChannel.ts';
-import { CONTROL_LABEL, MANUAL_KEY } from '../../../webrtc/config.ts';
-import { createLocalCode } from '../../../webrtc/createLocalCode.ts';
-import { createSession } from '../../../webrtc/createSession.ts';
-import { ensureTurnServers } from '../../../webrtc/turnServers.ts';
+import { bindChannel } from '../../../core/webrtc/bindChannel.ts';
+import { CONTROL_LABEL, MANUAL_KEY } from '../../../core/webrtc/config.ts';
+import { createLocalCode } from '../../../core/webrtc/createLocalCode.ts';
+import { createSession } from '../../../core/webrtc/createSession.ts';
+import { ensureTurnServers } from '../../../core/webrtc/turnServers.ts';
 import { codeGenerated, generationStarted } from '../../manual/manualSlice.ts';
 import type { AppThunk } from '../../store.ts';
 

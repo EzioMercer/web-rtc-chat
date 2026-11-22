@@ -1,6 +1,6 @@
 import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit';
-import { saveContacts } from '../identity/saveContacts.ts';
-import { saveSettings } from '../identity/saveSettings.ts';
+import { saveContacts } from '../core/identity/saveContacts.ts';
+import { saveSettings } from '../core/identity/saveSettings.ts';
 import {
   contactAdded,
   contactDeleted,

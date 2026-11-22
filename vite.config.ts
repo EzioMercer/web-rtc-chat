@@ -4,7 +4,7 @@ import { defineConfig, type Plugin } from 'vite';
 // Identifies this build: the commit on GitHub Actions, else the build time.
 const version = process.env.GITHUB_SHA ?? String(Date.now());
 
-// Publishes version.json next to the app, so an open tab can see that a newer build is out (src/update/).
+// Publishes version.json next to the app, so an open tab can see that a newer build is out (src/core/update/).
 const versionFile = (): Plugin => ({
   name: 'version-file',
   apply: 'build',

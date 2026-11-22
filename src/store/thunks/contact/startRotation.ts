@@ -1,6 +1,6 @@
-import { vault } from '../../../identity/vault.ts';
-import { newSecret } from '../../../signaling/newSecret.ts';
-import { sendControl } from '../../../webrtc/sendControl.ts';
+import { vault } from '../../../core/identity/vault.ts';
+import { newSecret } from '../../../core/signaling/newSecret.ts';
+import { sendControl } from '../../../core/webrtc/sendControl.ts';
 import { secretProposed } from '../../contacts/contactsSlice.ts';
 import type { AppThunk } from '../../store.ts';
 

@@ -1,4 +1,4 @@
-import type { ProtectionMode, StoredMode } from '../../identity/types.ts';
+import type { ProtectionMode, StoredMode } from '../../core/identity/types.ts';
 
 // loading: reading storage. setup: first launch. locked: waiting for the passkey or passphrase. ready: unlocked.
 export type AppPhase = 'loading' | 'setup' | 'locked' | 'ready';

@@ -1,4 +1,4 @@
-import { media, sessions } from '../../../webrtc/state.ts';
+import { media, sessions } from '../../../core/webrtc/state.ts';
 import { screenChanged } from '../../call/callSlice.ts';
 import { addMessage } from '../../chat/chatSlice.ts';
 import type { AppThunk } from '../../store.ts';

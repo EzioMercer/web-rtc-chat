@@ -1,8 +1,8 @@
-import { PATH_CHECK_MS, STUN_SERVERS, TURN_RESTART_MS } from '../../../webrtc/config.ts';
-import { errorText } from '../../../webrtc/errorText.ts';
-import { sessions } from '../../../webrtc/state.ts';
-import { ensureTurnServers, turnServers } from '../../../webrtc/turnServers.ts';
-import type { Session } from '../../../webrtc/types.ts';
+import { PATH_CHECK_MS, STUN_SERVERS, TURN_RESTART_MS } from '../../../core/webrtc/config.ts';
+import { errorText } from '../../../core/webrtc/errorText.ts';
+import { sessions } from '../../../core/webrtc/state.ts';
+import { ensureTurnServers, turnServers } from '../../../core/webrtc/turnServers.ts';
+import type { Session } from '../../../core/webrtc/types.ts';
 import type { AppDispatch, AppThunk } from '../../store.ts';
 import { checkRoute } from './checkRoute.ts';
 

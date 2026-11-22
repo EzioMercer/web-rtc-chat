@@ -1,9 +1,9 @@
-import { vault } from '../../../identity/vault.ts';
-import { deriveMailbox } from '../../../nostr/deriveMailbox.ts';
-import { listen } from '../../../nostr/listen.ts';
-import { utcDay } from '../../../nostr/utcDay.ts';
-import { activeInvites } from '../../../signaling/activeInvites.ts';
-import { routes, type Route } from '../../../signaling/routes.ts';
+import { vault } from '../../../core/identity/vault.ts';
+import { deriveMailbox } from '../../../core/nostr/deriveMailbox.ts';
+import { listen } from '../../../core/nostr/listen.ts';
+import { utcDay } from '../../../core/nostr/utcDay.ts';
+import { activeInvites } from '../../../core/signaling/activeInvites.ts';
+import { routes, type Route } from '../../../core/signaling/routes.ts';
 import type { AppThunk } from '../../store.ts';
 import { handleSignal } from './handleSignal.ts';
 
