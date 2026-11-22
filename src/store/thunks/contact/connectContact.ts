@@ -12,6 +12,8 @@ import { waitForIceGathering } from '../../../core/webrtc/waitForIceGathering.ts
 import { sessionDetail, sessionStatusChanged } from '../../sessions/sessionsSlice.ts';
 import type { AppThunk } from '../../store.ts';
 import { armTimeout } from './armTimeout.ts';
+import { SessionStatus } from '../../sessions/types.ts';
+import { SignalType } from '../../../core/signaling/types.ts';
 
 // Contact id -> when our current attempt started preparing (before its connection exists).
 const preparing = new Map<string, number>();
@@ -32,7 +34,7 @@ export const connectContact = (id: string): AppThunk<Promise<void>> => async (di
   const contact = getState().contacts.list.find(c => c.id === id);
   const status = getState().sessions.status[id];
 
-  if (!contact || status === 'connected' || (status === 'connecting' && attemptAlive(id))) {
+  if (!contact || status === SessionStatus.Connected || (status === SessionStatus.Connecting && attemptAlive(id))) {
     return;
   }
 
@@ -40,7 +42,7 @@ export const connectContact = (id: string): AppThunk<Promise<void>> => async (di
   const started = Date.now();
 
   preparing.set(id, started);
-  dispatch(sessionStatusChanged({ key: id, status: 'connecting' }));
+  dispatch(sessionStatusChanged({ key: id, status: SessionStatus.Connecting }));
   dispatch(sessionDetail({ key: id, detail: 'Preparing…' }));
 
   try {
@@ -77,7 +79,7 @@ export const connectContact = (id: string): AppThunk<Promise<void>> => async (di
     session.sentOffer = session.peer.localDescription.sdp;
     session.signaled = true;
 
-    const relays = await sendSignal(contact, { t: 'offer', sid: session.sid, sdp: session.sentOffer });
+    const relays = await sendSignal(contact, { t: SignalType.Offer, sid: session.sid, sdp: session.sentOffer });
 
     // Replaced by their attempt while the request was on its way.
     if (sessions.get(id) !== session) {
@@ -90,7 +92,7 @@ export const connectContact = (id: string): AppThunk<Promise<void>> => async (di
   } catch (err) {
     console.error('Could not reach contact', err);
     closeSession(session);
-    dispatch(sessionStatusChanged({ key: id, status: 'offline' }));
+    dispatch(sessionStatusChanged({ key: id, status: SessionStatus.Offline }));
     dispatch(sessionDetail({ key: id, detail: err instanceof Error ? err.message : 'Could not send the request.' }));
 
     return;

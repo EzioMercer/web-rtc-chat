@@ -5,7 +5,7 @@ import { keyForChoice } from './keyForChoice.ts';
 import { openVault } from './openVault.ts';
 import { saveContacts } from './saveContacts.ts';
 import { STORAGE_KEYS } from './storageKeys.ts';
-import type { ProtectionChoice, StoredMeta } from './types.ts';
+import { type ProtectionChoice, type StoredMeta, ProtectionMode } from './types.ts';
 
 // First launch: makes a new identity, protects it the way the user chose, and unlocks it.
 export const createIdentity = async (choice: ProtectionChoice) => {
@@ -15,8 +15,8 @@ export const createIdentity = async (choice: ProtectionChoice) => {
 
   pkcs8.fill(0);
 
-  if (choice.mode === 'temporary') {
-    await openVault('temporary', null, publicKey, key, sealedIdentity);
+  if (choice.mode === ProtectionMode.Temporary) {
+    await openVault(ProtectionMode.Temporary, null, publicKey, key, sealedIdentity);
 
     return;
   }

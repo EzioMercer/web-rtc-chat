@@ -5,6 +5,7 @@ import { ensureTurnServers, turnServers } from '../../../core/webrtc/turnServers
 import type { Session } from '../../../core/webrtc/types.ts';
 import type { AppDispatch, AppThunk } from '../../store.ts';
 import { checkRoute } from './checkRoute.ts';
+import { SessionRoute } from '../../sessions/types.ts';
 
 let timer: number | null = null;
 
@@ -29,7 +30,7 @@ const renewCredentials = (session: Session) => {
 // so a call doesn't drop when the old ones expire. One side does it (the other answers), so the searches don't
 // collide; without fresh credentials it waits, so the current relay path isn't lost.
 const restartIfRelay = (session: Session) => {
-  if (session.route !== 'relay' || session.polite || turnServers().length === 0
+  if (session.route !== SessionRoute.Relay || session.polite || turnServers().length === 0
     || Date.now() - session.restartedAt < TURN_RESTART_MS) {
     return;
   }

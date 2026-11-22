@@ -1,4 +1,4 @@
-import type { SignalMessage } from '../../../core/signaling/types.ts';
+import { type SignalMessage, SignalType } from '../../../core/signaling/types.ts';
 import { sessions } from '../../../core/webrtc/state.ts';
 import { describeCandidates } from '../../../core/webrtc/describeCandidates.ts';
 import { addRemoteCandidates } from '../../../core/webrtc/addRemoteCandidates.ts';
@@ -6,7 +6,7 @@ import { takeEarlyCandidates } from '../../../core/webrtc/earlyCandidates.ts';
 import { sessionDetail, sessionLogged } from '../../sessions/sessionsSlice.ts';
 import type { AppThunk } from '../../store.ts';
 
-type Answer = Extract<SignalMessage, { t: 'answer' }>;
+type Answer = Extract<SignalMessage, { t: SignalType.Answer }>;
 
 // The contact answered our offer: the direct connection opens next.
 export const receiveAnswer = (id: string, answer: Answer): AppThunk<Promise<void>> => async (dispatch) => {

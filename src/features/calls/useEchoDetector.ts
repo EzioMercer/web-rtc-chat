@@ -13,6 +13,7 @@ import { findEchoMatch } from '../../core/webrtc/findEchoMatch.ts';
 import { readAudioLevels } from '../../core/webrtc/readAudioLevels.ts';
 import { sendControl } from '../../core/webrtc/sendControl.ts';
 import { sessions } from '../../core/webrtc/state.ts';
+import { ControlType, CallAction } from '../../core/webrtc/types.ts';
 
 const CHECK_EVERY = 1000 / ECHO_SAMPLE_MS;
 
@@ -54,7 +55,7 @@ export const useEchoDetector = (key: string | null, running: boolean) => {
       if (hits >= ECHO_CHECKS) {
         window.clearInterval(timer);
         sessions.get(key)?.log(`Echo: we hear our own voice back (match ${late.toFixed(2)}); told them.`);
-        sendControl(key, { t: 'call', action: 'echo' });
+        sendControl(key, { t: ControlType.Call, action: CallAction.Echo });
       }
     };
 

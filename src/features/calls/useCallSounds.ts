@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
-import { startRinging, stopRinging, unlockSound } from '../../core/sound/ringtone.ts';
+import { startRinging, stopRinging, unlockSound, Ring } from '../../core/sound/ringtone.ts';
 import { useAppSelector } from '../../store/useAppSelector.ts';
+import { CallStatus } from '../../store/call/types.ts';
 
 // Rings for an incoming call, and plays the ringback tone while we're calling someone.
 export const useCallSounds = () => {
@@ -9,8 +10,8 @@ export const useCallSounds = () => {
   useEffect(unlockSound, []);
 
   useEffect(() => {
-    if (status === 'incoming' || status === 'outgoing') {
-      startRinging(status);
+    if (status === CallStatus.Incoming || status === CallStatus.Outgoing) {
+      startRinging(status === CallStatus.Incoming ? Ring.Incoming : Ring.Outgoing);
     }
 
     return stopRinging;

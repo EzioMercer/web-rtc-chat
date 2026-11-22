@@ -1,6 +1,6 @@
 import { errorText } from './errorText.ts';
 import { sendControl } from './sendControl.ts';
-import type { Session } from './types.ts';
+import { type Session, ControlType } from './types.ts';
 
 // Sends a new offer over the control channel when tracks are added or removed during a call.
 // The first offer/answer goes through relays (or codes), so nothing is sent before the channel is open.
@@ -14,7 +14,7 @@ export const negotiate = async (session: Session) => {
     await session.peer.setLocalDescription();
 
     if (session.peer.localDescription) {
-      sendControl(session.key, { t: 'sdp', description: session.peer.localDescription.toJSON() });
+      sendControl(session.key, { t: ControlType.Sdp, description: session.peer.localDescription.toJSON() });
       session.log(`Call setup: sent ${session.peer.localDescription.type}`);
     }
   } catch (err) {

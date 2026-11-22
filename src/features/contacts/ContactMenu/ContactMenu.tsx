@@ -8,6 +8,7 @@ import { Button } from '../../../ui/Button/Button.tsx';
 import { Dialog } from '../../../ui/Dialog/Dialog.tsx';
 import { RenameDialog } from '../RenameDialog/RenameDialog.tsx';
 import styles from './ContactMenu.module.css';
+import { ButtonVariant } from '../../../ui/Button/ButtonVariant.ts';
 
 type Props = {
   contact: Contact;
@@ -15,9 +16,14 @@ type Props = {
 };
 
 // Rename, favourite and delete, for one contact.
+enum MenuDialog {
+  Rename,
+  Delete,
+}
+
 export const ContactMenu = ({ contact, onClose }: Props) => {
   const dispatch = useAppDispatch();
-  const [dialog, setDialog] = useState<'rename' | 'delete' | null>(null);
+  const [dialog, setDialog] = useState<MenuDialog | null>(null);
   const ref = useRef<HTMLDivElement>(null);
 
   // Clicking anywhere else closes the menu (unless a dialog from it is open).
@@ -37,18 +43,18 @@ export const ContactMenu = ({ contact, onClose }: Props) => {
     return () => document.removeEventListener('pointerdown', onDown);
   }, [dialog, onClose]);
 
-  if (dialog === 'rename') {
+  if (dialog === MenuDialog.Rename) {
     return <RenameDialog contact={contact} onClose={onClose} />;
   }
 
-  if (dialog === 'delete') {
+  if (dialog === MenuDialog.Delete) {
     return (
       <Dialog title={`Delete ${contact.name}?`} onClose={onClose}>
         <p>
           They will be removed from your contacts on this device. To talk again, one of you has to send a new invite.
         </p>
         <Button
-          variant="danger"
+          variant={ButtonVariant.Danger}
           onClick={() => {
             dispatch(deleteContact(contact.id));
             onClose();
@@ -56,7 +62,7 @@ export const ContactMenu = ({ contact, onClose }: Props) => {
         >
           Delete
         </Button>
-        <Button variant="secondary" onClick={onClose}>Cancel</Button>
+        <Button variant={ButtonVariant.Secondary} onClick={onClose}>Cancel</Button>
       </Dialog>
     );
   }
@@ -69,7 +75,7 @@ export const ContactMenu = ({ contact, onClose }: Props) => {
       onClick={e => e.stopPropagation()}
       onPointerDown={e => e.stopPropagation()}
     >
-      <button className={styles.item} type="button" role="menuitem" onClick={() => setDialog('rename')}>
+      <button className={styles.item} type="button" role="menuitem" onClick={() => setDialog(MenuDialog.Rename)}>
         Rename
       </button>
       <button
@@ -94,7 +100,7 @@ export const ContactMenu = ({ contact, onClose }: Props) => {
       >
         Clear conversation
       </button>
-      <button className={styles.item} type="button" role="menuitem" onClick={() => setDialog('delete')}>
+      <button className={styles.item} type="button" role="menuitem" onClick={() => setDialog(MenuDialog.Delete)}>
         <span className={styles.danger}>Delete</span>
       </button>
     </div>

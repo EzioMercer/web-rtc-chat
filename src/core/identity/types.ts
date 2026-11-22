@@ -5,9 +5,14 @@ import type { Sealed } from '../crypto/types.ts';
 //  passphrase: a key derived from a passphrase (Argon2id) encrypts them.
 //  device:     a key kept in browser storage encrypts them: no unlock step, but no protection either.
 //  temporary:  nothing is saved; everything disappears when the tab closes.
-export type ProtectionMode = 'passkey' | 'passphrase' | 'device' | 'temporary';
+export enum ProtectionMode {
+  Passkey,
+  Passphrase,
+  Device,
+  Temporary,
+}
 
-export type StoredMode = Exclude<ProtectionMode, 'temporary'>;
+export type StoredMode = Exclude<ProtectionMode, ProtectionMode.Temporary>;
 
 export type StoredMeta = {
   version: 1;
@@ -21,10 +26,10 @@ export type StoredMeta = {
 
 // What the user chose on the setup or settings screen.
 export type ProtectionChoice =
-  | { mode: 'passkey' }
-  | { mode: 'passphrase'; passphrase: string }
-  | { mode: 'device' }
-  | { mode: 'temporary' };
+  | { mode: ProtectionMode.Passkey }
+  | { mode: ProtectionMode.Passphrase; passphrase: string }
+  | { mode: ProtectionMode.Device }
+  | { mode: ProtectionMode.Temporary };
 
 export type Backup = {
   app: 'web-rtc-chat';

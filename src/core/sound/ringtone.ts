@@ -23,7 +23,10 @@ const RINGBACK_EVERY_S = 6;
 const AHEAD_S = 90;
 const TOP_UP_MS = 5000;
 
-export type Ring = 'incoming' | 'outgoing';
+export enum Ring {
+  Incoming,
+  Outgoing,
+}
 
 let context: AudioContext | null = null;
 let ringing: { output: GainNode; sources: Set<AudioScheduledSourceNode>; timer: number; until: number } | null = null;
@@ -88,12 +91,12 @@ const queue = (ring: Ring) => {
     return;
   }
 
-  const every = ring === 'incoming' ? TUNE_EVERY_S : RINGBACK_EVERY_S;
+  const every = ring === Ring.Incoming ? TUNE_EVERY_S : RINGBACK_EVERY_S;
   const end = context.currentTime + AHEAD_S;
 
   while (ringing.until < end) {
     const at = ringing.until;
-    const added = ring === 'incoming'
+    const added = ring === Ring.Incoming
       ? TUNE.flatMap(note => playNote(context!, ringing!.output, note.freq, at + note.at))
       : playTone(context, ringing.output, at);
 
@@ -129,13 +132,13 @@ export const startRinging = (ring: Ring) => {
 
   // Browsers may keep audio off until the user has clicked the page; then it's silent (the call still shows).
   void ctx.resume().catch(() => undefined);
-  output.gain.value = ring === 'incoming' ? 0.25 : 0.15;
+  output.gain.value = ring === Ring.Incoming ? 0.25 : 0.15;
   output.connect(ctx.destination);
   ringing = { output, sources: new Set(), timer: 0, until: ctx.currentTime + 0.05 };
   ringing.timer = window.setInterval(() => queue(ring), TOP_UP_MS);
   queue(ring);
 
-  if (ring === 'incoming') {
+  if (ring === Ring.Incoming) {
     // Phones also vibrate (where the browser allows it): 1 s on, 2 off, for about a minute.
     navigator.vibrate?.(Array.from({ length: 40 }, (_, i) => (i % 2 === 0 ? 1000 : 2000)));
   }

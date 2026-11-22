@@ -3,6 +3,7 @@ import { errorText } from './errorText.ts';
 import { tuneSenders } from './tuneSenders.ts';
 import { sendControl } from './sendControl.ts';
 import { sessions } from './state.ts';
+import { ControlType } from './types.ts';
 
 // Applies an offer or answer received over the control channel (perfect negotiation). Our answer to an offer
 // goes back over the control channel, or through `reply` (e.g. through the relays, when the path is broken).
@@ -45,7 +46,7 @@ export const handleDescription = async (
       if (reply) {
         await reply();
       } else if (peer.localDescription) {
-        sendControl(key, { t: 'sdp', description: peer.localDescription.toJSON() });
+        sendControl(key, { t: ControlType.Sdp, description: peer.localDescription.toJSON() });
         session.log(`Call setup: sent ${peer.localDescription.type}`);
       }
     }

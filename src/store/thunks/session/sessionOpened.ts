@@ -11,6 +11,8 @@ import { startRotation } from '../contact/startRotation.ts';
 import { sendPending } from '../chat/sendPending.ts';
 import { checkRoute } from './checkRoute.ts';
 import { watchPaths } from './watchPaths.ts';
+import { SessionStatus } from '../../sessions/types.ts';
+import { MessageAuthor } from '../../chat/types.ts';
 
 // The direct connection is open.
 export const sessionOpened = (session: Session): AppThunk<Promise<void>> => async (dispatch) => {
@@ -32,13 +34,13 @@ export const sessionOpened = (session: Session): AppThunk<Promise<void>> => asyn
     const remote = getFingerprints(session.peer.remoteDescription?.sdp).join(',');
 
     dispatch(connected(await safetyWords(local, remote)));
-    dispatch(addMessage({ key: MANUAL_KEY, from: 'system', text: 'Connected. Say hi!' }));
+    dispatch(addMessage({ key: MANUAL_KEY, from: MessageAuthor.System, text: 'Connected. Say hi!' }));
 
     return;
   }
 
   reconnectAttempts.delete(session.key);
-  dispatch(sessionStatusChanged({ key: session.key, status: 'connected' }));
+  dispatch(sessionStatusChanged({ key: session.key, status: SessionStatus.Connected }));
   dispatch(sessionDetail({ key: session.key, detail: '' }));
   dispatch(startRotation(session.key));
 };

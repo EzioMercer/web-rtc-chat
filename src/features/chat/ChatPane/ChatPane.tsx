@@ -10,6 +10,8 @@ import { IconButton } from '../../../ui/IconButton/IconButton.tsx';
 import { SafetyPanel } from '../../contacts/SafetyPanel/SafetyPanel.tsx';
 import styles from './ChatPane.module.css';
 import { getStatusText } from './getStatusText.ts';
+import { SessionStatus } from '../../../store/sessions/types.ts';
+import { IconButtonVariant } from '../../../ui/IconButton/IconButtonVariant.ts';
 
 // While a contact's chat is open and they are offline, check again this often.
 const RETRY_MS = 20_000;
@@ -21,7 +23,7 @@ type Props = {
 export const ChatPane = ({ id }: Props) => {
   const dispatch = useAppDispatch();
   const contact = useAppSelector(state => state.contacts.list.find(c => c.id === id));
-  const status = useAppSelector(state => state.sessions.status[id] ?? 'idle');
+  const status = useAppSelector(state => state.sessions.status[id] ?? SessionStatus.Idle);
   const detail = useAppSelector(state => state.sessions.detail[id] ?? '');
   const log = useAppSelector(state => state.sessions.log[id]);
   const route = useAppSelector(state => state.sessions.route[id]);
@@ -29,10 +31,10 @@ export const ChatPane = ({ id }: Props) => {
   const words = useSafetyWords(contact?.identity);
   // Open until the contact is verified, so a new contact shows the code right away.
   const [showSafety, setShowSafety] = useState(() => !contact?.verified);
-  const connected = status === 'connected';
+  const connected = status === SessionStatus.Connected;
 
   useEffect(() => {
-    if (status !== 'offline') {
+    if (status !== SessionStatus.Offline) {
       return;
     }
 
@@ -56,13 +58,13 @@ export const ChatPane = ({ id }: Props) => {
           <IconButton
             icon="link"
             label="Connection log"
-            variant={showLog ? 'neutral' : 'plain'}
+            variant={showLog ? IconButtonVariant.Neutral : IconButtonVariant.Plain}
             onClick={() => setShowLog(!showLog)}
           />
           <IconButton
             icon={contact.verified ? 'shieldCheck' : 'shield'}
             label="Safety code"
-            variant={showSafety ? 'neutral' : 'plain'}
+            variant={showSafety ? IconButtonVariant.Neutral : IconButtonVariant.Plain}
             onClick={() => setShowSafety(!showSafety)}
           />
         </>
@@ -88,13 +90,13 @@ export const ChatPane = ({ id }: Props) => {
           Not verified yet. Tap to compare the safety code.
         </button>
       )}
-      {status === 'connecting' && detail && (
+      {status === SessionStatus.Connecting && detail && (
         <div className={styles.offline}>
           <span>{detail}</span>
           <button className={styles.retry} type="button" onClick={() => setShowLog(!showLog)}>Details</button>
         </div>
       )}
-      {status === 'offline' && (
+      {status === SessionStatus.Offline && (
         <div className={styles.offline}>
           <span>{detail || 'They aren\'t reachable. They need to have the app open.'}</span>
           <span className={styles.buttons}>

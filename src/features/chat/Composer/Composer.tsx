@@ -11,6 +11,8 @@ import { RecordButton } from '../../recording/RecordButton/RecordButton.tsx';
 import { RecordingBar } from '../../recording/RecordingBar/RecordingBar.tsx';
 import { VideoNotePreview } from '../../recording/VideoNotePreview/VideoNotePreview.tsx';
 import styles from './Composer.module.css';
+import { CallStatus } from '../../../store/call/types.ts';
+import { RecordPhase } from '../../recording/RecordPhase.ts';
 
 type Props = {
   convKey: string;
@@ -22,14 +24,14 @@ export const Composer = ({ convKey, connected }: Props) => {
   const [text, setText] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   // The microphone and camera are busy during a call.
-  const inCall = useAppSelector(state => state.call.status !== 'idle');
+  const inCall = useAppSelector(state => state.call.status !== CallStatus.Idle);
   const recording = useRecording(convKey);
   const { phase, recorder } = recording;
   // A contact's messages wait while offline and go out when the connection opens; files need the connection.
   const canType = connected || convKey !== MANUAL_KEY;
   const offlineText = canType ? 'Offline: sent when they\'re online' : 'Not connected';
   // Like chat apps: the Send button while there's text, the record button otherwise.
-  const showSend = text.trim() !== '' && phase === 'idle';
+  const showSend = text.trim() !== '' && phase === RecordPhase.Idle;
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -75,7 +77,7 @@ export const Composer = ({ convKey, connected }: Props) => {
           onChange={e => setText(e.target.value)}
           onPaste={paste}
         />
-        {phase !== 'idle' && (
+        {phase !== RecordPhase.Idle && (
           <RecordingBar phase={phase} recorder={recorder} slideX={recording.slide.x} onCancel={recording.cancel} />
         )}
       </div>
@@ -98,7 +100,7 @@ export const Composer = ({ convKey, connected }: Props) => {
               recorder={recorder}
               slide={recording.slide}
               hint={recording.hint}
-              disabled={phase === 'idle' && (!connected || inCall)}
+              disabled={phase === RecordPhase.Idle && (!connected || inCall)}
               handlers={recording.buttonProps}
             />
           )}

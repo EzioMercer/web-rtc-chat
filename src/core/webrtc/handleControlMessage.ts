@@ -6,7 +6,7 @@ import { receiveRotate } from '../../store/thunks/contact/receiveRotate.ts';
 import { handleCandidate } from './handleCandidate.ts';
 import { handleDescription } from './handleDescription.ts';
 import { sessions } from './state.ts';
-import type { ControlMessage } from './types.ts';
+import { type ControlMessage, ControlType, CallAction } from './types.ts';
 
 // Routes a message received on `key`'s control channel.
 export const handleControlMessage = (key: string, data: unknown, dispatch: AppDispatch) => {
@@ -19,31 +19,31 @@ export const handleControlMessage = (key: string, data: unknown, dispatch: AppDi
   }
 
   switch (message.t) {
-    case 'text':
+    case ControlType.Text:
       dispatch(receivePeerText(key, String(message.text), message.id, message.waited));
       break;
-    case 'ack':
+    case ControlType.Ack:
       if (typeof message.id === 'string') {
         dispatch(messageDelivered({ key, id: message.id }));
       }
 
       break;
-    case 'sdp':
+    case ControlType.Sdp:
       handleDescription(key, message.description).catch(() => undefined);
       break;
-    case 'ice':
+    case ControlType.Ice:
       void handleCandidate(key, message.candidate);
       break;
-    case 'call':
-      if (message.action !== 'state') {
-        sessions.get(key)?.log(`Call: they sent "${message.action}"`);
+    case ControlType.Call:
+      if (message.action !== CallAction.State) {
+        sessions.get(key)?.log(`Call: they sent "${CallAction[message.action]}"`);
       }
 
       dispatch(receiveCallSignal(key, message));
       break;
-    case 'rotate':
-    case 'rotate-ack':
-    case 'rotate-done':
+    case ControlType.Rotate:
+    case ControlType.RotateAck:
+    case ControlType.RotateDone:
       dispatch(receiveRotate(key, message));
       break;
   }

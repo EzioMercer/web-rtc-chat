@@ -1,7 +1,12 @@
 import type { ProtectionMode, StoredMode } from '../../core/identity/types.ts';
 
 // loading: reading storage. setup: first launch. locked: waiting for the passkey or passphrase. ready: unlocked.
-export type AppPhase = 'loading' | 'setup' | 'locked' | 'ready';
+export enum AppPhase {
+  Loading,
+  Setup,
+  Locked,
+  Ready,
+}
 
 export type AppState = {
   phase: AppPhase;

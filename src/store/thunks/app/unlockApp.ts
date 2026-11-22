@@ -7,6 +7,7 @@ import { settingsLoaded } from '../../settings/settingsSlice.ts';
 import type { AppThunk } from '../../store.ts';
 import { afterUnlock } from './afterUnlock.ts';
 import { errorMessage } from './errorMessage.ts';
+import { ProtectionMode } from '../../../core/identity/types.ts';
 
 export const unlockApp = (passphrase?: string): AppThunk<Promise<void>> => async (dispatch) => {
   dispatch(busyStarted());
@@ -20,6 +21,6 @@ export const unlockApp = (passphrase?: string): AppThunk<Promise<void>> => async
     return;
   }
 
-  dispatch(unlocked(vault.mode ?? 'device'));
+  dispatch(unlocked(vault.mode ?? ProtectionMode.Device));
   dispatch(afterUnlock());
 };

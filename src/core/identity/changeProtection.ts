@@ -7,7 +7,7 @@ import { keyForChoice } from './keyForChoice.ts';
 import { saveContacts } from './saveContacts.ts';
 import { saveSettings } from './saveSettings.ts';
 import { STORAGE_KEYS } from './storageKeys.ts';
-import type { ProtectionChoice, StoredMeta } from './types.ts';
+import { type ProtectionChoice, type StoredMeta, ProtectionMode } from './types.ts';
 import { vault } from './vault.ts';
 
 // Re-encrypts the same identity, contacts and settings with a different protection. Contacts notice nothing.
@@ -26,7 +26,7 @@ export const changeProtection = async (choice: ProtectionChoice, contacts: Conta
   vault.vaultKey = key;
   vault.sealedIdentity = sealedIdentity;
 
-  if (choice.mode === 'temporary') {
+  if (choice.mode === ProtectionMode.Temporary) {
     vault.meta = null;
     await kv.clear();
 
@@ -39,7 +39,7 @@ export const changeProtection = async (choice: ProtectionChoice, contacts: Conta
   await kv.set(STORAGE_KEYS.identity, sealedIdentity);
   await kv.set(STORAGE_KEYS.meta, meta);
 
-  if (choice.mode !== 'device') {
+  if (choice.mode !== ProtectionMode.Device) {
     await kv.delete(STORAGE_KEYS.deviceKey);
   }
 

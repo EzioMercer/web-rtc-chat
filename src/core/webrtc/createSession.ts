@@ -13,7 +13,7 @@ import { receiveFile } from './receiveFile.ts';
 import { sendControl } from './sendControl.ts';
 import { sessions } from './state.ts';
 import { turnServers } from './turnServers.ts';
-import type { Session } from './types.ts';
+import { type Session, ControlType } from './types.ts';
 
 type Options = Pick<Session, 'key' | 'sid' | 'outgoing' | 'polite'>;
 
@@ -70,7 +70,7 @@ export const createSession = (options: Options, dispatch: AppDispatch): Session 
   // The first addresses are inside the offer/answer. Later ones go over the control channel, or through relays
   // while it isn't open yet: otherwise the other side never learns them (a slow network can take half a minute).
   peer.onicecandidate = ({ candidate }) => {
-    if (!candidate || sendControl(session.key, { t: 'ice', candidate: candidate.toJSON() })) {
+    if (!candidate || sendControl(session.key, { t: ControlType.Ice, candidate: candidate.toJSON() })) {
       return;
     }
 

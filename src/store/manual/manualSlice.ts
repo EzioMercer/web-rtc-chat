@@ -1,9 +1,9 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import type { ManualState, Role } from './types.ts';
+import { type ManualState, ManualStatus, ManualRole } from './types.ts';
 
 const initialState: ManualState = {
-  role: 'none',
-  status: 'idle',
+  role: ManualRole.None,
+  status: ManualStatus.Idle,
   myCode: '',
   error: null,
   safetyWords: null,
@@ -14,33 +14,33 @@ const manualSlice = createSlice({
   initialState,
   reducers: {
     generationStarted: (state) => {
-      state.status = 'generating';
+      state.status = ManualStatus.Generating;
       state.error = null;
     },
-    codeGenerated: (state, { payload }: PayloadAction<{ role: Role; code: string }>) => {
+    codeGenerated: (state, { payload }: PayloadAction<{ role: ManualRole; code: string }>) => {
       state.role = payload.role;
       state.myCode = payload.code;
-      state.status = 'waiting';
+      state.status = ManualStatus.Waiting;
     },
     connecting: (state) => {
-      state.status = 'connecting';
+      state.status = ManualStatus.Connecting;
       state.error = null;
     },
     connected: (state, { payload }: PayloadAction<string[]>) => {
-      state.status = 'connected';
+      state.status = ManualStatus.Connected;
       state.error = null;
       state.safetyWords = payload;
     },
     disconnected: (state) => {
-      state.status = 'disconnected';
+      state.status = ManualStatus.Disconnected;
     },
     connectionFailed: (state) => {
-      state.status = 'failed';
+      state.status = ManualStatus.Failed;
       state.error = 'No network path found yet. Still trying; if nothing happens, start over.';
     },
     // A step failed (e.g. a wrong code was pasted): show why and go back to the last stable status.
     stepFailed: (state, { payload }: PayloadAction<string>) => {
-      state.status = state.role === 'none' ? 'idle' : 'waiting';
+      state.status = state.role === ManualRole.None ? ManualStatus.Idle : ManualStatus.Waiting;
       state.error = payload;
     },
     manualReset: () => initialState,

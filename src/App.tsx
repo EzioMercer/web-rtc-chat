@@ -5,6 +5,7 @@ import { UnlockScreen } from './features/setup/UnlockScreen/UnlockScreen.tsx';
 import { initApp } from './store/thunks/app/initApp.ts';
 import { useAppDispatch } from './store/useAppDispatch.ts';
 import { useAppSelector } from './store/useAppSelector.ts';
+import { AppPhase } from './store/app/types.ts';
 
 let started = false;
 
@@ -21,11 +22,11 @@ export const App = () => {
   }, [dispatch]);
 
   switch (phase) {
-    case 'setup':
+    case AppPhase.Setup:
       return <SetupScreen />;
-    case 'locked':
+    case AppPhase.Locked:
       return <UnlockScreen />;
-    case 'ready':
+    case AppPhase.Ready:
       return <Messenger />;
     default:
       return null;

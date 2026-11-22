@@ -1,4 +1,15 @@
-export type CallStatus = 'idle' | 'outgoing' | 'incoming' | 'active';
+export enum CallStatus {
+  Idle,
+  Outgoing,
+  Incoming,
+  Active,
+}
+
+export enum EchoPromptState {
+  None,
+  Open,
+  Done,
+}
 
 export type CallState = {
   // Conversation the call belongs to (only one call at a time).
@@ -19,7 +30,7 @@ export type CallState = {
   echoGuard: boolean;
   // The question "turn on echo guard?" after they told us they hear an echo: not asked yet, showing, or asked (it
   // is asked once per call).
-  echoPrompt: 'none' | 'open' | 'done';
+  echoPrompt: EchoPromptState;
   // Bumped whenever the remote MediaStream (kept outside the store) gets new tracks.
   remoteStreamVersion: number;
 };

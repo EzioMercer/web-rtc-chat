@@ -3,15 +3,19 @@ import { MIN_NOTE_MS, RELAY_STOP_MARGIN, VIDEO_NOTE_MAX_MS } from '../../core/me
 import { recordErrorText } from '../../core/media/recordErrorText.ts';
 import { startRecorder, type Recorder } from '../../core/media/startRecorder.ts';
 import { addMessage } from '../../store/chat/chatSlice.ts';
-import type { MediaNote } from '../../store/chat/types.ts';
+import { MessageAuthor, NoteType } from '../../store/chat/types.ts';
 import { sendNote } from '../../store/thunks/chat/sendNote.ts';
 import { useAppDispatch } from '../../store/useAppDispatch.ts';
 import { overRelayLimit } from '../../core/webrtc/overRelayLimit.ts';
 import { sessions } from '../../core/webrtc/state.ts';
+import { RecordPhase } from './RecordPhase.ts';
 
-// starting: waiting for the microphone/camera. recording: while the button is held. locked: slid up, so it goes on
-// without holding, until Send or Cancel.
-export type RecordPhase = 'idle' | 'starting' | 'recording' | 'locked';
+// The press on the button: the one that started recording, or (when locked) a new one that sends.
+enum Press {
+  None,
+  Hold,
+  Send,
+}
 
 // A press shorter than this is a tap (it switches between voice and video); holding longer starts recording.
 const HOLD_MS = 250;
@@ -31,8 +35,7 @@ type Live = {
   holdTimer: number;
   maxTimer: number;
   hintTimer: number;
-  // The press on the button: the one that started recording, or (when locked) a new one that sends.
-  press: 'none' | 'hold' | 'send';
+  press: Press;
   startX: number;
   startY: number;
 };
@@ -42,19 +45,19 @@ type Live = {
 // Works the same with a mouse; Escape cancels.
 export const useRecording = (convKey: string) => {
   const dispatch = useAppDispatch();
-  const [mode, setMode] = useState<MediaNote['type']>('voice');
-  const [phase, setPhaseState] = useState<RecordPhase>('idle');
+  const [mode, setMode] = useState(NoteType.Voice);
+  const [phase, setPhaseState] = useState<RecordPhase>(RecordPhase.Idle);
   const [recorder, setRecorder] = useState<Recorder | null>(null);
   const [slide, setSlide] = useState({ x: 0, y: 0 });
   const [hint, setHint] = useState<string | null>(null);
   const live = useRef<Live>({
-    phase: 'idle',
+    phase: RecordPhase.Idle,
     recorder: null,
     attempt: 0,
     holdTimer: 0,
     maxTimer: 0,
     hintTimer: 0,
-    press: 'none',
+    press: Press.None,
     startX: 0,
     startY: 0,
   });
@@ -85,7 +88,7 @@ export const useRecording = (convKey: string) => {
     state.recorder = null;
     setRecorder(null);
     setSlide({ x: 0, y: 0 });
-    setPhase('idle');
+    setPhase(RecordPhase.Idle);
 
     return running;
   };
@@ -107,19 +110,19 @@ export const useRecording = (convKey: string) => {
       return;
     }
 
-    await dispatch(sendNote(convKey, running.video ? 'video' : 'voice', recording));
+    await dispatch(sendNote(convKey, running.video ? NoteType.Video : NoteType.Voice, recording));
   };
 
   const begin = async () => {
     const state = live.current;
-    const video = mode === 'video';
+    const video = mode === NoteType.Video;
 
     state.holdTimer = 0;
     state.attempt += 1;
 
     const attempt = state.attempt;
 
-    setPhase('starting');
+    setPhase(RecordPhase.Starting);
     showHint(null);
 
     // Through the TURN relay, stop (and send) just before the size limit.
@@ -141,7 +144,7 @@ export const useRecording = (convKey: string) => {
 
       state.recorder = started;
       setRecorder(started);
-      setPhase(state.press === 'hold' ? 'recording' : 'locked');
+      setPhase(state.press === Press.Hold ? RecordPhase.Recording : RecordPhase.Locked);
 
       if (video) {
         state.maxTimer = window.setTimeout(() => void send(), VIDEO_NOTE_MAX_MS);
@@ -149,13 +152,13 @@ export const useRecording = (convKey: string) => {
     } catch (err) {
       if (attempt === state.attempt) {
         reset();
-        dispatch(addMessage({ key: convKey, from: 'system', text: recordErrorText(err, video) }));
+        dispatch(addMessage({ key: convKey, from: MessageAuthor.System, text: recordErrorText(err, video) }));
       }
     }
   };
 
   const toggleMode = () => {
-    const next = mode === 'voice' ? 'video' : 'voice';
+    const next = mode === NoteType.Voice ? NoteType.Video : NoteType.Voice;
 
     setMode(next);
     showHint(`Hold to record a ${next} message`);
@@ -168,19 +171,19 @@ export const useRecording = (convKey: string) => {
       return;
     }
 
-    if (state.phase === 'locked') {
-      state.press = 'send';
+    if (state.phase === RecordPhase.Locked) {
+      state.press = Press.Send;
 
       return;
     }
 
-    if (state.phase !== 'idle') {
+    if (state.phase !== RecordPhase.Idle) {
       return;
     }
 
     // Keep getting the moves and the release even when the finger leaves the button.
     e.currentTarget.setPointerCapture(e.pointerId);
-    state.press = 'hold';
+    state.press = Press.Hold;
     state.startX = e.clientX;
     state.startY = e.clientY;
     state.holdTimer = window.setTimeout(() => void begin(), HOLD_MS);
@@ -189,7 +192,7 @@ export const useRecording = (convKey: string) => {
   const onPointerMove = (e: PointerEvent<HTMLButtonElement>) => {
     const state = live.current;
 
-    if (state.press !== 'hold' || (state.phase !== 'recording' && state.phase !== 'starting')) {
+    if (state.press !== Press.Hold || (state.phase !== RecordPhase.Recording && state.phase !== RecordPhase.Starting)) {
       return;
     }
 
@@ -197,10 +200,10 @@ export const useRecording = (convKey: string) => {
     const y = Math.max(0, state.startY - e.clientY);
 
     if (x > CANCEL_PX) {
-      state.press = 'none';
+      state.press = Press.None;
       cancel();
-    } else if (y > LOCK_PX && state.phase === 'recording') {
-      setPhase('locked');
+    } else if (y > LOCK_PX && state.phase === RecordPhase.Recording) {
+      setPhase(RecordPhase.Locked);
       setSlide({ x: 0, y: 0 });
     } else {
       setSlide(x > y ? { x, y: 0 } : { x: 0, y });
@@ -211,17 +214,17 @@ export const useRecording = (convKey: string) => {
     const state = live.current;
     const press = state.press;
 
-    state.press = 'none';
+    state.press = Press.None;
 
     if (state.holdTimer) {
       window.clearTimeout(state.holdTimer);
       state.holdTimer = 0;
       toggleMode();
-    } else if (press === 'send' && state.phase === 'locked') {
+    } else if (press === Press.Send && state.phase === RecordPhase.Locked) {
       void send();
-    } else if (press === 'hold' && state.phase === 'recording') {
+    } else if (press === Press.Hold && state.phase === RecordPhase.Recording) {
       void send();
-    } else if (press === 'hold' && state.phase === 'starting') {
+    } else if (press === Press.Hold && state.phase === RecordPhase.Starting) {
       cancel();
     }
   };
@@ -230,11 +233,11 @@ export const useRecording = (convKey: string) => {
   const onPointerCancel = () => {
     const state = live.current;
 
-    state.press = 'none';
+    state.press = Press.None;
     window.clearTimeout(state.holdTimer);
     state.holdTimer = 0;
 
-    if (state.phase === 'recording' || state.phase === 'starting') {
+    if (state.phase === RecordPhase.Recording || state.phase === RecordPhase.Starting) {
       cancel();
     }
   };
@@ -245,9 +248,9 @@ export const useRecording = (convKey: string) => {
       return;
     }
 
-    if (live.current.phase === 'locked') {
+    if (live.current.phase === RecordPhase.Locked) {
       void send();
-    } else if (live.current.phase === 'idle') {
+    } else if (live.current.phase === RecordPhase.Idle) {
       toggleMode();
     }
   };
@@ -255,7 +258,7 @@ export const useRecording = (convKey: string) => {
   const cancelNow = useEffectEvent(cancel);
 
   useEffect(() => {
-    if (phase === 'idle') {
+    if (phase === RecordPhase.Idle) {
       return undefined;
     }
 

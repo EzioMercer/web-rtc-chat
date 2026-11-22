@@ -4,6 +4,8 @@ import { sendControl } from '../../../core/webrtc/sendControl.ts';
 import { messageQueued } from '../../chat/chatSlice.ts';
 import type { AppThunk } from '../../store.ts';
 import { connectContact } from '../contact/connectContact.ts';
+import { ManualStatus } from '../../manual/types.ts';
+import { ControlType } from '../../../core/webrtc/types.ts';
 
 // Adds `text` to the conversation and sends it over the direct connection. It stays "pending" until the other
 // side confirms it; without a connection it goes out as soon as one opens (see sendPending). Returns whether it
@@ -13,13 +15,13 @@ export const sendMessage = (key: string, text: string): AppThunk<boolean> => (di
   const id = nanoid();
 
   // The manual connection can't come back, so it only sends while connected.
-  if (!trimmed || (key === MANUAL_KEY && getState().manual.status !== 'connected')) {
+  if (!trimmed || (key === MANUAL_KEY && getState().manual.status !== ManualStatus.Connected)) {
     return false;
   }
 
   dispatch(messageQueued({ key, id, text: trimmed }));
 
-  if (!sendControl(key, { t: 'text', text: trimmed, id }) && key !== MANUAL_KEY) {
+  if (!sendControl(key, { t: ControlType.Text, text: trimmed, id }) && key !== MANUAL_KEY) {
     void dispatch(connectContact(key));
   }
 

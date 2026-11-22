@@ -123,11 +123,13 @@ const connect = async (a, b) => {
 // The app's modules, from inside the page (the dev server serves each source file at its path).
 const app = (page, fn, arg) => page.evaluate(fn, arg);
 
-const setRoute = (page, route) => app(page, async (r) => {
+// `route`: 'Direct' or 'Relay' (a SessionRoute name).
+const setRoute = (page, route) => app(page, async (name) => {
   const { sessions } = await import('/web-rtc-chat/src/core/webrtc/state.ts');
+  const { SessionRoute } = await import('/web-rtc-chat/src/store/sessions/types.ts');
 
   sessions.forEach((session) => {
-    session.route = r;
+    session.route = SessionRoute[name];
   });
 }, route);
 
@@ -183,14 +185,14 @@ const testRelayLimit = async (a, b) => {
 
   writeFileSync(big, Buffer.alloc(11 * 1024 * 1024, 1));
   writeFileSync(small, Buffer.alloc(1024 * 1024, 2));
-  await setRoute(a, 'relay');
-  await setRoute(b, 'relay');
+  await setRoute(a, 'Relay');
+  await setRoute(b, 'Relay');
   await a.locator('input[type=file]').setInputFiles([big, small]);
   await b.getByText('small.bin').waitFor({ timeout: 15000 });
   check(await a.getByText(/"big.bin" .* not sent: through the TURN relay/).count() === 1, 'big file refused on TURN');
   check(await b.getByText('big.bin').count() === 0, 'small file still sent on TURN');
-  await setRoute(a, 'direct');
-  await setRoute(b, 'direct');
+  await setRoute(a, 'Direct');
+  await setRoute(b, 'Direct');
 };
 
 const echoState = page => app(page, async () => {

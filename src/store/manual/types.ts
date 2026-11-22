@@ -1,11 +1,23 @@
-export type Role = 'none' | 'host' | 'client';
+export enum ManualRole {
+  None,
+  Host,
+  Client,
+}
 
-export type Status = 'idle' | 'generating' | 'waiting' | 'connecting' | 'connected' | 'disconnected' | 'failed';
+export enum ManualStatus {
+  Idle,
+  Generating,
+  Waiting,
+  Connecting,
+  Connected,
+  Disconnected,
+  Failed,
+}
 
 // The manual connection: codes copied by hand, without contacts or relays.
 export type ManualState = {
-  role: Role;
-  status: Status;
+  role: ManualRole;
+  status: ManualStatus;
   myCode: string;
   error: string | null;
   // Safety words computed from both sides' certificate fingerprints, once connected.

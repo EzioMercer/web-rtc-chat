@@ -3,11 +3,13 @@ import { useNewVersion } from '../useNewVersion.ts';
 import { useAppSelector } from '../../../store/useAppSelector.ts';
 import { Button } from '../../../ui/Button/Button.tsx';
 import styles from './UpdateNotice.module.css';
+import { ProtectionMode } from '../../../core/identity/types.ts';
+import { ButtonVariant } from '../../../ui/Button/ButtonVariant.ts';
 
 // Says that a new version is out. Reloading is optional: it clears this tab's chats (and a temporary identity).
 export const UpdateNotice = () => {
   const latest = useNewVersion();
-  const temporary = useAppSelector(state => state.app.mode === 'temporary');
+  const temporary = useAppSelector(state => state.app.mode === ProtectionMode.Temporary);
   const [dismissed, setDismissed] = useState<string | null>(null);
 
   if (!latest || latest === dismissed) {
@@ -23,7 +25,7 @@ export const UpdateNotice = () => {
         {` Reloading clears ${loses}.`}
       </span>
       <div className={styles.actions}>
-        <Button variant="ghost" onClick={() => setDismissed(latest)}>Later</Button>
+        <Button variant={ButtonVariant.Ghost} onClick={() => setDismissed(latest)}>Later</Button>
         <Button onClick={() => window.location.reload()}>Reload</Button>
       </div>
     </div>

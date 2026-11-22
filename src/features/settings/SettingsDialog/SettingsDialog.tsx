@@ -6,7 +6,7 @@ import { selectConversation } from '../../../store/thunks/chat/selectConversatio
 import { useAppDispatch } from '../../../store/useAppDispatch.ts';
 import { useAppSelector } from '../../../store/useAppSelector.ts';
 import { echoGuardChosen } from '../../../store/settings/settingsSlice.ts';
-import type { EchoGuardSetting } from '../../../store/settings/types.ts';
+import { EchoGuardSetting } from '../../../store/settings/types.ts';
 import { MANUAL_KEY } from '../../../core/webrtc/config.ts';
 import { Button } from '../../../ui/Button/Button.tsx';
 import { Dialog } from '../../../ui/Dialog/Dialog.tsx';
@@ -16,15 +16,17 @@ import { SegmentedControl } from '../../../ui/SegmentedControl/SegmentedControl.
 import { downloadBackup } from './downloadBackup.ts';
 import { MODE_LABELS } from './MODE_LABELS.ts';
 import styles from './SettingsDialog.module.css';
+import { ProtectionMode } from '../../../core/identity/types.ts';
+import { ButtonVariant } from '../../../ui/Button/ButtonVariant.ts';
 
 type Props = {
   onClose: () => void;
 };
 
 const ECHO_GUARD_OPTIONS: { value: EchoGuardSetting; label: string }[] = [
-  { value: 'auto', label: 'Auto' },
-  { value: 'on', label: 'On' },
-  { value: 'off', label: 'Off' },
+  { value: EchoGuardSetting.Auto, label: 'Auto' },
+  { value: EchoGuardSetting.On, label: 'On' },
+  { value: EchoGuardSetting.Off, label: 'Off' },
 ];
 
 export const SettingsDialog = ({ onClose }: Props) => {
@@ -34,7 +36,7 @@ export const SettingsDialog = ({ onClose }: Props) => {
   const [changing, setChanging] = useState(false);
   const [legal, setLegal] = useState(false);
   const [relays, setRelays] = useState(relayStatus);
-  const canBackup = mode === 'passkey' || mode === 'passphrase';
+  const canBackup = mode === ProtectionMode.Passkey || mode === ProtectionMode.Passphrase;
 
   useEffect(() => {
     const timer = window.setInterval(() => setRelays(relayStatus()), 2000);
@@ -75,9 +77,9 @@ export const SettingsDialog = ({ onClose }: Props) => {
       <section className={styles.section}>
         <h3>Protection</h3>
         <p>{mode ? MODE_LABELS[mode] : ''}</p>
-        <Button variant="secondary" onClick={() => setChanging(true)}>Change protection</Button>
-        {(mode === 'passkey' || mode === 'passphrase') && (
-          <Button variant="secondary" onClick={() => window.location.reload()}>Lock now</Button>
+        <Button variant={ButtonVariant.Secondary} onClick={() => setChanging(true)}>Change protection</Button>
+        {(mode === ProtectionMode.Passkey || mode === ProtectionMode.Passphrase) && (
+          <Button variant={ButtonVariant.Secondary} onClick={() => window.location.reload()}>Lock now</Button>
         )}
       </section>
 
@@ -89,7 +91,9 @@ export const SettingsDialog = ({ onClose }: Props) => {
             + 'Messages are never included.'
             : 'Backups need passkey or passphrase protection.'}
         </p>
-        <Button variant="secondary" disabled={!canBackup} onClick={() => void downloadBackup()}>Download backup</Button>
+        <Button variant={ButtonVariant.Secondary} disabled={!canBackup} onClick={() => void downloadBackup()}>
+          Download backup
+        </Button>
       </section>
 
       <section className={styles.section}>
@@ -121,7 +125,7 @@ export const SettingsDialog = ({ onClose }: Props) => {
         <h3>Connect manually</h3>
         <p>Copy codes by hand, without contacts or relays. Nothing is saved.</p>
         <Button
-          variant="secondary"
+          variant={ButtonVariant.Secondary}
           onClick={() => {
             dispatch(selectConversation(MANUAL_KEY));
             onClose();
@@ -134,12 +138,12 @@ export const SettingsDialog = ({ onClose }: Props) => {
       <section className={styles.section}>
         <h3>Legal</h3>
         <p>Disclaimer, privacy notice and donations.</p>
-        <Button variant="secondary" onClick={() => setLegal(true)}>Legal</Button>
+        <Button variant={ButtonVariant.Secondary} onClick={() => setLegal(true)}>Legal</Button>
       </section>
 
       <section className={styles.section}>
         <h3>This device</h3>
-        <Button variant="danger" onClick={reset}>Delete identity and contacts</Button>
+        <Button variant={ButtonVariant.Danger} onClick={reset}>Delete identity and contacts</Button>
       </section>
     </Dialog>
   );

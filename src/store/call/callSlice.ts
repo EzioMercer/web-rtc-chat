@@ -1,9 +1,9 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import type { CallState } from './types.ts';
+import { type CallState, CallStatus, EchoPromptState } from './types.ts';
 
 const initialState: CallState = {
   key: null,
-  status: 'idle',
+  status: CallStatus.Idle,
   video: false,
   ownVideo: false,
   mic: true,
@@ -14,7 +14,7 @@ const initialState: CallState = {
   remoteScreen: false,
   remoteStreamVersion: 0,
   echoGuard: false,
-  echoPrompt: 'none',
+  echoPrompt: EchoPromptState.None,
 };
 
 const callSlice = createSlice({
@@ -23,7 +23,12 @@ const callSlice = createSlice({
   reducers: {
     callStarted: (
       state,
-      { payload }: PayloadAction<{ key: string; status: 'outgoing' | 'incoming'; video: boolean; echoGuard: boolean }>,
+      { payload }: PayloadAction<{
+        key: string;
+        status: CallStatus.Outgoing | CallStatus.Incoming;
+        video: boolean;
+        echoGuard: boolean;
+      }>,
     ) => ({
       ...initialState,
       remoteStreamVersion: state.remoteStreamVersion,
@@ -34,7 +39,7 @@ const callSlice = createSlice({
       echoGuard: payload.echoGuard,
     }),
     callActive: (state) => {
-      state.status = 'active';
+      state.status = CallStatus.Active;
     },
     answeredWithAudioOnly: (state) => {
       state.ownVideo = false;
@@ -60,12 +65,12 @@ const callSlice = createSlice({
     },
     // They hear an echo of themselves: ask once per call, and only while our echo guard is off.
     echoReported: (state) => {
-      if (state.status === 'active' && !state.echoGuard && state.echoPrompt === 'none') {
-        state.echoPrompt = 'open';
+      if (state.status === CallStatus.Active && !state.echoGuard && state.echoPrompt === EchoPromptState.None) {
+        state.echoPrompt = EchoPromptState.Open;
       }
     },
     echoPromptAnswered: (state, { payload }: PayloadAction<boolean>) => {
-      state.echoPrompt = 'done';
+      state.echoPrompt = EchoPromptState.Done;
       state.echoGuard = state.echoGuard || payload;
     },
     remoteStreamChanged: (state) => {

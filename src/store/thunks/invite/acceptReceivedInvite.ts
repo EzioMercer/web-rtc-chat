@@ -7,6 +7,7 @@ import type { AppThunk } from '../../store.ts';
 import { selectConversation } from '../chat/selectConversation.ts';
 import { refreshMailboxes } from '../signal/refreshMailboxes.ts';
 import { saveContact } from './saveContact.ts';
+import { SignalType } from '../../../core/signaling/types.ts';
 
 // We used someone's invite: save them as a contact and send them, signed, the secret for our mailboxes.
 // They connect to us once they accept.
@@ -31,7 +32,7 @@ export const acceptReceivedInvite = (name: string, replaceId: string | null): Ap
   try {
     const mailbox = await deriveInviteMailbox(invite.secret);
 
-    await publishToMailbox(mailbox.pk, await sealEnvelope(invite.identity, { t: 'invite-accept', secret }));
+    await publishToMailbox(mailbox.pk, await sealEnvelope(invite.identity, { t: SignalType.InviteAccept, secret }));
   } catch (err) {
     dispatch(inviteError(err instanceof Error ? err.message : 'Could not send the request.'));
 

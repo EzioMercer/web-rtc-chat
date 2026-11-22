@@ -1,6 +1,6 @@
 import { isPolite } from '../../../core/signaling/isPolite.ts';
 import { sendSignal } from '../../../core/signaling/sendSignal.ts';
-import type { SignalMessage } from '../../../core/signaling/types.ts';
+import { type SignalMessage, SignalType } from '../../../core/signaling/types.ts';
 import { closeSession } from '../../../core/webrtc/closeSession.ts';
 import { createSession } from '../../../core/webrtc/createSession.ts';
 import { sessions } from '../../../core/webrtc/state.ts';
@@ -13,8 +13,9 @@ import { sessionDetail, sessionLogged, sessionStatusChanged } from '../../sessio
 import type { AppThunk } from '../../store.ts';
 import { endCall } from '../call/endCall.ts';
 import { armTimeout } from './armTimeout.ts';
+import { SessionStatus } from '../../sessions/types.ts';
 
-type Offer = Extract<SignalMessage, { t: 'offer' }>;
+type Offer = Extract<SignalMessage, { t: SignalType.Offer }>;
 
 // A contact wants to connect: answer it.
 export const receiveOffer = (id: string, offer: Offer): AppThunk<Promise<void>> => async (dispatch, getState) => {
@@ -35,7 +36,9 @@ export const receiveOffer = (id: string, offer: Offer): AppThunk<Promise<void>> 
       dispatch(sessionLogged({ key: id, text: 'Both sides asked at once; keeping ours and sending it again.' }));
 
       if (existing.sentOffer) {
-        await sendSignal(contact, { t: 'offer', sid: existing.sid, sdp: existing.sentOffer }).catch(() => undefined);
+        const offer = { t: SignalType.Offer as const, sid: existing.sid, sdp: existing.sentOffer };
+
+        await sendSignal(contact, offer).catch(() => undefined);
       }
 
       return;
@@ -54,7 +57,7 @@ export const receiveOffer = (id: string, offer: Offer): AppThunk<Promise<void>> 
   const polite = isPolite(contact.identity);
   const session = createSession({ key: id, sid: offer.sid, outgoing: false, polite }, dispatch);
 
-  dispatch(sessionStatusChanged({ key: id, status: 'connecting' }));
+  dispatch(sessionStatusChanged({ key: id, status: SessionStatus.Connecting }));
   dispatch(sessionDetail({ key: id, detail: 'They are asking to connect. Answering…' }));
   dispatch(sessionLogged({ key: id, text: `Their addresses: ${describeCandidates(offer.sdp)}` }));
 
@@ -71,12 +74,12 @@ export const receiveOffer = (id: string, offer: Offer): AppThunk<Promise<void>> 
     const sdp = session.peer.localDescription.sdp;
 
     session.signaled = true;
-    await sendSignal(contact, { t: 'answer', sid: offer.sid, sdp });
+    await sendSignal(contact, { t: SignalType.Answer, sid: offer.sid, sdp });
     dispatch(sessionDetail({ key: id, detail: 'Answered. Opening the direct connection…' }));
   } catch (err) {
     console.error('Could not answer contact', err);
     closeSession(session);
-    dispatch(sessionStatusChanged({ key: id, status: 'offline' }));
+    dispatch(sessionStatusChanged({ key: id, status: SessionStatus.Offline }));
 
     return;
   }

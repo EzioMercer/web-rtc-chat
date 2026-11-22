@@ -2,6 +2,7 @@ import { sendControl } from '../../../core/webrtc/sendControl.ts';
 import { peerTextReceived } from '../../chat/chatSlice.ts';
 import type { AppThunk } from '../../store.ts';
 import { countUnread } from './countUnread.ts';
+import { ControlType } from '../../../core/webrtc/types.ts';
 
 // Message ids seen per conversation, so a message sent again (see sendPending) shows once.
 const seen = new Map<string, Set<string>>();
@@ -13,7 +14,7 @@ const MAX_WAITED_MS = 7 * 24 * 3600 * 1000;
 export const receivePeerText = (key: string, text: string, id: unknown, waited: unknown): AppThunk => (dispatch) => {
   if (typeof id === 'string') {
     // Confirm it arrived, even if it's a copy: the first confirmation may have been lost.
-    sendControl(key, { t: 'ack', id });
+    sendControl(key, { t: ControlType.Ack, id });
 
     const ids = seen.get(key) ?? new Set<string>();
 

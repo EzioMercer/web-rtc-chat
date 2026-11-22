@@ -6,6 +6,7 @@ import { overRelayLimit, RELAY_LIMIT_TEXT } from './overRelayLimit.ts';
 import { parseFileMeta } from './parseFileMeta.ts';
 import { sessions } from './state.ts';
 import type { FileMeta } from './types.ts';
+import { MessageAuthor, FileStatus } from '../../store/chat/types.ts';
 
 // Progress is reported to the store at most this often (as a fraction of the file).
 const PROGRESS_STEP = 0.01;
@@ -54,7 +55,9 @@ export const receiveFile = (key: string, channel: RTCDataChannel, dispatch: AppD
         return;
       }
 
-      dispatch(fileAdded({ key, file: { ...meta, from: 'peer', url: null, transferred: 0, status: 'transferring' } }));
+      const file = { ...meta, from: MessageAuthor.Peer, url: null, transferred: 0, status: FileStatus.Transferring };
+
+      dispatch(fileAdded({ key, file }));
       dispatch(countUnread(key));
 
       if (refuseIfTooBig(meta)) {

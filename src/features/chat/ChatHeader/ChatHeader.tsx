@@ -5,6 +5,7 @@ import { useAppDispatch } from '../../../store/useAppDispatch.ts';
 import { useAppSelector } from '../../../store/useAppSelector.ts';
 import { IconButton } from '../../../ui/IconButton/IconButton.tsx';
 import styles from './ChatHeader.module.css';
+import { CallStatus } from '../../../store/call/types.ts';
 
 type Props = {
   convKey: string;
@@ -17,7 +18,7 @@ type Props = {
 
 export const ChatHeader = ({ convKey, title, subtitle, connected, actions }: Props) => {
   const dispatch = useAppDispatch();
-  const idle = useAppSelector(state => state.call.status === 'idle');
+  const idle = useAppSelector(state => state.call.status === CallStatus.Idle);
   const disabled = !connected || !idle;
 
   return (

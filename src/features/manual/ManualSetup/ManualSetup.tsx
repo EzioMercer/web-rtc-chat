@@ -10,11 +10,13 @@ import { CodeField } from '../../../ui/CodeField/CodeField.tsx';
 import { Button } from '../../../ui/Button/Button.tsx';
 import { CopyButton } from '../../../ui/CopyButton/CopyButton.tsx';
 import styles from './ManualSetup.module.css';
+import { ManualRole } from '../../../store/manual/types.ts';
+import { ButtonVariant } from '../../../ui/Button/ButtonVariant.ts';
 
-const PLACEHOLDERS = {
-  none: 'Leave empty to host, or paste the code you received…',
-  host: 'Paste the peer\'s reply code here…',
-  client: '',
+const PLACEHOLDERS: Record<ManualRole, string> = {
+  [ManualRole.None]: 'Leave empty to host, or paste the code you received…',
+  [ManualRole.Host]: 'Paste the peer\'s reply code here…',
+  [ManualRole.Client]: '',
 };
 
 // Connecting without contacts or relays: the two sides copy codes to each other by hand.
@@ -24,7 +26,7 @@ export const ManualSetup = () => {
   const [peerCode, setPeerCode] = useState('');
   const action = getAction(connection, peerCode.trim() !== '');
   const { role, myCode, error } = connection;
-  const started = role !== 'none';
+  const started = role !== ManualRole.None;
 
   return (
     <section className={styles.card}>
@@ -54,7 +56,7 @@ export const ManualSetup = () => {
         label="Peer's code"
         value={peerCode}
         placeholder={PLACEHOLDERS[role]}
-        readOnly={role === 'client'}
+        readOnly={role === ManualRole.Client}
         onChange={setPeerCode}
       />
 
@@ -77,7 +79,7 @@ export const ManualSetup = () => {
 
       <p className={cx(styles.hint, error && styles.error)}>{error ?? getHint(connection)}</p>
 
-      {started && <Button variant="ghost" onClick={() => dispatch(startOver())}>Start over</Button>}
+      {started && <Button variant={ButtonVariant.Ghost} onClick={() => dispatch(startOver())}>Start over</Button>}
     </section>
   );
 };

@@ -10,6 +10,8 @@ import { IconButton } from '../../../ui/IconButton/IconButton.tsx';
 import { ManualSetup } from '../ManualSetup/ManualSetup.tsx';
 import { SafetyPanel } from '../../contacts/SafetyPanel/SafetyPanel.tsx';
 import styles from './ManualPane.module.css';
+import { ManualStatus } from '../../../store/manual/types.ts';
+import { IconButtonVariant } from '../../../ui/IconButton/IconButtonVariant.ts';
 
 // The manual connection: code exchange first, then a normal conversation (not saved as a contact).
 export const ManualPane = () => {
@@ -18,7 +20,7 @@ export const ManualPane = () => {
   const [showSafety, setShowSafety] = useState(true);
   const { status, safetyWords } = manual;
 
-  if (status !== 'connected' && status !== 'disconnected') {
+  if (status !== ManualStatus.Connected && status !== ManualStatus.Disconnected) {
     return (
       <section className={styles.pane}>
         <ChatHeader convKey={MANUAL_KEY} title="Connect manually" subtitle={getStatusLabel(manual)} connected={false} />
@@ -32,13 +34,13 @@ export const ManualPane = () => {
       convKey={MANUAL_KEY}
       title="Manual connection"
       subtitle={getStatusLabel(manual)}
-      connected={status === 'connected'}
+      connected={status === ManualStatus.Connected}
       actions={(
         <>
           <IconButton
             icon="shield"
             label="Safety code"
-            variant={showSafety ? 'neutral' : 'plain'}
+            variant={showSafety ? IconButtonVariant.Neutral : IconButtonVariant.Plain}
             onClick={() => setShowSafety(!showSafety)}
           />
           <IconButton icon="close" label="Close connection" onClick={() => dispatch(startOver())} />
@@ -48,7 +50,7 @@ export const ManualPane = () => {
   );
 
   return (
-    <Conversation convKey={MANUAL_KEY} connected={status === 'connected'} header={header}>
+    <Conversation convKey={MANUAL_KEY} connected={status === ManualStatus.Connected} header={header}>
       {showSafety && <SafetyPanel words={safetyWords} />}
     </Conversation>
   );

@@ -1,18 +1,18 @@
-import type { ManualState } from '../../store/manual/types.ts';
+import { type ManualState, ManualStatus, ManualRole } from '../../store/manual/types.ts';
 
 export const getStatusLabel = ({ role, status }: ManualState): string => {
   switch (status) {
-    case 'generating':
+    case ManualStatus.Generating:
       return 'Generating code…';
-    case 'waiting':
-      return role === 'host' ? 'Waiting for reply' : 'Waiting for host';
-    case 'connecting':
+    case ManualStatus.Waiting:
+      return role === ManualRole.Host ? 'Waiting for reply' : 'Waiting for host';
+    case ManualStatus.Connecting:
       return 'Connecting…';
-    case 'connected':
+    case ManualStatus.Connected:
       return 'Connected';
-    case 'disconnected':
+    case ManualStatus.Disconnected:
       return 'Disconnected';
-    case 'failed':
+    case ManualStatus.Failed:
       return 'Connection failed';
     default:
       return 'Not connected';

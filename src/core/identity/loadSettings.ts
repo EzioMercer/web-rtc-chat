@@ -1,12 +1,27 @@
 import type { Sealed } from '../crypto/types.ts';
 import { unsealJson } from '../crypto/unsealJson.ts';
 import { DEFAULT_SETTINGS } from '../../store/settings/settingsSlice.ts';
-import type { SettingsState } from '../../store/settings/types.ts';
+import { EchoGuardSetting, type SettingsState } from '../../store/settings/types.ts';
 import { kv } from '../storage/kv.ts';
 import { STORAGE_KEYS } from './storageKeys.ts';
 import { vault } from './vault.ts';
 
-const ECHO_GUARD = ['auto', 'on', 'off'];
+// Versions before November 2026 saved words.
+const ECHO_GUARD_WORDS: Record<string, EchoGuardSetting> = {
+  auto: EchoGuardSetting.Auto,
+  on: EchoGuardSetting.On,
+  off: EchoGuardSetting.Off,
+};
+
+const toEchoGuard = (value: unknown): EchoGuardSetting => {
+  if (typeof value === 'string') {
+    return ECHO_GUARD_WORDS[value] ?? DEFAULT_SETTINGS.echoGuard;
+  }
+
+  return Object.values(EchoGuardSetting).includes(value as EchoGuardSetting)
+    ? value as EchoGuardSetting
+    : DEFAULT_SETTINGS.echoGuard;
+};
 
 // This device's saved settings, once the identity is unlocked. Anything missing, unreadable or unknown (e.g. after
 // restoring a backup, which was made with another key) falls back to the default.
@@ -21,7 +36,7 @@ export const loadSettings = async (): Promise<SettingsState> => {
     const saved = await unsealJson<Partial<SettingsState>>(vault.vaultKey, sealed);
 
     return {
-      echoGuard: ECHO_GUARD.includes(String(saved.echoGuard)) ? saved.echoGuard! : DEFAULT_SETTINGS.echoGuard,
+      echoGuard: toEchoGuard(saved.echoGuard),
     };
   } catch {
     return DEFAULT_SETTINGS;

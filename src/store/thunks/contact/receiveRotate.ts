@@ -1,6 +1,6 @@
 import { isSecret } from '../../../core/signaling/isSecret.ts';
 import { sendControl } from '../../../core/webrtc/sendControl.ts';
-import type { RotateSignal } from '../../../core/webrtc/types.ts';
+import { type RotateSignal, ControlType } from '../../../core/webrtc/types.ts';
 import { secretAdopted, secretConfirmed } from '../../contacts/contactsSlice.ts';
 import type { AppThunk } from '../../store.ts';
 
@@ -11,15 +11,15 @@ export const receiveRotate = (id: string, signal: RotateSignal): AppThunk => (di
   }
 
   switch (signal.t) {
-    case 'rotate':
+    case ControlType.Rotate:
       dispatch(secretAdopted({ id, secret: signal.secret }));
-      sendControl(id, { t: 'rotate-ack', secret: signal.secret });
+      sendControl(id, { t: ControlType.RotateAck, secret: signal.secret });
       break;
-    case 'rotate-ack':
+    case ControlType.RotateAck:
       dispatch(secretConfirmed({ id, secret: signal.secret }));
-      sendControl(id, { t: 'rotate-done', secret: signal.secret });
+      sendControl(id, { t: ControlType.RotateDone, secret: signal.secret });
       break;
-    case 'rotate-done':
+    case ControlType.RotateDone:
       dispatch(secretConfirmed({ id, secret: signal.secret }));
       break;
   }

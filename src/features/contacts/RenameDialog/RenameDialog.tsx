@@ -5,6 +5,7 @@ import { useAppDispatch } from '../../../store/useAppDispatch.ts';
 import { Button } from '../../../ui/Button/Button.tsx';
 import { Dialog } from '../../../ui/Dialog/Dialog.tsx';
 import { TextField } from '../../../ui/TextField/TextField.tsx';
+import { ButtonType } from '../../../ui/Button/ButtonType.ts';
 
 type Props = {
   contact: Contact;
@@ -25,7 +26,7 @@ export const RenameDialog = ({ contact, onClose }: Props) => {
     <Dialog title="Rename contact" onClose={onClose}>
       <form onSubmit={submit} style={{ display: 'contents' }}>
         <TextField label="Name" value={name} autoFocus onChange={setName} hint="Only you see this name." />
-        <Button type="submit" disabled={!name.trim()}>Save</Button>
+        <Button type={ButtonType.Submit} disabled={!name.trim()}>Save</Button>
       </form>
     </Dialog>
   );

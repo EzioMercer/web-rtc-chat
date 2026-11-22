@@ -1,8 +1,16 @@
 // idle: never tried. connecting: asking through relays / setting up. connected: direct link is open.
 // offline: no answer, or the link closed.
-export type SessionStatus = 'idle' | 'connecting' | 'connected' | 'offline';
+export enum SessionStatus {
+  Idle,
+  Connecting,
+  Connected,
+  Offline,
+}
 
-export type SessionRoute = 'direct' | 'relay';
+export enum SessionRoute {
+  Direct,
+  Relay,
+}
 
 export type SessionsState = {
   status: Record<string, SessionStatus>;

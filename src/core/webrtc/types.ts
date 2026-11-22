@@ -1,25 +1,50 @@
 import type { MediaNote } from '../../store/chat/types.ts';
+import type { SessionRoute } from '../../store/sessions/types.ts';
+
+// What a control channel message is (its `t`).
+export enum ControlType {
+  Text,
+  Ack,
+  Sdp,
+  Ice,
+  Call,
+  Rotate,
+  RotateAck,
+  RotateDone,
+}
+
+export enum CallAction {
+  Invite,
+  Accept,
+  Decline,
+  End,
+  State,
+  // They hear an echo of their own voice from our side (see useEchoDetector).
+  Echo,
+}
 
 export type CallSignal =
-  | { t: 'call'; action: 'invite'; video: boolean }
-  // `echo`: they hear an echo of their own voice from our side (see useEchoDetector).
-  | { t: 'call'; action: 'accept' | 'decline' | 'end' | 'echo' }
-  // `screen`: they share their screen (older versions don't send it).
-  | { t: 'call'; action: 'state'; mic: boolean; cam: boolean; screen?: boolean };
+  | { t: ControlType.Call; action: CallAction.Invite; video: boolean }
+  | { t: ControlType.Call; action: CallAction.Accept | CallAction.Decline | CallAction.End | CallAction.Echo }
+  // `screen`: they share their screen.
+  | { t: ControlType.Call; action: CallAction.State; mic: boolean; cam: boolean; screen?: boolean };
 
 // Replacing the shared mailbox secret, over the encrypted direct connection (never through relays):
 // rotate (new secret) -> rotate-ack -> rotate-done.
-export type RotateSignal = { t: 'rotate' | 'rotate-ack' | 'rotate-done'; secret: string };
+export type RotateSignal = {
+  t: ControlType.Rotate | ControlType.RotateAck | ControlType.RotateDone;
+  secret: string;
+};
 
 // Everything sent over the control channel, as JSON.
 export type ControlMessage =
   // `id` is answered with "ack", so the sender knows it arrived (older versions send no id).
   // `waited`: how long (ms) it waited on the sender's side before this send (it was written while offline), so
   // the receiver can put it in place without relying on the two devices' clocks agreeing.
-  | { t: 'text'; text: string; id?: string; waited?: number }
-  | { t: 'ack'; id: string }
-  | { t: 'sdp'; description: RTCSessionDescriptionInit }
-  | { t: 'ice'; candidate: RTCIceCandidateInit }
+  | { t: ControlType.Text; text: string; id?: string; waited?: number }
+  | { t: ControlType.Ack; id: string }
+  | { t: ControlType.Sdp; description: RTCSessionDescriptionInit }
+  | { t: ControlType.Ice; candidate: RTCIceCandidateInit }
   | CallSignal
   | RotateSignal;
 
@@ -65,7 +90,7 @@ export type Session = {
   // TURN servers the connection was set up with (see watchPaths).
   iceServers: RTCIceServer[];
   // How the open connection travels (null until it opens), and when we last looked for a new path.
-  route: 'direct' | 'relay' | null;
+  route: SessionRoute | null;
   restartedAt: number;
   // We accepted a call: our camera/microphone go into the answer to the caller's next offer (see handleDescription),
   // so only one side ever offers and the two offers can't collide.

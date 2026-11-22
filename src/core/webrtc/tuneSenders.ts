@@ -1,6 +1,7 @@
 import { errorText } from './errorText.ts';
 import { TURN_VIDEO_BITRATE } from './config.ts';
 import type { Session } from './types.ts';
+import { SessionRoute } from '../../store/sessions/types.ts';
 
 type Change = (encoding: RTCRtpEncodingParameters) => boolean;
 
@@ -28,7 +29,7 @@ const setEncoding = async (session: Session, sender: RTCRtpSender, change: Chang
 // Voice goes first when the network is busy, and video quality is lowered while the connection goes through the
 // TURN relay (the limit is lifted on a direct path).
 export const tuneSenders = async (session: Session) => {
-  const maxBitrate = session.route === 'relay' ? TURN_VIDEO_BITRATE : undefined;
+  const maxBitrate = session.route === SessionRoute.Relay ? TURN_VIDEO_BITRATE : undefined;
 
   for (const sender of session.peer.getSenders()) {
     if (sender.track?.kind === 'audio') {

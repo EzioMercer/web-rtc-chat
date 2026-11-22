@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type MouseEvent } from 'react';
-import type { Message } from '../../../store/chat/types.ts';
+import { type Message, MessageKind, NoteType } from '../../../store/chat/types.ts';
 import { useAppSelector } from '../../../store/useAppSelector.ts';
 import { cx } from '../../../utils/cx.ts';
 import { FileBubble } from '../FileBubble/FileBubble.tsx';
@@ -16,10 +16,10 @@ const NONE: Message[] = [];
 const TAP_MS = 400;
 
 // Chat text has a menu; files have their own buttons, and notes from the app have nothing to do.
-const tappable = (message: Message) => message.kind === 'text' && message.from !== 'system';
+const tappable = (message: Message) => message.kind === MessageKind.Text && message.from !== 'system';
 
 // Round video messages stand on their own, without a bubble around them.
-const bare = (message: Message) => message.kind === 'file' && message.note?.type === 'video';
+const bare = (message: Message) => message.kind === MessageKind.File && message.note?.type === NoteType.Video;
 
 export const MessageList = ({ convKey }: Props) => {
   const messages = useAppSelector(state => state.chat.conversations[convKey] ?? NONE);
@@ -77,8 +77,8 @@ export const MessageList = ({ convKey }: Props) => {
           onClick={tappable(message) ? e => tap(e, message.id) : undefined}
           onContextMenu={tappable(message) ? e => contextMenu(e, message.id) : undefined}
         >
-          {message.kind === 'file' ? <FileBubble file={message} /> : message.text}
-          {message.kind === 'text' && message.from === 'me' && (
+          {message.kind === MessageKind.File ? <FileBubble file={message} /> : message.text}
+          {message.kind === MessageKind.Text && message.from === 'me' && (
             <span
               className={cx(styles.tick, message.pending && styles.pending)}
               title={message.pending ? 'Not delivered yet' : 'Delivered'}
@@ -87,7 +87,7 @@ export const MessageList = ({ convKey }: Props) => {
               {message.pending ? '◷' : '✓'}
             </span>
           )}
-          {menu === message.id && message.kind === 'text' && (
+          {menu === message.id && message.kind === MessageKind.Text && (
             <MessageMenu text={message.text} mine={message.from === 'me'} onClose={() => setMenu(null)} />
           )}
         </div>

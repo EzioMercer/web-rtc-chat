@@ -5,6 +5,7 @@ import { errorText } from '../../../core/webrtc/errorText.ts';
 import { sessions } from '../../../core/webrtc/state.ts';
 import type { Session } from '../../../core/webrtc/types.ts';
 import type { AppThunk } from '../../store.ts';
+import { SignalType } from '../../../core/signaling/types.ts';
 
 // An address of ours found after the offer/answer went out, before the direct connection opened.
 // Addresses found close together go through the relays in one event.
@@ -30,7 +31,7 @@ export const relayCandidate = (session: Session, candidate: RTCIceCandidateInit)
     for (let i = 0; i < candidates.length; i += CANDIDATES_PER_EVENT) {
       const chunk = candidates.slice(i, i + CANDIDATES_PER_EVENT);
 
-      sendSignal(contact, { t: 'ice', sid: session.sid, candidates: chunk })
+      sendSignal(contact, { t: SignalType.Ice, sid: session.sid, candidates: chunk })
         .catch((err: unknown) => session.log(`Could not send addresses: ${errorText(err)}`));
     }
   }, LATE_CANDIDATE_BATCH_MS);

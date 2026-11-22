@@ -7,6 +7,7 @@ import { sessionDetail, sessionLogged, sessionStatusChanged } from '../../sessio
 import type { AppThunk } from '../../store.ts';
 import { reconnectAttempts } from './reconnectAttempts.ts';
 import { scheduleReconnect } from './scheduleReconnect.ts';
+import { SessionStatus } from '../../sessions/types.ts';
 
 // Gives up on `session` if it hasn't connected in time. Waiting for the answer and finding a network path are
 // timed separately: a path can take much longer, and cutting it short makes both sides start over forever.
@@ -19,7 +20,7 @@ export const armTimeout = (session: Session): AppThunk => (dispatch) => {
     dispatch(sessionLogged({ key: session.key, text: reason }));
     dispatch(sessionDetail({ key: session.key, detail: failureDetail(session) }));
     closeSession(session);
-    dispatch(sessionStatusChanged({ key: session.key, status: 'offline' }));
+    dispatch(sessionStatusChanged({ key: session.key, status: SessionStatus.Offline }));
 
     // Part of reconnecting after a drop: try again later.
     if (reconnectAttempts.has(session.key)) {

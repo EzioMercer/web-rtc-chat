@@ -1,9 +1,9 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { ProtectionMode, StoredMode } from '../../core/identity/types.ts';
-import type { AppState } from './types.ts';
+import { type AppState, AppPhase } from './types.ts';
 
 const initialState: AppState = {
-  phase: 'loading',
+  phase: AppPhase.Loading,
   mode: null,
   lockedMode: null,
   busy: false,
@@ -15,16 +15,16 @@ const appSlice = createSlice({
   initialState,
   reducers: {
     setupNeeded: (state) => {
-      state.phase = 'setup';
+      state.phase = AppPhase.Setup;
       state.busy = false;
     },
     lockedFound: (state, { payload }: PayloadAction<StoredMode>) => {
-      state.phase = 'locked';
+      state.phase = AppPhase.Locked;
       state.lockedMode = payload;
       state.busy = false;
     },
     unlocked: (state, { payload }: PayloadAction<ProtectionMode>) => {
-      state.phase = 'ready';
+      state.phase = AppPhase.Ready;
       state.mode = payload;
       state.busy = false;
       state.error = null;

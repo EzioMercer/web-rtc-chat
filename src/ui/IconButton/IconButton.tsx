@@ -2,16 +2,17 @@ import { cx } from '../../utils/cx.ts';
 import { Icon } from '../Icon/Icon.tsx';
 import type { IconName } from '../Icon/paths.ts';
 import styles from './IconButton.module.css';
+import { IconButtonVariant } from './IconButtonVariant.ts';
 
 type Props = {
   icon: IconName;
   label: string;
-  variant?: 'plain' | 'neutral' | 'off' | 'danger' | 'success';
+  variant?: IconButtonVariant;
   disabled?: boolean;
   onClick: () => void;
 };
 
-export const IconButton = ({ icon, label, variant = 'plain', disabled, onClick }: Props) => (
+export const IconButton = ({ icon, label, variant = IconButtonVariant.Plain, disabled, onClick }: Props) => (
   <button
     className={cx(styles.button, styles[variant])}
     type="button"

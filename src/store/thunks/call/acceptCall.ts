@@ -7,6 +7,8 @@ import { answeredWithAudioOnly, callActive } from '../../call/callSlice.ts';
 import type { AppThunk } from '../../store.ts';
 import { endCall } from './endCall.ts';
 import { sendCallState } from './sendCallState.ts';
+import { CallStatus } from '../../call/types.ts';
+import { ControlType, CallAction } from '../../../core/webrtc/types.ts';
 
 // If the caller's offer doesn't arrive within this time after accepting, send our tracks with our own offer.
 const ATTACH_FALLBACK_MS = 4000;
@@ -15,14 +17,14 @@ const ATTACH_FALLBACK_MS = 4000;
 export const acceptCall = (audioOnly = false): AppThunk<Promise<void>> => async (dispatch, getState) => {
   const { status, video, key } = getState().call;
 
-  if (status !== 'incoming' || !key) {
+  if (status !== CallStatus.Incoming || !key) {
     return;
   }
 
   try {
     media.localStream = await getLocalMedia(video && !audioOnly);
   } catch {
-    sendControl(key, { t: 'call', action: 'decline' });
+    sendControl(key, { t: ControlType.Call, action: CallAction.Decline });
     dispatch(endCall('Could not access your microphone or camera.'));
 
     return;
@@ -47,6 +49,6 @@ export const acceptCall = (audioOnly = false): AppThunk<Promise<void>> => async 
   }
 
   dispatch(callActive());
-  sendControl(key, { t: 'call', action: 'accept' });
+  sendControl(key, { t: ControlType.Call, action: CallAction.Accept });
   dispatch(sendCallState());
 };

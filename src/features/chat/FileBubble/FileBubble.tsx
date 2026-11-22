@@ -1,4 +1,4 @@
-import type { FileMessage } from '../../../store/chat/types.ts';
+import { type FileMessage, NoteType, FileStatus } from '../../../store/chat/types.ts';
 import { formatBytes } from '../../../utils/formatBytes.ts';
 import { Icon } from '../../../ui/Icon/Icon.tsx';
 import { VideoNoteBubble } from '../../recording/VideoNoteBubble/VideoNoteBubble.tsx';
@@ -36,11 +36,11 @@ export const FileBubble = ({ file }: Props) => {
     return null;
   };
 
-  if (note?.type === 'voice') {
+  if (note?.type === NoteType.Voice) {
     return <VoiceBubble file={file} />;
   }
 
-  if (note?.type === 'video') {
+  if (note?.type === NoteType.Video) {
     return <VideoNoteBubble file={file} />;
   }
 
@@ -52,8 +52,8 @@ export const FileBubble = ({ file }: Props) => {
         <div className={styles.info}>
           <span className={styles.name} title={name}>{name}</span>
           <span className={styles.meta}>
-            {status === 'transferring' && `${verb}… ${percent}% · `}
-            {status === 'failed' && (
+            {status === FileStatus.Transferring && `${verb}… ${percent}% · `}
+            {status === FileStatus.Failed && (
               <span className={styles.failed}>
                 {error ?? 'Failed'}
                 {' '}
@@ -64,13 +64,13 @@ export const FileBubble = ({ file }: Props) => {
             {formatBytes(size)}
           </span>
         </div>
-        {status === 'done' && url && (
+        {status === FileStatus.Done && url && (
           <a className={styles.download} href={url} download={name} title="Download" aria-label="Download">
             <Icon name="download" />
           </a>
         )}
       </div>
-      {status === 'transferring' && (
+      {status === FileStatus.Transferring && (
         <div className={styles.progress}>
           <div className={styles.bar} style={{ width: `${percent}%` }} />
         </div>

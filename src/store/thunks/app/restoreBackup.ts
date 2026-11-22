@@ -3,6 +3,7 @@ import { readMeta } from '../../../core/identity/readMeta.ts';
 import { busyStarted, failed, lockedFound } from '../../app/appSlice.ts';
 import type { AppThunk } from '../../store.ts';
 import { errorMessage } from './errorMessage.ts';
+import { ProtectionMode } from '../../../core/identity/types.ts';
 
 // Saves a backup file; it is then unlocked like any saved identity.
 export const restoreBackup = (text: string): AppThunk<Promise<void>> => async (dispatch) => {
@@ -13,7 +14,7 @@ export const restoreBackup = (text: string): AppThunk<Promise<void>> => async (d
 
     const meta = await readMeta();
 
-    if (meta && meta.mode !== 'device') {
+    if (meta && meta.mode !== ProtectionMode.Device) {
       dispatch(lockedFound(meta.mode));
     }
   } catch (err) {

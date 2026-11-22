@@ -4,6 +4,7 @@ import type { AppThunk } from '../../store.ts';
 import { connect } from './connect.ts';
 import { host } from './host.ts';
 import { join } from './join.ts';
+import { ManualRole } from '../../manual/types.ts';
 
 // The single action button: an empty field makes you the host, an invite makes you the client,
 // and a reply pasted by the host connects.
@@ -11,7 +12,7 @@ export const submitPeerCode = (raw: string): AppThunk<Promise<void>> => async (d
   const { role } = getState().manual;
 
   try {
-    if (role === 'none' && !raw.trim()) {
+    if (role === ManualRole.None && !raw.trim()) {
       await dispatch(host());
 
       return;
@@ -19,7 +20,7 @@ export const submitPeerCode = (raw: string): AppThunk<Promise<void>> => async (d
 
     const desc = decodeCode(raw);
 
-    if (role === 'host') {
+    if (role === ManualRole.Host) {
       if (desc.type !== 'answer') {
         throw new Error('That\'s an invite code. Paste the peer\'s reply instead.');
       }

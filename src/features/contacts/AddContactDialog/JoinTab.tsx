@@ -6,6 +6,8 @@ import { Button } from '../../../ui/Button/Button.tsx';
 import { QrScanner } from '../../../ui/QrScanner/QrScanner.tsx';
 import { TextField } from '../../../ui/TextField/TextField.tsx';
 import styles from './AddContactDialog.module.css';
+import { ButtonType } from '../../../ui/Button/ButtonType.ts';
+import { ButtonVariant } from '../../../ui/Button/ButtonVariant.ts';
 
 type Props = {
   onOpened: () => void;
@@ -30,7 +32,7 @@ export const JoinTab = ({ onOpened }: Props) => {
     <>
       {scanning
         ? <QrScanner onResult={open} />
-        : <Button variant="secondary" onClick={() => setScanning(true)}>Scan their QR code</Button>}
+        : <Button variant={ButtonVariant.Secondary} onClick={() => setScanning(true)}>Scan their QR code</Button>}
       <form
         className={styles.form}
         onSubmit={(e) => {
@@ -39,7 +41,7 @@ export const JoinTab = ({ onOpened }: Props) => {
         }}
       >
         <TextField label="Or paste their invite link" value={link} placeholder="https://…#invite=…" onChange={setLink} />
-        <Button type="submit" disabled={!link.trim()}>Open invite</Button>
+        <Button type={ButtonType.Submit} disabled={!link.trim()}>Open invite</Button>
       </form>
       {error && <p className={styles.error}>{error}</p>}
     </>

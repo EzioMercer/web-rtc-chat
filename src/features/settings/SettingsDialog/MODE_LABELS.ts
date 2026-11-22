@@ -1,8 +1,8 @@
-import type { ProtectionMode } from '../../../core/identity/types.ts';
+import { ProtectionMode } from '../../../core/identity/types.ts';
 
 export const MODE_LABELS: Record<ProtectionMode, string> = {
-  passkey: 'Passkey',
-  passphrase: 'Passphrase',
-  device: 'No protection',
-  temporary: 'Temporary (nothing saved)',
+  [ProtectionMode.Passkey]: 'Passkey',
+  [ProtectionMode.Passphrase]: 'Passphrase',
+  [ProtectionMode.Device]: 'No protection',
+  [ProtectionMode.Temporary]: 'Temporary (nothing saved)',
 };

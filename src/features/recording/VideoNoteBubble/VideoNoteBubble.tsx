@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { playOne } from '../../../core/media/playOne.ts';
-import type { FileMessage } from '../../../store/chat/types.ts';
+import { type FileMessage, FileStatus } from '../../../store/chat/types.ts';
 import { formatDuration } from '../../../utils/formatDuration.ts';
 import { Icon } from '../../../ui/Icon/Icon.tsx';
 import styles from './VideoNoteBubble.module.css';
@@ -97,11 +97,11 @@ export const VideoNoteBubble = ({ file }: Props) => {
   };
 
   const meta = () => {
-    if (status === 'transferring') {
+    if (status === FileStatus.Transferring) {
       return `${from === 'me' ? 'Sending' : 'Receiving'}… ${percent}%`;
     }
 
-    if (status === 'failed') {
+    if (status === FileStatus.Failed) {
       return <span className={styles.failed}>{error ?? 'Failed'}</span>;
     }
 

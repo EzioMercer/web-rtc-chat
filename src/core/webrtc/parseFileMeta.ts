@@ -1,4 +1,4 @@
-import type { MediaNote } from '../../store/chat/types.ts';
+import { type MediaNote, NoteType } from '../../store/chat/types.ts';
 import type { FileMeta } from './types.ts';
 
 // A voice message longer than a day, or a waveform with more bars than we draw, is not from this app.
@@ -16,7 +16,7 @@ const parseNote = (note: unknown): MediaNote | undefined => {
   }
 
   const { type, duration, wave } = note as Partial<MediaNote>;
-  const valid = (type === 'voice' || type === 'video')
+  const valid = (type === NoteType.Voice || type === NoteType.Video)
     && typeof duration === 'number'
     && Number.isFinite(duration)
     && duration >= 0

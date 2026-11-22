@@ -20,6 +20,8 @@ import { IconButton } from '../../../ui/IconButton/IconButton.tsx';
 import { CallStage } from '../CallStage/CallStage.tsx';
 import { EchoPrompt } from '../EchoPrompt/EchoPrompt.tsx';
 import styles from './CallPanel.module.css';
+import { CallStatus, EchoPromptState } from '../../../store/call/types.ts';
+import { IconButtonVariant } from '../../../ui/IconButton/IconButtonVariant.ts';
 
 const TITLES = {
   incoming: 'Incoming',
@@ -48,10 +50,10 @@ export const CallPanel = () => {
   const { status, video, ownVideo, mic, cam, remoteMic, remoteCam, remoteStreamVersion, key } = call;
   const { screen, remoteScreen, echoGuard, echoPrompt } = call;
   const remoteStream = key ? sessions.get(key)?.remoteStream ?? null : null;
-  const stats = useCallStats(key, status === 'active');
+  const stats = useCallStats(key, status === CallStatus.Active);
 
-  useEchoGuard(key, status === 'active' && echoGuard && mic);
-  useEchoDetector(key, status === 'active');
+  useEchoGuard(key, status === CallStatus.Active && echoGuard && mic);
+  useEchoDetector(key, status === CallStatus.Active);
 
   const [controlsShown, setControlsShown] = useState(true);
   const hideTimer = useRef(0);
@@ -67,13 +69,13 @@ export const CallPanel = () => {
 
   useEffect(() => () => window.clearTimeout(hideTimer.current), []);
 
-  if (status === 'idle') {
+  if (status === CallStatus.Idle) {
     return null;
   }
 
-  const active = status === 'active';
+  const active = status === CallStatus.Active;
   const showRemoteVideo = active && ((video && remoteCam) || remoteScreen);
-  const showLocalVideo = screen || (ownVideo && cam && status !== 'incoming');
+  const showLocalVideo = screen || (ownVideo && cam && status !== CallStatus.Incoming);
   const videoStage = video || screen || remoteScreen;
   const hidden = full && !controlsShown;
   const kind = video ? 'video' : 'audio';
@@ -108,8 +110,8 @@ export const CallPanel = () => {
         {!showRemoteVideo && (
           <div className={styles.placeholder}>
             <span className={styles.avatar}><Icon name="user" size={36} /></span>
-            {status === 'incoming' && <span>{`${TITLES.incoming} ${kind} call`}</span>}
-            {status === 'outgoing' && <span>{TITLES.outgoing}</span>}
+            {status === CallStatus.Incoming && <span>{`${TITLES.incoming} ${kind} call`}</span>}
+            {status === CallStatus.Outgoing && <span>{TITLES.outgoing}</span>}
           </div>
         )}
         {active && !remoteMic && (
@@ -149,22 +151,27 @@ export const CallPanel = () => {
           </span>
         )}
         <div className={styles.controls}>
-          {status === 'incoming'
+          {status === CallStatus.Incoming
             ? (
                 <>
-                  <IconButton icon="hangUp" label="Decline" variant="danger" onClick={() => dispatch(declineCall())} />
+                  <IconButton
+                    icon="hangUp"
+                    label="Decline"
+                    variant={IconButtonVariant.Danger}
+                    onClick={() => dispatch(declineCall())}
+                  />
                   {video && (
                     <IconButton
                       icon="phone"
                       label="Accept with audio only"
-                      variant="success"
+                      variant={IconButtonVariant.Success}
                       onClick={() => dispatch(acceptCall(true))}
                     />
                   )}
                   <IconButton
                     icon={video ? 'video' : 'phone'}
                     label="Accept"
-                    variant="success"
+                    variant={IconButtonVariant.Success}
                     onClick={() => dispatch(acceptCall())}
                   />
                 </>
@@ -174,20 +181,20 @@ export const CallPanel = () => {
                   <IconButton
                     icon={mic ? 'mic' : 'micOff'}
                     label={mic ? 'Mute' : 'Unmute'}
-                    variant={mic ? 'neutral' : 'off'}
+                    variant={mic ? IconButtonVariant.Neutral : IconButtonVariant.Off}
                     onClick={() => dispatch(toggleMic())}
                   />
                   <IconButton
                     icon="echo"
                     label={echoGuard ? 'Turn echo guard off' : 'Turn echo guard on'}
-                    variant={echoGuard ? 'success' : 'neutral'}
+                    variant={echoGuard ? IconButtonVariant.Success : IconButtonVariant.Neutral}
                     onClick={() => dispatch(echoGuardToggled())}
                   />
                   {ownVideo && (
                     <IconButton
                       icon={cam ? 'video' : 'videoOff'}
                       label={cam ? 'Turn camera off' : 'Turn camera on'}
-                      variant={cam ? 'neutral' : 'off'}
+                      variant={cam ? IconButtonVariant.Neutral : IconButtonVariant.Off}
                       onClick={() => dispatch(toggleCam())}
                     />
                   )}
@@ -195,7 +202,7 @@ export const CallPanel = () => {
                     <IconButton
                       icon="screen"
                       label={screen ? 'Stop sharing your screen' : 'Share your screen'}
-                      variant={screen ? 'success' : 'neutral'}
+                      variant={screen ? IconButtonVariant.Success : IconButtonVariant.Neutral}
                       onClick={() => void dispatch(toggleScreen())}
                     />
                   )}
@@ -203,17 +210,22 @@ export const CallPanel = () => {
                     <IconButton
                       icon={full ? 'minimize' : 'maximize'}
                       label={full ? 'Exit full screen' : 'Full screen'}
-                      variant="neutral"
+                      variant={IconButtonVariant.Neutral}
                       onClick={toggleFull}
                     />
                   )}
-                  <IconButton icon="hangUp" label="Hang up" variant="danger" onClick={() => dispatch(hangUp())} />
+                  <IconButton
+                    icon="hangUp"
+                    label="Hang up"
+                    variant={IconButtonVariant.Danger}
+                    onClick={() => dispatch(hangUp())}
+                  />
                 </>
               )}
         </div>
       </div>
       {/* Opens inside the full-screen element when in full screen (see Dialog). */}
-      {echoPrompt === 'open' && <EchoPrompt />}
+      {echoPrompt === EchoPromptState.Open && <EchoPrompt />}
     </div>
   );
 };

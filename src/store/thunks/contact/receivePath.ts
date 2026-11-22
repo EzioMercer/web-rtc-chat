@@ -1,5 +1,5 @@
 import { sendSignal } from '../../../core/signaling/sendSignal.ts';
-import type { SignalMessage } from '../../../core/signaling/types.ts';
+import { type SignalMessage, SignalType } from '../../../core/signaling/types.ts';
 import { errorText } from '../../../core/webrtc/errorText.ts';
 import { handleDescription } from '../../../core/webrtc/handleDescription.ts';
 import { sessions } from '../../../core/webrtc/state.ts';
@@ -7,7 +7,7 @@ import { waitForIceGathering } from '../../../core/webrtc/waitForIceGathering.ts
 import type { AppThunk } from '../../store.ts';
 import { finishRescue, refreshIceServers, startRescue } from '../session/rescuePath.ts';
 
-type PathSignal = Extract<SignalMessage, { t: 'path' }>;
+type PathSignal = Extract<SignalMessage, { t: SignalType.Path }>;
 
 // The other side lost the network path of our open connection and searches for a new one (see rescuePath):
 // answer through the relays, keeping the connection.
@@ -45,7 +45,9 @@ export const receivePath = (id: string, msg: PathSignal): AppThunk<Promise<void>
       await waitForIceGathering(peer);
 
       if (sessions.get(id) === session && peer.localDescription?.type === 'answer') {
-        await sendSignal(contact, { t: 'path', sid: session.sid, type: 'answer', sdp: peer.localDescription.sdp });
+        const { sdp } = peer.localDescription;
+
+        await sendSignal(contact, { t: SignalType.Path, sid: session.sid, type: 'answer', sdp });
         session.log('Answered their new path search through the relays.');
       }
     });

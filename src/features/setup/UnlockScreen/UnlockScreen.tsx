@@ -7,6 +7,10 @@ import { Button } from '../../../ui/Button/Button.tsx';
 import { Icon } from '../../../ui/Icon/Icon.tsx';
 import { TextField } from '../../../ui/TextField/TextField.tsx';
 import styles from './UnlockScreen.module.css';
+import { ProtectionMode } from '../../../core/identity/types.ts';
+import { ButtonType } from '../../../ui/Button/ButtonType.ts';
+import { ButtonVariant } from '../../../ui/Button/ButtonVariant.ts';
+import { TextFieldType } from '../../../ui/TextField/TextFieldType.ts';
 
 export const UnlockScreen = () => {
   const dispatch = useAppDispatch();
@@ -15,7 +19,7 @@ export const UnlockScreen = () => {
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    void dispatch(unlockApp(lockedMode === 'passphrase' ? passphrase : undefined));
+    void dispatch(unlockApp(lockedMode === ProtectionMode.Passphrase ? passphrase : undefined));
   };
 
   const reset = () => {
@@ -28,14 +32,24 @@ export const UnlockScreen = () => {
     <form className={styles.screen} onSubmit={submit}>
       <span className={styles.icon}><Icon name="lock" size={32} /></span>
       <h1 className={styles.title}>Unlock P2P Chat</h1>
-      {lockedMode === 'passphrase' && (
-        <TextField label="Passphrase" type="password" value={passphrase} autoFocus onChange={setPassphrase} />
+      {lockedMode === ProtectionMode.Passphrase && (
+        <TextField
+          label="Passphrase"
+          type={TextFieldType.Password}
+          value={passphrase}
+          autoFocus
+          onChange={setPassphrase}
+        />
       )}
       {error && <p className={styles.error}>{error}</p>}
-      <Button type="submit" wide disabled={busy || (lockedMode === 'passphrase' && !passphrase)}>
-        {busy ? 'Unlocking…' : lockedMode === 'passkey' ? 'Unlock with passkey' : 'Unlock'}
+      <Button
+        type={ButtonType.Submit}
+        wide
+        disabled={busy || (lockedMode === ProtectionMode.Passphrase && !passphrase)}
+      >
+        {busy ? 'Unlocking…' : lockedMode === ProtectionMode.Passkey ? 'Unlock with passkey' : 'Unlock'}
       </Button>
-      <Button variant="ghost" onClick={reset}>Start over with a new identity</Button>
+      <Button variant={ButtonVariant.Ghost} onClick={reset}>Start over with a new identity</Button>
     </form>
   );
 };

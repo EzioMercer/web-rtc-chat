@@ -1,18 +1,21 @@
 import { useId, type ReactNode } from 'react';
 import styles from './TextField.module.css';
+import { TextFieldType } from './TextFieldType.ts';
 
 type Props = {
   label: string;
   value: string;
   onChange: (value: string) => void;
-  type?: 'text' | 'password';
+  type?: TextFieldType;
   placeholder?: string;
   autoFocus?: boolean;
   hint?: ReactNode;
   action?: ReactNode;
 };
 
-export const TextField = ({ label, value, onChange, type = 'text', placeholder, autoFocus, hint, action }: Props) => {
+export const TextField = (
+  { label, value, onChange, type = TextFieldType.Text, placeholder, autoFocus, hint, action }: Props,
+) => {
   const id = useId();
 
   return (

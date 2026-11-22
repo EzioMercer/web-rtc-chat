@@ -1,5 +1,6 @@
 import { Button } from '../../../ui/Button/Button.tsx';
 import styles from './SafetyPanel.module.css';
+import { ButtonVariant } from '../../../ui/Button/ButtonVariant.ts';
 
 type Props = {
   words: string[] | null;
@@ -18,6 +19,8 @@ export const SafetyPanel = ({ words, verified, onVerify, onUnverify }: Props) =>
       Compare these with your friend in person or by voice. If they differ, someone is in the middle.
     </p>
     {onVerify && !verified && <Button onClick={onVerify}>They match: mark as verified</Button>}
-    {onUnverify && verified && <Button variant="secondary" onClick={onUnverify}>Remove verification</Button>}
+    {onUnverify && verified && (
+      <Button variant={ButtonVariant.Secondary} onClick={onUnverify}>Remove verification</Button>
+    )}
   </div>
 );

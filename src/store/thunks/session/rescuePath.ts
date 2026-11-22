@@ -8,6 +8,7 @@ import { waitForIceGathering } from '../../../core/webrtc/waitForIceGathering.ts
 import type { AppThunk } from '../../store.ts';
 import { checkRoute } from './checkRoute.ts';
 import { sessionDropped } from './sessionDropped.ts';
+import { SignalType } from '../../../core/signaling/types.ts';
 
 const working = (session: Session) => (
   session.peer.iceConnectionState === 'connected' || session.peer.iceConnectionState === 'completed'
@@ -103,7 +104,7 @@ export const rescuePath = (session: Session): AppThunk<Promise<void>> => async (
   }
 
   try {
-    await sendSignal(contact, { t: 'path', sid: session.sid, type: 'offer', sdp: peer.localDescription.sdp });
+    await sendSignal(contact, { t: SignalType.Path, sid: session.sid, type: 'offer', sdp: peer.localDescription.sdp });
     dispatch(finishRescue(session));
     session.log('Sent the new path search through the relays.');
   } catch (err) {

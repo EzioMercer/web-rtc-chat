@@ -68,10 +68,11 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
 - Arrow functions only, one exported function or component per file, named like the file.
 - Comments in plain English that say why; no "removed" or history comments.
 - Constants and limits go in the area's `config.ts` with a comment.
-- Prefer enums over string-literal unions, and number enums over string enums when it doesn't hurt. Never
-  `const enum` (isolatedModules). Values sent to the peer or saved on the device (control messages, signaling,
-  file notes, settings, protection mode) stay string enums with their current values, so older app versions and
-  saved data keep working.
+- Enums, not string-literal unions; number enums by default. String enums only where the value is itself a
+  CSS class name or a browser/HTML value (ButtonVariant, IconButtonVariant, MessageAuthor, TrackKind, …). Never
+  `const enum` (isolatedModules). Enum values in text (logs, file names) must be turned into words
+  (e.g. `CallAction[action]`), and CSS classes picked through a lookup table, never `styles[numericEnum]`.
+  Data saved before November 2026 used words: `toProtectionMode` and `loadSettings` still read those.
 - New UI: reuse `ui/` first. Something used by two features belongs in `ui/`, `hooks/` or `utils/`.
 - Git hooks run eslint --fix and tsc on commit.
 

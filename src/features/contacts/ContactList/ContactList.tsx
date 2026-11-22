@@ -6,12 +6,13 @@ import { MANUAL_KEY } from '../../../core/webrtc/config.ts';
 import { Icon } from '../../../ui/Icon/Icon.tsx';
 import { ContactGroup } from './ContactGroup.tsx';
 import styles from './ContactList.module.css';
+import { ManualStatus } from '../../../store/manual/types.ts';
 
 export const ContactList = () => {
   const dispatch = useAppDispatch();
   const list = useAppSelector(state => state.contacts.list);
   const selected = useAppSelector(state => state.ui.selected);
-  const manualActive = useAppSelector(state => state.manual.status !== 'idle');
+  const manualActive = useAppSelector(state => state.manual.status !== ManualStatus.Idle);
   const manualUnread = useAppSelector(state => state.chat.unread[MANUAL_KEY] ?? 0);
   const favourites = list.filter(contact => contact.favourite);
   const others = list.filter(contact => !contact.favourite);

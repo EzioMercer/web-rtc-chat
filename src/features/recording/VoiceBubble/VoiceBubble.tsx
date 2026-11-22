@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { playOne } from '../../../core/media/playOne.ts';
-import type { FileMessage } from '../../../store/chat/types.ts';
+import { type FileMessage, FileStatus } from '../../../store/chat/types.ts';
 import { cx } from '../../../utils/cx.ts';
 import { formatDuration } from '../../../utils/formatDuration.ts';
 import styles from './VoiceBubble.module.css';
@@ -73,11 +73,11 @@ export const VoiceBubble = ({ file }: Props) => {
   };
 
   const meta = () => {
-    if (status === 'transferring') {
+    if (status === FileStatus.Transferring) {
       return `${from === 'me' ? 'Sending' : 'Receiving'}… ${percent}%`;
     }
 
-    if (status === 'failed') {
+    if (status === FileStatus.Failed) {
       return <span className={styles.failed}>{error ?? 'Failed'}</span>;
     }
 

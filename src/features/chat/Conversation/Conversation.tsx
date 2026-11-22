@@ -6,6 +6,7 @@ import { CallPanel } from '../../calls/CallPanel/CallPanel.tsx';
 import { Composer } from '../Composer/Composer.tsx';
 import { MessageList } from '../MessageList/MessageList.tsx';
 import styles from './Conversation.module.css';
+import { CallStatus } from '../../../store/call/types.ts';
 
 type Props = {
   convKey: string;
@@ -20,7 +21,7 @@ const hasFiles = (e: DragEvent) => e.dataTransfer.types.includes('Files');
 // One conversation: header, call, messages and the composer. Files can be dropped anywhere on it.
 export const Conversation = ({ convKey, connected, header, children }: Props) => {
   const dispatch = useAppDispatch();
-  const inCall = useAppSelector(state => state.call.key === convKey && state.call.status !== 'idle');
+  const inCall = useAppSelector(state => state.call.key === convKey && state.call.status !== CallStatus.Idle);
   const [dragging, setDragging] = useState(false);
 
   const dragOver = (e: DragEvent) => {

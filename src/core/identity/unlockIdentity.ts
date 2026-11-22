@@ -6,6 +6,7 @@ import { keyForMeta } from './keyForMeta.ts';
 import { openVault } from './openVault.ts';
 import { readMeta } from './readMeta.ts';
 import { STORAGE_KEYS } from './storageKeys.ts';
+import { ProtectionMode } from './types.ts';
 
 // Unlocks the saved identity and returns the decrypted contact list.
 export const unlockIdentity = async (passphrase?: string): Promise<Contact[]> => {
@@ -21,7 +22,7 @@ export const unlockIdentity = async (passphrase?: string): Promise<Contact[]> =>
   try {
     await openVault(meta.mode, meta, meta.publicKey, key, sealedIdentity);
   } catch {
-    throw new Error(meta.mode === 'passphrase' ? 'Wrong passphrase.' : 'Could not unlock the identity.');
+    throw new Error(meta.mode === ProtectionMode.Passphrase ? 'Wrong passphrase.' : 'Could not unlock the identity.');
   }
 
   const sealedContacts = await kv.get<Sealed>(STORAGE_KEYS.contacts);

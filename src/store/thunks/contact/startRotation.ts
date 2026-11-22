@@ -3,6 +3,7 @@ import { newSecret } from '../../../core/signaling/newSecret.ts';
 import { sendControl } from '../../../core/webrtc/sendControl.ts';
 import { secretProposed } from '../../contacts/contactsSlice.ts';
 import type { AppThunk } from '../../store.ts';
+import { ControlType } from '../../../core/webrtc/types.ts';
 
 // Each time the direct connection opens, one side (always the same one) proposes a new mailbox secret.
 // It travels over the encrypted direct connection, so relays never see it, and a copied invite or an old
@@ -17,5 +18,5 @@ export const startRotation = (id: string): AppThunk => (dispatch, getState) => {
   const secret = newSecret();
 
   dispatch(secretProposed({ id, secret }));
-  sendControl(id, { t: 'rotate', secret });
+  sendControl(id, { t: ControlType.Rotate, secret });
 };

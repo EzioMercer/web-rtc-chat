@@ -3,6 +3,8 @@ import { useAppSelector } from '../../../store/useAppSelector.ts';
 import { Button } from '../../../ui/Button/Button.tsx';
 import { TextField } from '../../../ui/TextField/TextField.tsx';
 import styles from './ContactNameForm.module.css';
+import { ButtonType } from '../../../ui/Button/ButtonType.ts';
+import { ButtonVariant } from '../../../ui/Button/ButtonVariant.ts';
 
 type Props = {
   submitLabel: string;
@@ -54,10 +56,10 @@ export const ContactNameForm = ({ submitLabel, busy, error, children, onSubmit, 
         </div>
       )}
       {error && <p className={styles.error}>{error}</p>}
-      <Button type="submit" disabled={busy || (!name.trim() && !replaceId)}>
+      <Button type={ButtonType.Submit} disabled={busy || (!name.trim() && !replaceId)}>
         {busy ? 'Please wait…' : submitLabel}
       </Button>
-      <Button variant="secondary" onClick={onCancel}>{cancelLabel ?? 'Cancel'}</Button>
+      <Button variant={ButtonVariant.Secondary} onClick={onCancel}>{cancelLabel ?? 'Cancel'}</Button>
     </form>
   );
 };

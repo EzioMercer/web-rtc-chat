@@ -5,6 +5,7 @@ import { ECHO_SAMPLE_MS, GUARD_HANGOVER_MS, TALK_LEVEL } from '../../core/webrtc
 import { readAudioLevels } from '../../core/webrtc/readAudioLevels.ts';
 import { setTracksEnabled } from '../../core/webrtc/setTracksEnabled.ts';
 import { sessions } from '../../core/webrtc/state.ts';
+import { TrackKind } from '../../core/webrtc/TrackKind.ts';
 
 // Echo guard: while they talk, our microphone is off, so their voice coming out of our speaker can't go back to them
 // as an echo. It opens again shortly after they stop. Runs only while `running` (a call, the guard on, not muted).
@@ -24,7 +25,7 @@ export const useEchoGuard = (key: string | null, running: boolean) => {
     const setClosed = (close: boolean) => {
       if (close !== closed) {
         closed = close;
-        setTracksEnabled('audio', !close && store.getState().call.mic);
+        setTracksEnabled(TrackKind.Audio, !close && store.getState().call.mic);
       }
     };
 
@@ -59,7 +60,7 @@ export const useEchoGuard = (key: string | null, running: boolean) => {
       window.clearInterval(timer);
 
       if (closed) {
-        setTracksEnabled('audio', store.getState().call.mic);
+        setTracksEnabled(TrackKind.Audio, store.getState().call.mic);
       }
     };
   }, [key, running, store]);

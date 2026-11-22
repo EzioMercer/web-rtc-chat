@@ -3,10 +3,11 @@ import { tuneSenders } from '../../../core/webrtc/tuneSenders.ts';
 import type { Session } from '../../../core/webrtc/types.ts';
 import { sessionRouteChanged } from '../../sessions/sessionsSlice.ts';
 import type { AppThunk } from '../../store.ts';
+import { SessionRoute } from '../../sessions/types.ts';
 
 // Finds out which path the open connection uses now, and shows it when it changed.
 export const checkRoute = (session: Session): AppThunk<Promise<void>> => async (dispatch) => {
-  const route = await getRoute(session.peer).catch(() => session.route ?? 'direct');
+  const route = await getRoute(session.peer).catch(() => session.route ?? SessionRoute.Direct);
 
   if (route === session.route || session.peer.connectionState === 'closed') {
     return;
@@ -16,7 +17,7 @@ export const checkRoute = (session: Session): AppThunk<Promise<void>> => async (
 
   session.route = route;
 
-  if (route === 'relay') {
+  if (route === SessionRoute.Relay) {
     session.log(first ? 'Connected through the TURN relay.' : 'Moved to the TURN relay.');
   } else {
     session.log(first ? 'Connected directly.' : 'Moved to a direct connection.');

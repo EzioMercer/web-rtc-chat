@@ -3,6 +3,8 @@ import { screenChanged } from '../../call/callSlice.ts';
 import { addMessage } from '../../chat/chatSlice.ts';
 import type { AppThunk } from '../../store.ts';
 import { sendCallState } from './sendCallState.ts';
+import { CallStatus } from '../../call/types.ts';
+import { MessageAuthor } from '../../chat/types.ts';
 
 // Phones' browsers can't share the screen; the button is shown only where this is true.
 export const canShareScreen = () => typeof navigator.mediaDevices?.getDisplayMedia === 'function';
@@ -33,7 +35,7 @@ export const toggleScreen = (): AppThunk<Promise<void>> => async (dispatch, getS
     return;
   }
 
-  if (status !== 'active' || !key) {
+  if (status !== CallStatus.Active || !key) {
     return;
   }
 
@@ -50,7 +52,7 @@ export const toggleScreen = (): AppThunk<Promise<void>> => async (dispatch, getS
   const session = sessions.get(key);
 
   // The call ended or the connection changed while the picker was open.
-  if (!track || !session || getState().call.status !== 'active' || getState().call.key !== key) {
+  if (!track || !session || getState().call.status !== CallStatus.Active || getState().call.key !== key) {
     stream.getTracks().forEach(t => t.stop());
 
     return;
@@ -75,7 +77,7 @@ export const toggleScreen = (): AppThunk<Promise<void>> => async (dispatch, getS
     media.screen = { stream, sender, before };
   } catch {
     stream.getTracks().forEach(t => t.stop());
-    dispatch(addMessage({ key, from: 'system', text: 'Could not share your screen.' }));
+    dispatch(addMessage({ key, from: MessageAuthor.System, text: 'Could not share your screen.' }));
 
     return;
   }

@@ -5,6 +5,7 @@ import { createSession } from '../../../core/webrtc/createSession.ts';
 import { ensureTurnServers } from '../../../core/webrtc/turnServers.ts';
 import { codeGenerated, generationStarted } from '../../manual/manualSlice.ts';
 import type { AppThunk } from '../../store.ts';
+import { ManualRole } from '../../manual/types.ts';
 
 // Host side: opens the chat channel and produces the invite (offer) code.
 export const host = (): AppThunk<Promise<void>> => async (dispatch) => {
@@ -15,5 +16,5 @@ export const host = (): AppThunk<Promise<void>> => async (dispatch) => {
 
   bindChannel(session, session.peer.createDataChannel(CONTROL_LABEL), dispatch);
   await session.peer.setLocalDescription(await session.peer.createOffer());
-  dispatch(codeGenerated({ role: 'host', code: await createLocalCode(session.peer) }));
+  dispatch(codeGenerated({ role: ManualRole.Host, code: await createLocalCode(session.peer) }));
 };

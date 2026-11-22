@@ -1,5 +1,13 @@
 import { createSlice, nanoid, type PayloadAction } from '@reduxjs/toolkit';
-import type { ChatState, FileMessage, Message, TextMessage } from './types.ts';
+import {
+  type ChatState,
+  type FileMessage,
+  FileStatus,
+  type Message,
+  MessageAuthor,
+  MessageKind,
+  type TextMessage,
+} from './types.ts';
 
 const initialState: ChatState = {
   conversations: {},
@@ -24,7 +32,7 @@ const insertByTime = (state: ChatState, key: string, message: Message & { at: nu
 };
 
 const findFile = (state: ChatState, key: string, id: string) => state.conversations[key]?.find(
-  (message): message is FileMessage => message.kind === 'file' && message.id === id,
+  (message): message is FileMessage => message.kind === MessageKind.File && message.id === id,
 );
 
 type Keyed<T> = { key: string } & T;
@@ -38,27 +46,29 @@ const chatSlice = createSlice({
         push(state, payload.key, payload.message);
       },
       prepare: ({ key, from, text }: Keyed<Pick<TextMessage, 'from' | 'text'>>) => ({
-        payload: { key, message: { kind: 'text' as const, id: nanoid(), from, text } },
+        payload: { key, message: { kind: MessageKind.Text as const, id: nanoid(), from, text } },
       }),
     },
     // Their text, written `at` (already converted to our clock).
     peerTextReceived: (state, { payload }: PayloadAction<Keyed<{ text: string; at: number }>>) => {
       const { key, text, at } = payload;
 
-      insertByTime(state, key, { kind: 'text', id: nanoid(), from: 'peer', text, at });
+      insertByTime(state, key, { kind: MessageKind.Text, id: nanoid(), from: MessageAuthor.Peer, text, at });
     },
     messageQueued: (state, { payload }: PayloadAction<Keyed<{ id: string; text: string }>>) => {
-      push(state, payload.key, { kind: 'text', id: payload.id, from: 'me', text: payload.text, pending: true });
+      const { key, id, text } = payload;
+
+      push(state, key, { kind: MessageKind.Text, id, from: MessageAuthor.Me, text, pending: true });
     },
     messageDelivered: (state, { payload }: PayloadAction<Keyed<{ id: string }>>) => {
       const message = state.conversations[payload.key]?.find(m => m.id === payload.id);
 
-      if (message?.kind === 'text') {
+      if (message?.kind === MessageKind.Text) {
         delete message.pending;
       }
     },
     fileAdded: (state, { payload }: PayloadAction<Keyed<{ file: Omit<FileMessage, 'kind'> }>>) => {
-      push(state, payload.key, { ...payload.file, kind: 'file' });
+      push(state, payload.key, { ...payload.file, kind: MessageKind.File });
     },
     fileProgress: (state, { payload }: PayloadAction<Keyed<{ id: string; transferred: number }>>) => {
       const file = findFile(state, payload.key, payload.id);
@@ -73,14 +83,14 @@ const chatSlice = createSlice({
       if (file) {
         file.url = payload.url;
         file.transferred = file.size;
-        file.status = 'done';
+        file.status = FileStatus.Done;
       }
     },
     fileFailed: (state, { payload }: PayloadAction<Keyed<{ id: string; error?: string }>>) => {
       const file = findFile(state, payload.key, payload.id);
 
       if (file) {
-        file.status = 'failed';
+        file.status = FileStatus.Failed;
         file.error = payload.error;
       }
     },

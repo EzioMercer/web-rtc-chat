@@ -4,6 +4,7 @@ import { useAppSelector } from '../../../store/useAppSelector.ts';
 import { cx } from '../../../utils/cx.ts';
 import { ContactMenu } from '../ContactMenu/ContactMenu.tsx';
 import { Icon } from '../../../ui/Icon/Icon.tsx';
+import { SessionStatus } from '../../../store/sessions/types.ts';
 import styles from './ContactRow.module.css';
 
 type Props = {
@@ -16,8 +17,14 @@ type Props = {
 };
 
 // One contact in the list: name, status and unread count (never a message preview).
+// The status dot's colour (grey otherwise).
+const DOT_CLASSES: Partial<Record<SessionStatus, string>> = {
+  [SessionStatus.Connecting]: styles.connecting,
+  [SessionStatus.Connected]: styles.connected,
+};
+
 export const ContactRow = ({ contact, selected, dragging, onOpen, sortProps }: Props) => {
-  const status = useAppSelector(state => state.sessions.status[contact.id] ?? 'idle');
+  const status = useAppSelector(state => state.sessions.status[contact.id] ?? SessionStatus.Idle);
   const unread = useAppSelector(state => state.chat.unread[contact.id] ?? 0);
   const [menu, setMenu] = useState(false);
 
@@ -34,7 +41,7 @@ export const ContactRow = ({ contact, selected, dragging, onOpen, sortProps }: P
       >
         <span className={styles.avatar}>
           {contact.name.trim().charAt(0).toUpperCase() || '?'}
-          <span className={cx(styles.dot, styles[status])} />
+          <span className={cx(styles.dot, DOT_CLASSES[status])} />
         </span>
         <span className={styles.name}>{contact.name}</span>
         {contact.favourite && <span className={styles.star} title="Favourite"><Icon name="star" size={14} /></span>}

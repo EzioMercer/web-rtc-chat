@@ -9,8 +9,13 @@ import { SettingsDialog } from '../../settings/SettingsDialog/SettingsDialog.tsx
 import { UpdateNotice } from '../UpdateNotice/UpdateNotice.tsx';
 import styles from './Sidebar.module.css';
 
+enum SidebarDialog {
+  Add,
+  Settings,
+}
+
 export const Sidebar = () => {
-  const [dialog, setDialog] = useState<'add' | 'settings' | null>(null);
+  const [dialog, setDialog] = useState<SidebarDialog | null>(null);
 
   return (
     <aside className={styles.sidebar}>
@@ -19,18 +24,18 @@ export const Sidebar = () => {
           <Logo size={28} />
           P2P Chat
         </h1>
-        <IconButton icon="settings" label="Settings" onClick={() => setDialog('settings')} />
+        <IconButton icon="settings" label="Settings" onClick={() => setDialog(SidebarDialog.Settings)} />
       </div>
       <div className={styles.add}>
-        <Button wide onClick={() => setDialog('add')}>
+        <Button wide onClick={() => setDialog(SidebarDialog.Add)}>
           <Icon name="userPlus" size={18} />
           Add contact
         </Button>
       </div>
       <ContactList />
       <UpdateNotice />
-      {dialog === 'add' && <AddContactDialog onClose={() => setDialog(null)} />}
-      {dialog === 'settings' && <SettingsDialog onClose={() => setDialog(null)} />}
+      {dialog === SidebarDialog.Add && <AddContactDialog onClose={() => setDialog(null)} />}
+      {dialog === SidebarDialog.Settings && <SettingsDialog onClose={() => setDialog(null)} />}
     </aside>
   );
 };

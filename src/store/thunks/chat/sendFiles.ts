@@ -4,7 +4,7 @@ import { overRelayLimit, RELAY_LIMIT_TEXT } from '../../../core/webrtc/overRelay
 import { sendFile } from '../../../core/webrtc/sendFile.ts';
 import { sessions } from '../../../core/webrtc/state.ts';
 import { addMessage, fileAdded, fileCompleted, fileFailed, fileProgress } from '../../chat/chatSlice.ts';
-import type { MediaNote } from '../../chat/types.ts';
+import { type MediaNote, NoteType, MessageAuthor, FileStatus } from '../../chat/types.ts';
 import type { AppThunk } from '../../store.ts';
 import { checkRoute } from '../session/checkRoute.ts';
 
@@ -19,11 +19,11 @@ export const sendFiles = (key: string, files: File[], note?: MediaNote): AppThun
   dispatch,
 ) => {
   const session = sessions.get(key);
-  const what = note ? `${note.type === 'voice' ? 'Voice' : 'Video'} message` : null;
+  const what = note ? `${note.type === NoteType.Voice ? 'Voice' : 'Video'} message` : null;
 
   if (session?.channel?.readyState !== 'open') {
     if (what) {
-      dispatch(addMessage({ key, from: 'system', text: `${what} not sent: not connected.` }));
+      dispatch(addMessage({ key, from: MessageAuthor.System, text: `${what} not sent: not connected.` }));
     }
 
     return;
@@ -39,7 +39,7 @@ export const sendFiles = (key: string, files: File[], note?: MediaNote): AppThun
       const text = `${what ?? `"${file.name}"`} (${formatBytes(file.size)}) not sent: through the TURN relay, `
         + `files can be up to ${RELAY_LIMIT_TEXT}. Bigger ones need a direct connection.`;
 
-      dispatch(addMessage({ key, from: 'system', text }));
+      dispatch(addMessage({ key, from: MessageAuthor.System, text }));
 
       return;
     }
@@ -52,13 +52,13 @@ export const sendFiles = (key: string, files: File[], note?: MediaNote): AppThun
       key,
       file: {
         id,
-        from: 'me',
+        from: MessageAuthor.Me,
         name: file.name,
         size: file.size,
         mime: file.type,
         url,
         transferred: 0,
-        status: 'transferring',
+        status: FileStatus.Transferring,
         ...(note ? { note } : {}),
       },
     }));

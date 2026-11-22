@@ -6,6 +6,8 @@ import { contactAdded, contactReplaced } from '../../contacts/contactsSlice.ts';
 import type { Contact } from '../../contacts/types.ts';
 import { sessionStatusChanged } from '../../sessions/sessionsSlice.ts';
 import type { AppThunk } from '../../store.ts';
+import { SessionStatus } from '../../sessions/types.ts';
+import { MessageAuthor } from '../../chat/types.ts';
 
 type NewContact = {
   name: string;
@@ -47,12 +49,12 @@ export const saveContact = ({ name, identity, secret, replaceId }: NewContact): 
     // The connection belonged to the old key.
     if (session) {
       closeSession(session);
-      dispatch(sessionStatusChanged({ key: old.id, status: 'idle' }));
+      dispatch(sessionStatusChanged({ key: old.id, status: SessionStatus.Idle }));
     }
 
     dispatch(addMessage({
       key: old.id,
-      from: 'system',
+      from: MessageAuthor.System,
       text: old.verified
         ? `⚠ ${contact.name}'s identity key changed. Compare the safety code again before trusting this chat.`
         : `${contact.name}'s identity key changed. Compare the safety code.`,

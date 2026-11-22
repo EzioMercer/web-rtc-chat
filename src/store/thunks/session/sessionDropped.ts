@@ -9,6 +9,8 @@ import { sessionDetail, sessionLogged, sessionStatusChanged } from '../../sessio
 import type { AppThunk } from '../../store.ts';
 import { endCall } from '../call/endCall.ts';
 import { scheduleReconnect } from '../contact/scheduleReconnect.ts';
+import { SessionStatus } from '../../sessions/types.ts';
+import { MessageAuthor } from '../../chat/types.ts';
 
 const handled = new WeakSet<Session>();
 
@@ -40,12 +42,12 @@ export const sessionDropped = (session: Session): AppThunk => (dispatch, getStat
     }
 
     dispatch(session.opened ? disconnected() : connectionFailed());
-    dispatch(addMessage({ key, from: 'system', text: 'Connection closed.' }));
+    dispatch(addMessage({ key, from: MessageAuthor.System, text: 'Connection closed.' }));
 
     return;
   }
 
-  dispatch(sessionStatusChanged({ key, status: 'offline' }));
+  dispatch(sessionStatusChanged({ key, status: SessionStatus.Offline }));
 
   if (unexpected) {
     dispatch(sessionDetail({ key, detail }));

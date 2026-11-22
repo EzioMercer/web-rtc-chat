@@ -1,10 +1,10 @@
 import { useEffect, useRef, type MouseEvent, type PointerEvent } from 'react';
-import type { RecordPhase } from '../useRecording.ts';
 import type { Recorder } from '../../../core/media/startRecorder.ts';
-import type { MediaNote } from '../../../store/chat/types.ts';
+import { type MediaNote, NoteType } from '../../../store/chat/types.ts';
 import { cx } from '../../../utils/cx.ts';
 import { Icon } from '../../../ui/Icon/Icon.tsx';
 import styles from './RecordButton.module.css';
+import { RecordPhase } from '../RecordPhase.ts';
 
 type Handlers = {
   onPointerDown: (e: PointerEvent<HTMLButtonElement>) => void;
@@ -29,8 +29,8 @@ type Props = {
 // and follows it; locked, it becomes the Send button.
 export const RecordButton = ({ mode, phase, recorder, slide, hint, disabled, handlers }: Props) => {
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const held = phase === 'starting' || phase === 'recording';
-  const locked = phase === 'locked';
+  const held = phase === RecordPhase.Starting || phase === RecordPhase.Recording;
+  const locked = phase === RecordPhase.Locked;
 
   // A glow around the button that follows how loud the microphone is.
   useEffect(() => {
@@ -57,12 +57,12 @@ export const RecordButton = ({ mode, phase, recorder, slide, hint, disabled, han
 
   const label = locked
     ? 'Send'
-    : `${mode === 'video' ? 'Video' : 'Voice'} message: hold to record, tap to switch to ${
-      mode === 'video' ? 'voice' : 'video'}`;
+    : `${mode === NoteType.Video ? 'Video' : 'Voice'} message: hold to record, tap to switch to ${
+      mode === NoteType.Video ? 'voice' : 'video'}`;
 
   return (
     <span className={styles.wrap}>
-      {phase === 'recording' && (
+      {phase === RecordPhase.Recording && (
         <span className={styles.lock} style={{ transform: `translateY(${-slide.y}px)` }} aria-hidden="true">
           <Icon name="lock" size={16} />
           <Icon name="chevronUp" size={16} />
@@ -79,7 +79,7 @@ export const RecordButton = ({ mode, phase, recorder, slide, hint, disabled, han
         style={held ? { transform: `translate(${-slide.x}px, ${-slide.y}px) scale(1.5)` } : undefined}
         {...handlers}
       >
-        <Icon name={locked ? 'send' : (mode === 'video' ? 'video' : 'mic')} />
+        <Icon name={locked ? 'send' : (mode === NoteType.Video ? 'video' : 'mic')} />
       </button>
     </span>
   );

@@ -6,6 +6,7 @@ import type { AppThunk } from '../../store.ts';
 import { conversationSelected } from '../../ui/uiSlice.ts';
 import { endCall } from '../call/endCall.ts';
 import { clearConversation } from '../chat/clearConversation.ts';
+import { SessionStatus } from '../../sessions/types.ts';
 
 export const deleteContact = (id: string): AppThunk => (dispatch, getState) => {
   const session = sessions.get(id);
@@ -22,7 +23,7 @@ export const deleteContact = (id: string): AppThunk => (dispatch, getState) => {
     dispatch(conversationSelected(null));
   }
 
-  dispatch(sessionStatusChanged({ key: id, status: 'idle' }));
+  dispatch(sessionStatusChanged({ key: id, status: SessionStatus.Idle }));
   dispatch(clearConversation(id));
   dispatch(contactDeleted(id));
 };

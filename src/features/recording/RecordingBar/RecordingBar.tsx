@@ -1,4 +1,4 @@
-import { CANCEL_PX, type RecordPhase } from '../useRecording.ts';
+import { CANCEL_PX } from '../useRecording.ts';
 import { useElapsed } from '../../../hooks/useElapsed.ts';
 import type { Recorder } from '../../../core/media/startRecorder.ts';
 import { cx } from '../../../utils/cx.ts';
@@ -6,6 +6,7 @@ import { formatDuration } from '../../../utils/formatDuration.ts';
 import { Icon } from '../../../ui/Icon/Icon.tsx';
 import { IconButton } from '../../../ui/IconButton/IconButton.tsx';
 import styles from './RecordingBar.module.css';
+import { RecordPhase } from '../RecordPhase.ts';
 
 type Props = {
   phase: RecordPhase;
@@ -18,7 +19,7 @@ type Props = {
 // Covers the message field while recording: the time so far, and how to cancel.
 export const RecordingBar = ({ phase, recorder, slideX, onCancel }: Props) => {
   const elapsed = useElapsed(recorder?.startedAt ?? null);
-  const locked = phase === 'locked';
+  const locked = phase === RecordPhase.Locked;
 
   return (
     <div className={styles.bar}>

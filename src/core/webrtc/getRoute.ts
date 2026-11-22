@@ -1,3 +1,5 @@
+import { SessionRoute } from '../../store/sessions/types.ts';
+
 type Stat = {
   type: string;
   selectedCandidatePairId?: string;
@@ -10,7 +12,7 @@ type Stat = {
 };
 
 // Whether the open connection goes straight between the devices or through the TURN relay.
-export const getRoute = async (peer: RTCPeerConnection): Promise<'direct' | 'relay'> => {
+export const getRoute = async (peer: RTCPeerConnection): Promise<SessionRoute> => {
   const report = await peer.getStats();
   const stats = [...report.values()] as Stat[];
   const pairId = stats.find(s => s.type === 'transport' && s.selectedCandidatePairId)?.selectedCandidatePairId;
@@ -22,5 +24,5 @@ export const getRoute = async (peer: RTCPeerConnection): Promise<'direct' | 'rel
   const types = [pair?.localCandidateId, pair?.remoteCandidateId]
     .map(id => (id ? (report.get(id) as Stat | undefined)?.candidateType : undefined));
 
-  return types.includes('relay') ? 'relay' : 'direct';
+  return types.includes('relay') ? SessionRoute.Relay : SessionRoute.Direct;
 };

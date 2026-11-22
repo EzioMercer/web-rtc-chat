@@ -7,6 +7,7 @@ import { CopyButton } from '../../../ui/CopyButton/CopyButton.tsx';
 import { QrCode } from '../../../ui/QrCode/QrCode.tsx';
 import { formatRemaining } from './formatRemaining.ts';
 import styles from './AddContactDialog.module.css';
+import { ButtonVariant } from '../../../ui/Button/ButtonVariant.ts';
 
 // Shows our single-use invite as a QR code and a link.
 export const InviteTab = () => {
@@ -54,11 +55,11 @@ export const InviteTab = () => {
         />
         <CopyButton text={mine.link} />
       </div>
-      {'share' in navigator && <Button variant="secondary" onClick={share}>Share link</Button>}
+      {'share' in navigator && <Button variant={ButtonVariant.Secondary} onClick={share}>Share link</Button>}
       <p className={styles.muted}>
         {`Single use · expires in ${formatRemaining(mine.expiresAt - now)} · keep the app open until they use it.`}
       </p>
-      <Button variant="ghost" onClick={() => void dispatch(createInvite())}>Make a new invite</Button>
+      <Button variant={ButtonVariant.Ghost} onClick={() => void dispatch(createInvite())}>Make a new invite</Button>
     </>
   );
 };

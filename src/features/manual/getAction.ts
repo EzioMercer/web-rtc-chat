@@ -1,4 +1,4 @@
-import type { ManualState } from '../../store/manual/types.ts';
+import { type ManualState, ManualStatus, ManualRole } from '../../store/manual/types.ts';
 
 export type Action = {
   label: string;
@@ -7,15 +7,15 @@ export type Action = {
 
 // Label and state of the single setup button, from the connection and whether the peer's code is filled in.
 export const getAction = ({ role, status }: ManualState, hasPeerCode: boolean): Action => {
-  if (status === 'generating' || status === 'connecting') {
+  if (status === ManualStatus.Generating || status === ManualStatus.Connecting) {
     return { label: 'Please wait…', disabled: true };
   }
 
-  if (role === 'host') {
-    return { label: 'Connect', disabled: !hasPeerCode || status !== 'waiting' };
+  if (role === ManualRole.Host) {
+    return { label: 'Connect', disabled: !hasPeerCode || status !== ManualStatus.Waiting };
   }
 
-  if (role === 'client') {
+  if (role === ManualRole.Client) {
     return { label: 'Waiting for host…', disabled: true };
   }
 

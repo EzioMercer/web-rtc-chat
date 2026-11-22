@@ -1,8 +1,8 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import type { EchoGuardSetting, SettingsState } from './types.ts';
+import { EchoGuardSetting, type SettingsState } from './types.ts';
 
 export const DEFAULT_SETTINGS: SettingsState = {
-  echoGuard: 'auto',
+  echoGuard: EchoGuardSetting.Auto,
 };
 
 const settingsSlice = createSlice({
