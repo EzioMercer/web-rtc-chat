@@ -6,7 +6,8 @@ import styles from './UpdateNotice.module.css';
 import { ProtectionMode } from '../../../core/identity/types.ts';
 import { ButtonVariant } from '../../../ui/Button/ButtonVariant.ts';
 
-// Says that a new version is out. Reloading is optional: it clears this tab's chats (and a temporary identity).
+// Says that a new version is out. Reloading is optional: saved chats stay, but files on their way stop (and a
+// temporary identity loses everything).
 export const UpdateNotice = () => {
   const latest = useNewVersion();
   const temporary = useAppSelector(state => state.app.mode === ProtectionMode.Temporary);
@@ -16,13 +17,15 @@ export const UpdateNotice = () => {
     return null;
   }
 
-  const loses = temporary ? 'the chats in this tab and your temporary identity' : 'the chats in this tab';
+  const loses = temporary
+    ? ' Reloading clears the chats in this tab and your temporary identity.'
+    : ' Your chats stay; only files still on their way stop.';
 
   return (
     <div className={styles.notice} role="status">
       <span>
         <b>A new version is available.</b>
-        {` Reloading clears ${loses}.`}
+        {loses}
       </span>
       <div className={styles.actions}>
         <Button variant={ButtonVariant.Ghost} onClick={() => setDismissed(latest)}>Later</Button>

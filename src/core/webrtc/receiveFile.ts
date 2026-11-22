@@ -1,7 +1,11 @@
 import { inflateBlob } from '../compression/inflateBlob.ts';
+import { memoryFileKey } from '../history/memoryFileKey.ts';
+import { memoryFiles } from '../history/memoryFiles.ts';
 import { fileAdded, fileCompleted, fileFailed, fileProgress } from '../../store/chat/chatSlice.ts';
+import { peerMessageId } from '../../store/chat/peerMessageId.ts';
 import type { AppDispatch } from '../../store/store.ts';
 import { countUnread } from '../../store/thunks/chat/countUnread.ts';
+import { hasMessage } from '../../store/thunks/chat/hasMessage.ts';
 import { FILE_DONE } from './config.ts';
 import { overRelayLimit, RELAY_LIMIT_TEXT } from './overRelayLimit.ts';
 import { parseFileMeta } from './parseFileMeta.ts';
@@ -25,6 +29,8 @@ const wireSize = (file: FileMeta) => file.packed ?? file.size;
 export const receiveFile = (key: string, channel: RTCDataChannel, dispatch: AppDispatch) => {
   const chunks: ArrayBuffer[] = [];
   let meta: FileMeta | null = null;
+  // Our id for it (see peerMessageId).
+  let id = '';
   let received = 0;
   let reported = 0;
   let done = false;
@@ -43,10 +49,11 @@ export const receiveFile = (key: string, channel: RTCDataChannel, dispatch: AppD
         throw new Error(DAMAGED);
       }
 
-      dispatch(fileCompleted({ key, id: file.id, url: URL.createObjectURL(content) }));
+      memoryFiles.set(memoryFileKey(key, id), content);
+      dispatch(fileCompleted({ key, id, url: URL.createObjectURL(content) }));
       channel.send(FILE_DONE);
     } catch {
-      dispatch(fileFailed({ key, id: file.id, error: DAMAGED }));
+      dispatch(fileFailed({ key, id, error: DAMAGED }));
       channel.close();
     }
   };
@@ -67,14 +74,24 @@ export const receiveFile = (key: string, channel: RTCDataChannel, dispatch: AppD
   channel.onmessage = (e: MessageEvent) => {
     if (!meta) {
       meta = parseFileMeta(e.data);
+      id = (meta && peerMessageId(meta.id)) ?? '';
 
-      if (!meta) {
+      // A file id we already have would replace that file.
+      if (!meta || !id || dispatch(hasMessage(key, id))) {
+        meta = null;
         channel.close();
 
         return;
       }
 
-      const file = { ...meta, from: MessageAuthor.Peer, url: null, transferred: 0, status: FileStatus.Transferring };
+      const file = {
+        ...meta,
+        id,
+        from: MessageAuthor.Peer,
+        url: null,
+        transferred: 0,
+        status: FileStatus.Transferring,
+      };
 
       dispatch(fileAdded({ key, file }));
       dispatch(countUnread(key));
@@ -101,13 +118,13 @@ export const receiveFile = (key: string, channel: RTCDataChannel, dispatch: AppD
       void finish(meta);
     } else if (received - reported >= wireSize(meta) * PROGRESS_STEP) {
       reported = received;
-      dispatch(fileProgress({ key, id: meta.id, transferred: received }));
+      dispatch(fileProgress({ key, id, transferred: received }));
     }
   };
 
   channel.onclose = () => {
     if (meta && !done) {
-      dispatch(fileFailed({ key, id: meta.id, error }));
+      dispatch(fileFailed({ key, id, error }));
     }
   };
 };

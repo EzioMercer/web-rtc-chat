@@ -4,12 +4,15 @@ import type { ProtectionMode, StoredMeta } from './types.ts';
 type Vault = {
   mode: ProtectionMode | null;
   meta: StoredMeta | null;
-  // Encrypts the contacts, our keys for them and the settings at rest.
+  // The data key: encrypts the contacts, our keys for them, the settings, messages and files at rest.
   vaultKey: CryptoKey | null;
+  // The protection's key, which encrypts the data key (see StoredMeta). None for a temporary identity.
+  wrapKey: CryptoKey | null;
 };
 
 export const vault: Vault = {
   mode: null,
   meta: null,
   vaultKey: null,
+  wrapKey: null,
 };

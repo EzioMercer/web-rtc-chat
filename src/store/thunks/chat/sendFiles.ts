@@ -1,5 +1,7 @@
 import { nanoid } from '@reduxjs/toolkit';
 import { packFile } from '../../../core/compression/packFile.ts';
+import { memoryFileKey } from '../../../core/history/memoryFileKey.ts';
+import { memoryFiles } from '../../../core/history/memoryFiles.ts';
 import { formatBytes } from '../../../utils/formatBytes.ts';
 import { overRelayLimit, RELAY_LIMIT_TEXT } from '../../../core/webrtc/overRelayLimit.ts';
 import { sendFile } from '../../../core/webrtc/sendFile.ts';
@@ -54,6 +56,8 @@ export const sendFiles = (key: string, files: File[], note?: MediaNote): AppThun
     const id = nanoid();
     const url = URL.createObjectURL(file);
     let reported = 0;
+
+    memoryFiles.set(memoryFileKey(key, id), file);
 
     dispatch(fileAdded({
       key,

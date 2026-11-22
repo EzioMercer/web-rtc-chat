@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useBackToList } from '../useBackToList.ts';
+import { historySaver } from '../../../core/history/historySaver.ts';
 import { reconnectRelays } from '../../../core/nostr/listen.ts';
 import { useCallSounds } from '../../calls/useCallSounds.ts';
 import { conversationRead } from '../../../store/chat/chatSlice.ts';
@@ -75,8 +76,11 @@ export const Messenger = () => {
       hiddenAt = 0;
     };
 
-    // Free received files from memory when the page goes away.
-    const onHide = () => Object.values(store.getState().chat.conversations).forEach(revokeFiles);
+    // Save what is still waiting, and free received files from memory, when the page goes away.
+    const onHide = () => {
+      void historySaver.flush();
+      Object.values(store.getState().chat.conversations).forEach(revokeFiles);
+    };
 
     window.addEventListener('online', reconnectSelected);
     window.addEventListener('hashchange', onHash);

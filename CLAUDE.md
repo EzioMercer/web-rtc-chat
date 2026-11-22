@@ -11,12 +11,13 @@ explains the product and its privacy promises; read it before changing anything 
 src/
   ui/         Reusable building blocks. Look here before writing a new button, dialog or field.
                 Button, IconButton, Icon (+ paths.ts: every icon), Dialog (dismissible={false} for questions that
-                must be answered), TextField, CodeField, CopyButton, SegmentedControl (radio or tabs),
+                must be answered), TextField, CodeField, CopyButton, SegmentedControl (radio or tabs), Checkbox,
                 MediaVideo (plays a MediaStream), QrCode, QrScanner, Logo
   features/   Screens, one folder per feature, with the hooks and helpers only that feature uses.
-                app/        Messenger (main layout), Sidebar, EmptyPane, UpdateNotice
+                app/        Messenger (main layout), Sidebar, EmptyPane, UpdateNotice, OtherTabScreen
                 setup/      SetupScreen, UnlockScreen, ProtectionPicker
-                settings/   SettingsDialog, LegalDialog (LEGAL.ts: disclaimer and privacy text)
+                settings/   SettingsDialog, StorageSection, LegalDialog (LEGAL.ts: disclaimer and privacy text)
+                backup/     ExportDialog, ImportDialog, BackupProgress (covers the app while one runs)
                 contacts/   AddContactDialog (invite / join), ContactList, ContactRow, SafetyPanel, dialogs
                 chat/       ChatPane, Conversation, ChatHeader, MessageList, Composer, FileBubble
                 recording/  voice and round video messages: useRecording (tap/hold/slide logic), RecordButton,
@@ -29,15 +30,22 @@ src/
                             config.ts (all timeouts and limits, TURN_FILE_LIMIT), echoConfig.ts
                 signaling/  what goes through relays (types.ts), sealing and invite links
                 nostr/      relay pool, mailboxes, listen/publish
-                identity/   keys, the encrypted vault, saving contacts and settings
+                identity/   keys, the encrypted vault (a data key under the protection's key), contacts, settings
+                history/    saved chats: pages of messages and files in 1 MB pieces, under a random slot per chat
+                            (historyKeys), historySaver (debounced, one queue), memoryFiles (this session's files)
+                backup/     the .p2pchat file: createBackupWriter / createRecordReader, writeBackup, restoreBackup,
+                            openStreamDownload (+ public/backup-sw.js, which streams it to disk)
+                tab/        claimTab: one tab at a time (Web Locks)
                 crypto/     small WebCrypto helpers
-                storage/    kv.ts: the ONLY module allowed to touch browser storage (lint enforces it)
+                storage/    kv.ts: the ONLY module allowed to touch browser storage (lint enforces it), with batch
+                            (all-or-nothing) writes and prefix reads/deletes
                 turn/, update/  the only modules allowed to fetch (lint enforces it)
                 media/      recording engine (MediaRecorder, format choice, square crop, waveform)
                 compression/  zip/unzip (deflate-raw) for files, relay notes and manual codes
                 sound/      ringtone (Web Audio, paused when nothing rings: see the comment there)
-  store/      Redux: one folder per slice (app, contacts, sessions, chat, call, invites, manual, ui, settings),
-              thunks/<area>/ for everything with side effects, persistence.ts saves contacts and settings.
+  store/      Redux: one folder per slice (app, contacts, sessions, chat, call, invites, manual, ui, settings,
+              backup), thunks/<area>/ for everything with side effects, persistence.ts saves contacts, settings,
+              chats, files and unread counts as they change.
   hooks/      Generic hooks (useElapsed, useFullScreen, useDragSort). Feature hooks live in their feature.
   utils/      Generic helpers (cx, formatBytes, formatDuration, hasKeyboard, trackWindowHeight).
 ```
@@ -46,8 +54,8 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
 
 ## How the main flows work
 
-- **Start:** `App` → `initApp` thunk → setup, unlock or (no protection) straight in → `afterUnlock` starts
-  listening on the Nostr mailboxes.
+- **Start:** `App` → `initApp` thunk → `claimTab` (a second tab waits) → setup, unlock or (no protection) straight
+  in → `loadSavedChats` → `afterUnlock` starts listening on the Nostr mailboxes.
 - **Connecting to a contact:** `connectContact` creates a session (`core/webrtc/createSession.ts`), sends a sealed,
   signed offer to the contact's daily mailbox (`core/signaling`, `core/nostr`); `receiveOffer` / `receiveAnswer`
   answer it. Once the data channel opens, `sessionOpened` checks the route (direct or TURN) and starts
@@ -71,9 +79,21 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
   (`EchoPrompt`) and its `useEchoGuard` turns the microphone off while they talk. Both only read
   `getStats()` levels: no Web Audio during calls (it breaks phones' echo filters).
 - **Nothing a user writes is ever stored on a server or relay.** The device may store anything the app needs,
-  encrypted with the vault key (`core/identity`, through `core/storage/kv.ts`). Today that is the contacts, our key
-  for each contact and device settings; messages live only in memory. Settings are per device: never synced, never
-  in backups.
+  encrypted with the vault key (`core/identity`, through `core/storage/kv.ts`): the contacts, our key for each
+  contact, device settings, and the chats (`core/history`: messages, files, unread counts). Temporary identities
+  and the manual connection save nothing. Settings are per device: never synced, never in backups.
+- **Vault key:** `vault.vaultKey` is a random data key; `StoredMeta.dataKey` keeps it encrypted with the passkey,
+  passphrase or device key. Changing protection only re-encrypts that (`changeProtection`).
+- **Saved chats** (`core/history`): `persistence.ts` schedules a save on every chat change; `writePages` rewrites
+  only pages whose message objects changed (the store never mutates in place). Files are saved on `fileCompleted`
+  from `memoryFiles`. A saved file has `url: null`; `useFileUrl` decrypts it when it comes into view. Peer message
+  and file ids are prefixed `p.` (`peerMessageId`), so they can't collide with ours and repeats are dropped after a
+  reload too. Each saved record is encrypted with its storage key bound in (`sealRecord`).
+- **Backups** (`core/backup`, `store/thunks/backup`): `goOffline` (calls, connections and relays stop; `app.paused`
+  blocks new ones) → write or read the file → `goOnline`. The file: magic, format, a plain header (Argon2id salt,
+  the backup key encrypted with the password), then records (Info, Contact…, per chat File + Chunk… then Page…,
+  End), each encrypted with its index and type bound in. A restore writes new slots, then switches contacts, keys
+  and slots in one `kv.batch`; on the setup screen the new identity is created first and saved only then.
 - **Keys:** there is no single identity key. Every contact gets its own key pair (`contactKeys`, private halves
   never in Redux): we sign relay notes to them with it, and `Contact.myKey` is its public half.
 
@@ -82,6 +102,10 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
 - Arrow functions only, one exported function or component per file, named like the file.
 - Comments in plain English that say why; no "removed" or history comments.
 - Constants and limits go in the area's `config.ts` with a comment.
+- Enums whose numbers are saved or sent (chat, signaling, control, protection, settings, backup records) have their
+  values written out: never change one, add new ones at the end. A saved message kind this version doesn't know
+  shows as "needs a newer version" and stays saved.
+- Saved data: new fields are optional and missing means the default, so old saved data needs no migration.
 - Enums, not string-literal unions; number enums by default. String enums only where the value is itself a
   CSS class name or a browser/HTML value (ButtonVariant, IconButtonVariant, MessageAuthor, TrackKind, …). Never
   `const enum` (isolatedModules). Enum values in text (logs, file names) must be turned into words
@@ -95,6 +119,9 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
 - `scripts/e2e-media.mjs`: two browsers connect by hand-copied codes and test voice/video messages, the TURN
   limit, zipped files and echo detection with the guard. It imports the app's modules in the page, so it needs the dev server:
   `VITE_TURN_URL= npx vite --port 5173 --strictPort &` then `node scripts/e2e-media.mjs`.
+- `scripts/e2e-backup.mjs` (same dev server): saved chats, backups and restores in Chromium, Firefox and WebKit
+  (also across them), errors, name clashes, protection changes, one tab, and a 1 GB backup's memory use.
+  Restart the dev server after editing files: a reloaded module is a second copy, and the test would talk to that.
 - `scripts/e2e-move.mjs` (same dev server): a call moves to a new connection, goes back when it breaks, and stays when
   the test fails.
 - `scripts/e2e-real-relays.mjs` (built app, `npx vite preview --port 4173`, real relays): Chromium adds Firefox and

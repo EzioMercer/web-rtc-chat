@@ -22,7 +22,7 @@ type Props = {
   onSubmit: (choice: ProtectionChoice) => void;
 };
 
-// Lets the user choose how the identity and contacts are protected on this device.
+// Lets the user choose how the identity, contacts and chats are protected on this device.
 export const ProtectionPicker = ({ submitLabel, busy, error, current, onSubmit }: Props) => {
   const [passkey, setPasskey] = useState<boolean | null>(null);
   const [mode, setMode] = useState<ProtectionMode | null>(null);

@@ -2,14 +2,13 @@ import type { Sealed } from '../crypto/types.ts';
 import { unsealJson } from '../crypto/unsealJson.ts';
 import type { Contact } from '../../store/contacts/types.ts';
 import { kv } from '../storage/kv.ts';
-import { keyForMeta } from './keyForMeta.ts';
 import { loadContactKeys } from './loadContactKeys.ts';
+import { openDataKey } from './openDataKey.ts';
 import { readMeta } from './readMeta.ts';
 import { STORAGE_KEYS } from './storageKeys.ts';
-import { ProtectionMode } from './types.ts';
 import { vault } from './vault.ts';
 
-// Unlocks the vault and returns the decrypted contact list. Opening the list also proves the key is right.
+// Unlocks the vault and returns the decrypted contact list.
 export const unlockIdentity = async (passphrase?: string): Promise<Contact[]> => {
   const meta = await readMeta();
   const sealedContacts = await kv.get<Sealed>(STORAGE_KEYS.contacts);
@@ -18,19 +17,20 @@ export const unlockIdentity = async (passphrase?: string): Promise<Contact[]> =>
     throw new Error('No saved identity.');
   }
 
-  const key = await keyForMeta(meta, passphrase);
+  const { dataKey, wrapKey } = await openDataKey(meta, passphrase);
   let contacts: Contact[];
 
   try {
-    contacts = await unsealJson<Contact[]>(key, sealedContacts);
+    contacts = await unsealJson<Contact[]>(dataKey, sealedContacts);
   } catch {
-    throw new Error(meta.mode === ProtectionMode.Passphrase ? 'Wrong passphrase.' : 'Could not unlock the identity.');
+    throw new Error('The saved contacts are damaged.');
   }
 
-  await loadContactKeys(key, contacts);
+  await loadContactKeys(dataKey, contacts);
   vault.mode = meta.mode;
   vault.meta = meta;
-  vault.vaultKey = key;
+  vault.vaultKey = dataKey;
+  vault.wrapKey = wrapKey;
 
   return contacts;
 };

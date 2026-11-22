@@ -34,6 +34,11 @@ export const connectContact = (id: string): AppThunk<Promise<void>> => async (di
   const contact = getState().contacts.list.find(c => c.id === id);
   const status = getState().sessions.status[id];
 
+  // Offline on purpose while a backup runs (see goOffline).
+  if (getState().app.paused) {
+    return;
+  }
+
   if (!contact || status === SessionStatus.Connected || (status === SessionStatus.Connecting && attemptAlive(id))) {
     return;
   }

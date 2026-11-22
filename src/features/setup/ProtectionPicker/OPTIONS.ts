@@ -4,8 +4,8 @@ export const OPTIONS: { mode: ProtectionMode; title: string; text: string }[] = 
   {
     mode: ProtectionMode.Passkey,
     title: 'Passkey (recommended)',
-    text: 'Unlock with your fingerprint, face or device PIN. Your identity and contacts are encrypted with a key '
-      + 'that only the passkey can produce, so copying this device\'s files gives nothing useful.',
+    text: 'Unlock with your fingerprint, face or device PIN. Your identity, contacts and chats are encrypted with a '
+      + 'key that only the passkey can produce, so copying this device\'s files gives nothing useful.',
   },
   {
     mode: ProtectionMode.Passphrase,
@@ -16,12 +16,12 @@ export const OPTIONS: { mode: ProtectionMode; title: string; text: string }[] = 
   {
     mode: ProtectionMode.Device,
     title: 'No protection',
-    text: 'No unlock step. Anyone with access to this device\'s files could send messages as you.',
+    text: 'No unlock step. Anyone with access to this device\'s files could read your chats and write as you.',
   },
   {
     mode: ProtectionMode.Temporary,
     title: 'Temporary',
-    text: 'Nothing is saved. Your identity and contacts disappear when you close the tab. '
+    text: 'Nothing is saved. Your identity, contacts and chats disappear when you close the tab. '
       + 'For shared or untrusted computers.',
   },
 ];

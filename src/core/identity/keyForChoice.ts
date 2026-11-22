@@ -10,7 +10,7 @@ type KeyAndMeta = {
   meta: Pick<StoredMeta, 'credentialId' | 'prfSalt' | 'argonSalt'>;
 };
 
-// Makes the key that will encrypt the identity and contacts, for the protection the user chose.
+// Makes the key that will protect the data key (see StoredMeta), for the protection the user chose.
 export const keyForChoice = async (choice: ProtectionChoice): Promise<KeyAndMeta> => {
   switch (choice.mode) {
     case ProtectionMode.Passkey: {

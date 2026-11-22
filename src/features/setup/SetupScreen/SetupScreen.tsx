@@ -1,8 +1,8 @@
-import { useState, type ChangeEvent } from 'react';
-import { restoreBackup } from '../../../store/thunks/app/restoreBackup.ts';
+import { useState } from 'react';
 import { setupIdentity } from '../../../store/thunks/app/setupIdentity.ts';
 import { useAppDispatch } from '../../../store/useAppDispatch.ts';
 import { useAppSelector } from '../../../store/useAppSelector.ts';
+import { ImportDialog } from '../../backup/ImportDialog/ImportDialog.tsx';
 import { LegalDialog } from '../../settings/LegalDialog/LegalDialog.tsx';
 import { Logo } from '../../../ui/Logo/Logo.tsx';
 import { ProtectionPicker } from '../ProtectionPicker/ProtectionPicker.tsx';
@@ -13,16 +13,7 @@ export const SetupScreen = () => {
   const dispatch = useAppDispatch();
   const { busy, error } = useAppSelector(state => state.app);
   const [legal, setLegal] = useState(false);
-
-  const restore = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-
-    e.target.value = '';
-
-    if (file) {
-      await dispatch(restoreBackup(await file.text()));
-    }
-  };
+  const [restoring, setRestoring] = useState(false);
 
   return (
     <section className={styles.screen}>
@@ -48,11 +39,11 @@ export const SetupScreen = () => {
         </button>
         .
       </p>
-      <label className={styles.restore}>
+      <button type="button" className={styles.restore} onClick={() => setRestoring(true)}>
         Restore from a backup file
-        <input type="file" accept="application/json,.json" hidden onChange={restore} />
-      </label>
+      </button>
       {legal && <LegalDialog onClose={() => setLegal(false)} />}
+      {restoring && <ImportDialog fresh onClose={() => setRestoring(false)} />}
     </section>
   );
 };

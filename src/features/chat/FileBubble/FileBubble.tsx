@@ -1,3 +1,4 @@
+import { useFileUrl } from '../../../hooks/useFileUrl.ts';
 import { type FileMessage, NoteType, FileStatus } from '../../../store/chat/types.ts';
 import { formatBytes } from '../../../utils/formatBytes.ts';
 import { Icon } from '../../../ui/Icon/Icon.tsx';
@@ -6,12 +7,17 @@ import { VoiceBubble } from '../../recording/VoiceBubble/VoiceBubble.tsx';
 import styles from './FileBubble.module.css';
 
 type Props = {
+  chat: string;
   file: FileMessage;
 };
 
 // Voice and video messages have their own player; files get an inline preview for images, video and audio, and a
-// download card.
-export const FileBubble = ({ file }: Props) => {
+// download card. A saved file is opened from storage once it comes into view (see useFileUrl).
+export const FileBubble = ({ chat, file: message }: Props) => {
+  const { ref, url: openedUrl, error: openError } = useFileUrl(chat, message);
+  const file: FileMessage = openError
+    ? { ...message, url: null, status: FileStatus.Failed, error: openError }
+    : { ...message, url: openedUrl };
   const { name, size, mime, url, transferred, status, from, error, note, packed } = file;
   // `transferred` counts what travels: the zipped bytes when it was sent zipped.
   const total = packed ?? size;
@@ -39,15 +45,15 @@ export const FileBubble = ({ file }: Props) => {
   };
 
   if (note?.type === NoteType.Voice) {
-    return <VoiceBubble file={file} />;
+    return <div ref={ref}><VoiceBubble file={file} /></div>;
   }
 
   if (note?.type === NoteType.Video) {
-    return <VideoNoteBubble file={file} />;
+    return <div ref={ref}><VideoNoteBubble file={file} /></div>;
   }
 
   return (
-    <div className={styles.file}>
+    <div ref={ref} className={styles.file}>
       {preview()}
       <div className={styles.row}>
         <Icon name="file" size={22} />

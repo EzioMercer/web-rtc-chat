@@ -23,7 +23,7 @@ export const UnlockScreen = () => {
   };
 
   const reset = () => {
-    if (window.confirm('Delete your identity and contacts from this device? This can\'t be undone.')) {
+    if (window.confirm('Delete your identity, contacts and chats from this device? This can\'t be undone.')) {
       void resetApp();
     }
   };

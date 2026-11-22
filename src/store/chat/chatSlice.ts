@@ -49,11 +49,11 @@ const chatSlice = createSlice({
         payload: { key, message: { kind: MessageKind.Text as const, id: nanoid(), from, text } },
       }),
     },
-    // Their text, written `at` (already converted to our clock).
-    peerTextReceived: (state, { payload }: PayloadAction<Keyed<{ text: string; at: number }>>) => {
-      const { key, text, at } = payload;
+    // Their text, written `at` (already converted to our clock). `id` is theirs (see peerMessageId).
+    peerTextReceived: (state, { payload }: PayloadAction<Keyed<{ id: string; text: string; at: number }>>) => {
+      const { key, id, text, at } = payload;
 
-      insertByTime(state, key, { kind: MessageKind.Text, id: nanoid(), from: MessageAuthor.Peer, text, at });
+      insertByTime(state, key, { kind: MessageKind.Text, id, from: MessageAuthor.Peer, text, at });
     },
     messageQueued: (state, { payload }: PayloadAction<Keyed<{ id: string; text: string }>>) => {
       const { key, id, text } = payload;
@@ -100,6 +100,11 @@ const chatSlice = createSlice({
     conversationRead: (state, { payload }: PayloadAction<string>) => {
       delete state.unread[payload];
     },
+    // The saved chats, after unlocking or restoring a backup. Replaces what was in memory.
+    historyLoaded: (state, { payload }: PayloadAction<ChatState>) => {
+      state.conversations = payload.conversations;
+      state.unread = payload.unread;
+    },
     conversationCleared: (state, { payload }: PayloadAction<string>) => {
       delete state.conversations[payload];
       delete state.unread[payload];
@@ -118,6 +123,7 @@ export const {
   fileFailed,
   unreadAdded,
   conversationRead,
+  historyLoaded,
   conversationCleared,
 } = chatSlice.actions;
 

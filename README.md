@@ -17,6 +17,9 @@ Live: https://eziomercer.github.io/web-rtc-chat/
 - 📎 Files, photos and videos of any size (up to 10 MB when the connection goes through the TURN relay); text files
   are sent zipped, often 5-10 times smaller
 - 🔒 End-to-end encrypted, messages never touch a server
+- 💾 Chats and files are saved on your device, encrypted, and are still there after a reload
+- 📦 Backup to a password-locked file (text only or with media, for all chats or each on its own) to move to another
+  device
 - 👤 No account, phone number or email
 - 📱 Works on phones and computers, nothing to install
 - ➕ Add contacts with a QR code or an invite link
@@ -29,7 +32,7 @@ Live: https://eziomercer.github.io/web-rtc-chat/
    accounts.
 2. **Your identity is keys, not an account.** For each contact the app creates a new key pair on your device, so no
    two contacts see the same key and they can't tell they know the same person. There is no sign-up, email, phone
-   number or password. You choose how the keys are protected on this device:
+   number or password. You choose how the keys and chats are protected on this device:
    - **passkey:** fingerprint, face or device PIN (recommended);
    - **passphrase;**
    - **no protection;**
@@ -57,8 +60,9 @@ Live: https://eziomercer.github.io/web-rtc-chat/
 
    After that, relays aren't involved in that conversation. Every time you connect, the two apps also swap a new
    mailbox secret over the direct link, so an old invite or secret stops working.
-6. **Closing the tab ends everything.** Messages and received files exist only in the page's memory (the Redux
-   store), and they disappear when the tab closes.
+6. **Chats stay on your device.** Messages and files are saved in the browser (IndexedDB), encrypted, and come back
+   after a reload. With a temporary identity they live only in the tab's memory, and so does the manual connection's
+   chat. The app runs in one tab at a time: a second tab waits until the first is closed.
 
 Some networks block direct connections. Then the browsers send their (still end-to-end encrypted) traffic through
 a **TURN relay** on Cloudflare instead. It can't read anything and stores nothing. The status then says "through TURN
@@ -89,18 +93,52 @@ hand, without contacts or relays.
   - The safety code proves that the keys are the right ones.
 - **Relays see almost nothing.** They see encrypted, throwaway-signed notes addressed to random-looking mailboxes
   that change daily. They don't see who talks to whom, or any content, and they don't store the notes.
-- **Messages never touch a server.** No server or relay ever stores (or sees) them. Only your own device may keep
-  things, and only encrypted.
-  - Today the only things saved, in IndexedDB, are your contact list (names, both public keys, mailbox secrets),
-    your private key for each contact and your settings. They are encrypted with your passkey or passphrase key.
-    With "no protection" the key is saved right next to them, so anyone with a copy of the browser's files can open
-    them. Messages are kept only in memory.
+- **Messages never touch a server.** No server or relay ever stores (or sees) them. Only your own device keeps
+  them, and only encrypted.
+  - Saved in IndexedDB: your contact list (names, both public keys, mailbox secrets), your private key for each
+    contact, your settings, and your chats (messages, files, voice and video messages).
+  - All of it is encrypted (AES-GCM) with a random data key. The data key is encrypted with your passkey or
+    passphrase key; changing the protection only encrypts the data key again. With "no protection" the key that
+    opens it is saved right next to it, so anyone with a copy of the browser's files can read everything.
+  - Each saved piece is bound to its place, so pieces can't be swapped around. Files are saved in 1 MB pieces, and
+    a saved file is decrypted only when it scrolls into view.
+  - Browsers may delete a site's data when the device runs low on space. The app asks the browser to keep it
+    ("persistent storage"); installed apps usually get that. Safari on iPhone and iPad deletes the data of sites
+    not visited for 7 days, unless the app is added to the Home Screen. Keep a backup.
 - **No accounts, analytics, trackers or third-party scripts.**
+
+## Backups
+
+Settings → Back up writes a `.p2pchat` file with your contacts, your keys for them and your chats. Settings →
+Restore (or "Restore from a backup file" on the first screen) brings them back, on this device or another one.
+
+- **You choose what goes in:** text only or with media, for all chats or each chat on its own, and chats to leave
+  out. The dialog shows the size and time for each choice. Settings are never in a backup: they belong to the
+  device.
+- **Locked with its own password.** A random key encrypts the file, and the password (through Argon2id, like the
+  passphrase) encrypts that key. It works on any device, whatever protection either device uses. Before a backup,
+  the app asks for the passkey or passphrase again, so someone holding your unlocked phone can't take your chats.
+- **Nothing can be changed unnoticed.** Every piece of the file is encrypted together with its place in it, and the
+  file ends with an end mark. A changed, reordered or cut-off file is refused.
+- **Small.** Messages and text-like files are zipped before they are encrypted. Photos, videos and voice are
+  compressed already, so they go in as they are.
+- **Big backups don't fill the memory.** A small service worker (it handles only this, and caches nothing) streams
+  the file to disk piece by piece. Without it, for example in some private windows, the file is built in memory.
+- **Offline meanwhile.** While a backup is made or restored, the app stops the relays and closes its connections,
+  so nothing changes halfway. Then it reconnects by itself.
+- **Restoring adds and replaces.** A chat from the backup replaces the same chat on the device; others are added;
+  chats only on the device stay. If a different contact here has the same name, you choose: keep this device's,
+  the backup's, or both. A restore is all or nothing: the whole file is checked and written first, and only then
+  switched in at once.
+- **One device at a time.** A restored device has the same keys as the one the backup came from. There is no
+  automatic sync: if both are open, both answer your contacts and the chats split between them.
 
 ### What it does *not* protect against
 
 - **Skipping the safety check.** If someone intercepted the invite link and used it first, they could pose as your
   contact. Comparing the safety code catches this, but only if people actually compare it.
+- **A weak backup password.** Anyone with the backup file can try passwords offline. Argon2id makes each guess
+  slow, but a short password can still be found: use the suggested words.
 - **A compromised device.** Malware that can read your screen, keyboard or memory can read anything while the app
   is unlocked. With "no protection", it can also copy your keys from disk. No app can defend against that.
 - **IP addresses.** The other person sees your IP address when the connection is direct. Relays, the STUN server

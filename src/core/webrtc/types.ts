@@ -3,27 +3,29 @@ import type { SessionRoute } from '../../store/sessions/types.ts';
 import type { TrackKind } from './TrackKind.ts';
 
 // What a control channel message is (its `t`).
+// Saved or sent as numbers: never change a value; add new ones at the end.
 export enum ControlType {
-  Text,
-  Ack,
-  Sdp,
-  Ice,
-  Call,
-  Rotate,
-  RotateAck,
-  RotateDone,
+  Text = 0,
+  Ack = 1,
+  Sdp = 2,
+  Ice = 3,
+  Call = 4,
+  Rotate = 5,
+  RotateAck = 6,
+  RotateDone = 7,
   // Moving a call to a new, direct connection (see store/thunks/move).
-  Move,
+  Move = 8,
 }
 
+// Saved or sent as numbers: never change a value; add new ones at the end.
 export enum CallAction {
-  Invite,
-  Accept,
-  Decline,
-  End,
-  State,
+  Invite = 0,
+  Accept = 1,
+  Decline = 2,
+  End = 3,
+  State = 4,
   // They hear an echo of their own voice from our side (see useEchoDetector).
-  Echo,
+  Echo = 5,
 }
 
 export type CallSignal =
@@ -34,25 +36,26 @@ export type CallSignal =
 
 // Steps of moving a call from the TURN relay to a new, direct connection, which is tested before the call goes over
 // and kept until it holds (see store/thunks/move). The impolite side leads.
+// Saved or sent as numbers: never change a value; add new ones at the end.
 export enum MoveStep {
   // Leader: let's try a direct connection.
-  Ask,
+  Ask = 0,
   // Other side: yes; `kinds` says what our call sends (each a slot on the new connection).
-  Ready,
+  Ready = 1,
   // Leader: the new connection's offer, with what our call sends.
-  Offer,
-  Answer,
+  Offer = 2,
+  Answer = 3,
   // Over the new connection while it is tested: every ping must be answered in time.
-  Ping,
-  Pong,
+  Ping = 4,
+  Pong = 5,
   // Leader: our call goes out on the new connection now; move over.
-  Switch,
+  Switch = 6,
   // Other side: moved over.
-  Done,
+  Done = 7,
   // The new connection broke soon after the move: back to the old one.
-  Back,
+  Back = 8,
   // Give the attempt up (no direct path, or the call changed meanwhile).
-  Abort,
+  Abort = 9,
 }
 
 export type MoveSignal = { t: ControlType.Move; step: MoveStep; id: string; sdp?: string; kinds?: TrackKind[] };

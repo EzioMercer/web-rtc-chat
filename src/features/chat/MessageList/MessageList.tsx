@@ -21,6 +21,18 @@ const tappable = (message: Message) => message.kind === MessageKind.Text && mess
 // Round video messages stand on their own, without a bubble around them.
 const bare = (message: Message) => message.kind === MessageKind.File && message.note?.type === NoteType.Video;
 
+// A kind this version doesn't know was saved by a newer one: it stays saved as it is, shown as a note.
+const content = (convKey: string, message: Message) => {
+  switch (message.kind) {
+    case MessageKind.File:
+      return <FileBubble chat={convKey} file={message} />;
+    case MessageKind.Text:
+      return message.text;
+    default:
+      return <i>This message needs a newer version of the app.</i>;
+  }
+};
+
 export const MessageList = ({ convKey }: Props) => {
   const messages = useAppSelector(state => state.chat.conversations[convKey] ?? NONE);
   const listRef = useRef<HTMLDivElement>(null);
@@ -77,7 +89,7 @@ export const MessageList = ({ convKey }: Props) => {
           onClick={tappable(message) ? e => tap(e, message.id) : undefined}
           onContextMenu={tappable(message) ? e => contextMenu(e, message.id) : undefined}
         >
-          {message.kind === MessageKind.File ? <FileBubble file={message} /> : message.text}
+          {content(convKey, message)}
           {message.kind === MessageKind.Text && message.from === 'me' && (
             <span
               className={cx(styles.tick, message.pending && styles.pending)}

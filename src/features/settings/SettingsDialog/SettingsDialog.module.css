@@ -28,3 +28,13 @@
   justify-content: space-between;
   gap: 12px;
 }
+
+.section p.warn {
+  color: var(--warn);
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}

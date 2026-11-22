@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
+import { BackupProgress } from './features/backup/BackupProgress/BackupProgress.tsx';
 import { Messenger } from './features/app/Messenger/Messenger.tsx';
+import { OtherTabScreen } from './features/app/OtherTabScreen/OtherTabScreen.tsx';
 import { SetupScreen } from './features/setup/SetupScreen/SetupScreen.tsx';
 import { UnlockScreen } from './features/setup/UnlockScreen/UnlockScreen.tsx';
 import { initApp } from './store/thunks/app/initApp.ts';
@@ -21,14 +23,25 @@ export const App = () => {
     }
   }, [dispatch]);
 
-  switch (phase) {
-    case AppPhase.Setup:
-      return <SetupScreen />;
-    case AppPhase.Locked:
-      return <UnlockScreen />;
-    case AppPhase.Ready:
-      return <Messenger />;
-    default:
-      return null;
-  }
+  const screen = () => {
+    switch (phase) {
+      case AppPhase.Setup:
+        return <SetupScreen />;
+      case AppPhase.Locked:
+        return <UnlockScreen />;
+      case AppPhase.Ready:
+        return <Messenger />;
+      case AppPhase.OtherTab:
+        return <OtherTabScreen />;
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <>
+      {screen()}
+      <BackupProgress />
+    </>
+  );
 };

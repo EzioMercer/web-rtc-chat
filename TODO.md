@@ -17,6 +17,12 @@ Only open items. Everything done is described in the README.
 - [ ] Two devices on the same Wi-Fi with "AP isolation" (guest networks often have it) can't connect directly; check
   that they fall back to TURN quickly.
 
+- [ ] Field test backups on a real iPhone (Safari, and installed on the Home Screen): the download through the
+  service worker (one file, saved to Files), a backup with a lot of media (memory), and restoring it. Also check
+  that Safari keeps the saved chats of the installed app after 7 days without a visit.
+- [ ] Field test saved chats on phones: Firefox asks before allowing persistent storage; check the question comes
+  once and the chats survive the browser cleaning up.
+
 ## Maybe
 
 - [ ] Show the "new version" notice only for releases marked as important, not for every update.
@@ -27,7 +33,8 @@ Only open items. Everything done is described in the README.
 
 - [ ] Push notifications when the tab is closed, through a stateless Cloudflare Worker that forwards end-to-end
   encrypted web pushes.
-- [ ] Safe message history and syncing between your own devices, encrypted at rest with a non-extractable key.
+- [ ] Syncing chats between your own devices automatically (today: a backup file moved by hand, one device at a
+  time).
 - [ ] Multiple devices per person.
 - [ ] Messages to a contact who is offline while you close the app (today they wait only while your tab is open),
   encrypted.

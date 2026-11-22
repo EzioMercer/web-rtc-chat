@@ -1,12 +1,13 @@
 // What travels through relays. Never chat content: only what is needed to open a direct connection.
 // What a relayed signal is (its `t`).
+// Saved or sent as numbers: never change a value; add new ones at the end.
 export enum SignalType {
-  Offer,
-  Answer,
-  Ice,
-  Path,
-  InviteAccept,
-  InviteReveal,
+  Offer = 0,
+  Answer = 1,
+  Ice = 2,
+  Path = 3,
+  InviteAccept = 4,
+  InviteReveal = 5,
 }
 
 export type SignalMessage =

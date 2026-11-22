@@ -1,5 +1,5 @@
 import { deriveMailbox } from '../../../core/nostr/deriveMailbox.ts';
-import { listen } from '../../../core/nostr/listen.ts';
+import { listen, stopListening } from '../../../core/nostr/listen.ts';
 import { utcDay } from '../../../core/nostr/utcDay.ts';
 import { activeInvites } from '../../../core/signaling/activeInvites.ts';
 import { pendingJoins } from '../../../core/signaling/pendingJoins.ts';
@@ -15,6 +15,14 @@ let version = 0;
 // used and wait on.
 export const refreshMailboxes = (): AppThunk<Promise<void>> => async (dispatch, getState) => {
   if (getState().app.phase !== AppPhase.Ready) {
+    return;
+  }
+
+  // Offline on purpose (a backup): nothing may come in.
+  if (getState().app.paused) {
+    version += 1;
+    stopListening();
+
     return;
   }
 

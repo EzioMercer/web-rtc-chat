@@ -5,18 +5,23 @@ import type { Sealed } from '../crypto/types.ts';
 //  passphrase: a key derived from a passphrase (Argon2id) encrypts them.
 //  device:     a key kept in browser storage encrypts them: no unlock step, but no protection either.
 //  temporary:  nothing is saved; everything disappears when the tab closes.
+// Saved or sent as numbers: never change a value; add new ones at the end.
 export enum ProtectionMode {
-  Passkey,
-  Passphrase,
-  Device,
-  Temporary,
+  Passkey = 0,
+  Passphrase = 1,
+  Device = 2,
+  Temporary = 3,
 }
 
 export type StoredMode = Exclude<ProtectionMode, ProtectionMode.Temporary>;
 
+// Saved unencrypted: what is needed to unlock. Everything else is encrypted with the data key, which is saved here
+// encrypted with the protection's key (passkey, passphrase or device key). Changing the protection only encrypts
+// the data key again; the saved messages and files stay as they are.
 export type StoredMeta = {
   version: 1;
   mode: StoredMode;
+  dataKey: Sealed;
   credentialId?: string;
   prfSalt?: string;
   argonSalt?: string;
@@ -28,14 +33,6 @@ export type ProtectionChoice =
   | { mode: ProtectionMode.Passphrase; passphrase: string }
   | { mode: ProtectionMode.Device }
   | { mode: ProtectionMode.Temporary };
-
-export type Backup = {
-  app: 'web-rtc-chat';
-  version: 1;
-  meta: StoredMeta;
-  contacts: Sealed;
-  keys: Record<string, Sealed>;
-};
 
 // Our key pair for one contact (see contactKeys).
 export type ContactKey = {

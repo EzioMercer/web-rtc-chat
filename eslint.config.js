@@ -17,9 +17,9 @@ const functionStatements = [
 
 const loops = ['if', 'for', 'while', 'do', 'switch'];
 
-// Messages must never be saved or sent anywhere but the direct connection. These APIs can do that, so they are
-// banned everywhere except the one module that saves the (encrypted) identity and contacts.
-const PRIVACY_MESSAGE = 'Messages must stay in memory. Only src/core/storage/ may touch browser storage.';
+// Messages must never be sent anywhere but the direct connection, and only saved encrypted. These APIs can store
+// or send data, so they are banned everywhere except the one module that saves the (encrypted) app data.
+const PRIVACY_MESSAGE = 'Data never leaves the device unencrypted. Only src/core/storage/ may touch browser storage.';
 const bannedGlobals = [
   'localStorage',
   'sessionStorage',
@@ -46,7 +46,9 @@ const banProperties = (allowed = []) => [
     { object: 'self', property, message: PRIVACY_MESSAGE },
   ]),
   { object: 'navigator', property: 'sendBeacon', message: PRIVACY_MESSAGE },
-  { object: 'navigator', property: 'storage', message: PRIVACY_MESSAGE },
+  ...(allowed.includes('navigator.storage')
+    ? []
+    : [{ object: 'navigator', property: 'storage', message: PRIVACY_MESSAGE }]),
   { object: 'document', property: 'cookie', message: PRIVACY_MESSAGE },
 ];
 
@@ -104,7 +106,7 @@ export default tseslint.config(
     files: ['src/core/storage/**'],
     rules: {
       'no-restricted-globals': banGlobals(['indexedDB']),
-      'no-restricted-properties': banProperties(['indexedDB']),
+      'no-restricted-properties': banProperties(['indexedDB', 'navigator.storage']),
     },
   },
   {
@@ -114,6 +116,11 @@ export default tseslint.config(
       'no-restricted-globals': banGlobals(['fetch']),
       'no-restricted-properties': banProperties(['fetch']),
     },
+  },
+  {
+    // The service worker that streams backup downloads to disk.
+    files: ['public/backup-sw.js'],
+    languageOptions: { globals: globals.serviceworker },
   },
   {
     // The Cloudflare Worker runs on Cloudflare, not in the app.

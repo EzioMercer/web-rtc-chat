@@ -78,6 +78,14 @@ export const reconnectRelays = () => {
   subscribe();
 };
 
+// Stops listening and closes every relay connection, until `listen` is called again.
+export const stopListening = () => {
+  state.mailboxes = new Map();
+  state.sub?.close();
+  state.sub = null;
+  pool.close(RELAYS);
+};
+
 // Listens on exactly these mailboxes (public key -> secret key) and passes decrypted signals to `handler`.
 export const listen = (mailboxes: Map<string, Uint8Array>, handler: Handler) => {
   const same = mailboxes.size === state.mailboxes.size && [...mailboxes.keys()].every(pk => state.mailboxes.has(pk));

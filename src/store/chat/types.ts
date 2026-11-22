@@ -5,20 +5,23 @@ export enum MessageAuthor {
   System = 'system',
 }
 
+// Saved or sent as numbers: never change a value; add new ones at the end.
 export enum MessageKind {
-  Text,
-  File,
+  Text = 0,
+  File = 1,
 }
 
+// Saved or sent as numbers: never change a value; add new ones at the end.
 export enum NoteType {
-  Voice,
-  Video,
+  Voice = 0,
+  Video = 1,
 }
 
+// Saved or sent as numbers: never change a value; add new ones at the end.
 export enum FileStatus {
-  Transferring,
-  Done,
-  Failed,
+  Transferring = 0,
+  Done = 1,
+  Failed = 2,
 }
 
 export type TextMessage = {
@@ -62,7 +65,7 @@ export type FileMessage = {
 
 export type Message = TextMessage | FileMessage;
 
-// Memory only. Nothing here is ever saved.
+// Saved on the device, encrypted (see core/history), except for temporary identities and the manual connection.
 export type ChatState = {
   // Conversation key (contact id, or the manual connection) -> messages.
   conversations: Record<string, Message[]>;

@@ -10,10 +10,12 @@ import { EchoGuardSetting } from '../../../store/settings/types.ts';
 import { MANUAL_KEY } from '../../../core/webrtc/config.ts';
 import { Button } from '../../../ui/Button/Button.tsx';
 import { Dialog } from '../../../ui/Dialog/Dialog.tsx';
+import { ExportDialog } from '../../backup/ExportDialog/ExportDialog.tsx';
+import { ImportDialog } from '../../backup/ImportDialog/ImportDialog.tsx';
 import { LegalDialog } from '../LegalDialog/LegalDialog.tsx';
+import { StorageSection } from '../StorageSection/StorageSection.tsx';
 import { ProtectionPicker } from '../../setup/ProtectionPicker/ProtectionPicker.tsx';
 import { SegmentedControl } from '../../../ui/SegmentedControl/SegmentedControl.tsx';
-import { downloadBackup } from './downloadBackup.ts';
 import { MODE_LABELS } from './MODE_LABELS.ts';
 import styles from './SettingsDialog.module.css';
 import { ProtectionMode } from '../../../core/identity/types.ts';
@@ -29,14 +31,19 @@ const ECHO_GUARD_OPTIONS: { value: EchoGuardSetting; label: string }[] = [
   { value: EchoGuardSetting.Off, label: 'Off' },
 ];
 
+// Going temporary deletes what is saved; the chats stay only in this tab.
+const TEMPORARY_WARNING = 'Temporary deletes your identity, contacts and chats from this device. They stay only in '
+  + 'this tab and disappear when it closes. Make a backup first to keep them. Continue?';
+
 export const SettingsDialog = ({ onClose }: Props) => {
   const dispatch = useAppDispatch();
   const { mode, busy, error } = useAppSelector(state => state.app);
   const echoGuard = useAppSelector(state => state.settings.echoGuard);
   const [changing, setChanging] = useState(false);
   const [legal, setLegal] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [relays, setRelays] = useState(relayStatus);
-  const canBackup = mode === ProtectionMode.Passkey || mode === ProtectionMode.Passphrase;
 
   useEffect(() => {
     const timer = window.setInterval(() => setRelays(relayStatus()), 2000);
@@ -48,6 +55,14 @@ export const SettingsDialog = ({ onClose }: Props) => {
     return <LegalDialog onClose={() => setLegal(false)} />;
   }
 
+  if (exporting) {
+    return <ExportDialog onClose={() => setExporting(false)} />;
+  }
+
+  if (importing) {
+    return <ImportDialog fresh={false} onClose={() => setImporting(false)} />;
+  }
+
   if (changing) {
     return (
       <Dialog title="Change protection" onClose={() => setChanging(false)}>
@@ -57,6 +72,11 @@ export const SettingsDialog = ({ onClose }: Props) => {
           error={error}
           current={mode}
           onSubmit={async (choice) => {
+            if (choice.mode === ProtectionMode.Temporary && mode !== ProtectionMode.Temporary
+              && !window.confirm(TEMPORARY_WARNING)) {
+              return;
+            }
+
             if (await dispatch(updateProtection(choice))) {
               setChanging(false);
             }
@@ -67,7 +87,7 @@ export const SettingsDialog = ({ onClose }: Props) => {
   }
 
   const reset = () => {
-    if (window.confirm('Delete your identity and contacts from this device? This can\'t be undone.')) {
+    if (window.confirm('Delete your identity, contacts and chats from this device? This can\'t be undone.')) {
       void resetApp();
     }
   };
@@ -83,18 +103,7 @@ export const SettingsDialog = ({ onClose }: Props) => {
         )}
       </section>
 
-      <section className={styles.section}>
-        <h3>Backup</h3>
-        <p>
-          {canBackup
-            ? 'Download your encrypted identity and contacts. Only your passkey or passphrase can open the file. '
-            + 'Messages are never included.'
-            : 'Backups need passkey or passphrase protection.'}
-        </p>
-        <Button variant={ButtonVariant.Secondary} disabled={!canBackup} onClick={() => void downloadBackup()}>
-          Download backup
-        </Button>
-      </section>
+      <StorageSection onExport={() => setExporting(true)} onImport={() => setImporting(true)} />
 
       <section className={styles.section}>
         <div className={styles.titleRow}>
@@ -143,7 +152,7 @@ export const SettingsDialog = ({ onClose }: Props) => {
 
       <section className={styles.section}>
         <h3>This device</h3>
-        <Button variant={ButtonVariant.Danger} onClick={reset}>Delete identity and contacts</Button>
+        <Button variant={ButtonVariant.Danger} onClick={reset}>Delete identity, contacts and chats</Button>
       </section>
     </Dialog>
   );

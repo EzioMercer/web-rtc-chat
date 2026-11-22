@@ -8,12 +8,16 @@ const initialState: AppState = {
   lockedMode: null,
   busy: false,
   error: null,
+  paused: false,
 };
 
 const appSlice = createSlice({
   name: 'app',
   initialState,
   reducers: {
+    otherTabFound: (state) => {
+      state.phase = AppPhase.OtherTab;
+    },
     setupNeeded: (state) => {
       state.phase = AppPhase.Setup;
       state.busy = false;
@@ -40,9 +44,21 @@ const appSlice = createSlice({
     errorCleared: (state) => {
       state.error = null;
     },
+    pausedChanged: (state, { payload }: PayloadAction<boolean>) => {
+      state.paused = payload;
+    },
   },
 });
 
-export const { setupNeeded, lockedFound, unlocked, busyStarted, failed, errorCleared } = appSlice.actions;
+export const {
+  otherTabFound,
+  setupNeeded,
+  lockedFound,
+  unlocked,
+  busyStarted,
+  failed,
+  errorCleared,
+  pausedChanged,
+} = appSlice.actions;
 
 export const appReducer = appSlice.reducer;
