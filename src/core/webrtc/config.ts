@@ -18,7 +18,7 @@ export const TURN_RENEW_EARLY_S = 20 * 60;
 export const PATH_CHECK_MS = 60_000;
 
 // While a connection goes through the TURN relay, look for a new path this often: a direct one if it works now,
-// otherwise the relay again with fresh credentials.
+// otherwise the relay again with fresh credentials. During a call, only the relay (see watchPaths).
 export const TURN_RESTART_MS = 5 * 60_000;
 
 // Video limit (bits per second) while a call goes through the TURN relay, where traffic counts toward the limit.

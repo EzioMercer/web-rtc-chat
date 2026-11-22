@@ -1,5 +1,6 @@
 import { sendSignal } from '../../../core/signaling/sendSignal.ts';
 import { MANUAL_KEY, RESCUE_TIMEOUT_MS, STUN_SERVERS } from '../../../core/webrtc/config.ts';
+import { configureIce } from '../../../core/webrtc/configureIce.ts';
 import { errorText } from '../../../core/webrtc/errorText.ts';
 import { sessions } from '../../../core/webrtc/state.ts';
 import { ensureTurnServers, turnServers } from '../../../core/webrtc/turnServers.ts';
@@ -49,19 +50,21 @@ export const startRescue = (session: Session, reason: string): AppThunk<boolean>
   return true;
 };
 
-// Gives the connection fresh TURN credentials, so the new path search can use the relay.
-export const refreshIceServers = async (session: Session) => {
+// Gives the connection fresh TURN credentials, so the next path search can use the relay. With `policy`, that
+// search also offers only relay addresses ('relay') or every kind ('all').
+export const refreshIceServers = async (session: Session, policy?: RTCIceTransportPolicy) => {
   await ensureTurnServers();
 
   const fresh = turnServers();
+  const renew = fresh.length > 0 && fresh !== session.iceServers;
+  const changes: RTCConfiguration = renew ? { iceServers: [...STUN_SERVERS, ...fresh] } : {};
 
-  if (fresh.length > 0 && fresh !== session.iceServers) {
-    try {
-      session.peer.setConfiguration({ iceServers: [...STUN_SERVERS, ...fresh] });
-      session.iceServers = fresh;
-    } catch (err) {
-      session.log(`Could not renew the TURN relay credentials: ${errorText(err)}`);
-    }
+  if (policy && session.peer.getConfiguration().iceTransportPolicy !== policy) {
+    changes.iceTransportPolicy = policy;
+  }
+
+  if (Object.keys(changes).length > 0 && configureIce(session, changes) && renew) {
+    session.iceServers = fresh;
   }
 };
 
@@ -78,7 +81,8 @@ export const rescuePath = (session: Session): AppThunk<Promise<void>> => async (
     return;
   }
 
-  await refreshIceServers(session);
+  // The path is broken anyway, so every kind is tried, even in a call that stayed on the relay (see watchPaths).
+  await refreshIceServers(session, 'all');
 
   // Another search or a call setup is half done: it carries on, and the timeout above still applies.
   if (peer.signalingState !== 'stable' || sessions.get(key) !== session) {

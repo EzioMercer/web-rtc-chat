@@ -7,7 +7,7 @@ import { SessionRoute } from '../../sessions/types.ts';
 
 // Finds out which path the open connection uses now, and shows it when it changed.
 export const checkRoute = (session: Session): AppThunk<Promise<void>> => async (dispatch) => {
-  const route = await getRoute(session.peer).catch(() => session.route ?? SessionRoute.Direct);
+  const route = (await getRoute(session.peer).catch(() => null)) ?? session.route ?? SessionRoute.Direct;
 
   if (route === session.route || session.peer.connectionState === 'closed') {
     return;

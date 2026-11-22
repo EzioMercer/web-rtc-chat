@@ -39,7 +39,7 @@ export const receivePath = (id: string, msg: PathSignal): AppThunk<Promise<void>
     }
 
     dispatch(startRescue(session, 'They lost the network path. Looking for a new one together…'));
-    await refreshIceServers(session);
+    await refreshIceServers(session, 'all');
     await handleDescription(id, { type: 'offer', sdp: msg.sdp }, async () => {
       // Every address in the answer: ones found later couldn't be sent.
       await waitForIceGathering(peer);

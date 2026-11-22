@@ -11,8 +11,9 @@ type Stat = {
   state?: string;
 };
 
-// Whether the open connection goes straight between the devices or through the TURN relay.
-export const getRoute = async (peer: RTCPeerConnection): Promise<SessionRoute> => {
+// Whether the open connection goes straight between the devices or through the TURN relay; null while the browser
+// has no path chosen (e.g. during a path search), so a missing answer isn't taken for a direct path.
+export const getRoute = async (peer: RTCPeerConnection): Promise<SessionRoute | null> => {
   const report = await peer.getStats();
   const stats = [...report.values()] as Stat[];
   const pairId = stats.find(s => s.type === 'transport' && s.selectedCandidatePairId)?.selectedCandidatePairId;
@@ -21,7 +22,11 @@ export const getRoute = async (peer: RTCPeerConnection): Promise<SessionRoute> =
   const pair = (pairId ? report.get(pairId) as Stat : undefined)
     ?? stats.find(s => s.type === 'candidate-pair' && (s.selected || (s.nominated && s.state === 'succeeded')));
 
-  const types = [pair?.localCandidateId, pair?.remoteCandidateId]
+  if (!pair) {
+    return null;
+  }
+
+  const types = [pair.localCandidateId, pair.remoteCandidateId]
     .map(id => (id ? (report.get(id) as Stat | undefined)?.candidateType : undefined));
 
   return types.includes('relay') ? SessionRoute.Relay : SessionRoute.Direct;

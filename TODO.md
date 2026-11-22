@@ -9,6 +9,8 @@ Only open items. Everything done is described in the README.
   echo; tune ECHO_MATCH in src/core/webrtc/echoConfig.ts if needed.
 - [ ] Field test the new path search (switching to TURN when the direct path breaks) on real phones: turn Wi-Fi off
   and on during a call.
+- [ ] Field test a long call through the TURN relay (over an hour): it must stay on the relay without dropping, and
+  move to a direct path only after the call.
 - [ ] Field test voice and video messages on real phones, above all an iPhone (Safari) with an Android phone
   (Chrome and Firefox): each side must play what the other recorded.
 - [ ] Two devices on the same Wi-Fi with "AP isolation" (guest networks often have it) can't connect directly; check
