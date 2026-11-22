@@ -18,7 +18,7 @@ export const submitPeerCode = (raw: string): AppThunk<Promise<void>> => async (d
       return;
     }
 
-    const desc = decodeCode(raw);
+    const desc = await decodeCode(raw);
 
     if (role === ManualRole.Host) {
       if (desc.type !== 'answer') {

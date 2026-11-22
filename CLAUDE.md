@@ -34,6 +34,7 @@ src/
                 storage/    kv.ts: the ONLY module allowed to touch browser storage (lint enforces it)
                 turn/, update/  the only modules allowed to fetch (lint enforces it)
                 media/      recording engine (MediaRecorder, format choice, square crop, waveform)
+                compression/  zip/unzip (deflate-raw) for files, relay notes and manual codes
                 sound/      ringtone (Web Audio, paused when nothing rings: see the comment there)
   store/      Redux: one folder per slice (app, contacts, sessions, chat, call, invites, manual, ui, settings),
               thunks/<area>/ for everything with side effects, persistence.ts saves contacts and settings.
@@ -52,8 +53,12 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
   answer it. Once the data channel opens, `sessionOpened` checks the route (direct or TURN) and starts
   `watchPaths`, which moves to a better path or rescues a broken one.
 - **Chat text** goes over the `control` data channel as JSON (`ControlMessage` in `core/webrtc/types.ts`), with
-  an ack. **Files** each get their own data channel (`sendFile` / `receiveFile`); over TURN only files up to
-  `TURN_FILE_LIMIT` (10 MB) go, on both sides.
+  an ack. **Files** each get their own data channel (`sendFile` / `receiveFile`); text-like files are zipped
+  first (`core/compression/packFile.ts`, `packed` in the file's first message). Over TURN only files up to
+  `TURN_FILE_LIMIT` (10 MB, counted zipped) go, checked on both sides.
+- **Zipping** (`core/compression`, the browser's own deflate-raw): files as above, the notes sent through relays
+  (`sealEnvelope` / `openEnvelope`) and the manual codes. Always before encrypting; unzipping is size-capped.
+  Chat text is not zipped: it is too short to gain anything.
 - **Calls** use media tracks on the same connection; call control (`invite`, `accept`, `state`, `echo`, …) goes
   over the control channel and is handled in `store/thunks/call/receiveCallSignal.ts`.
 - **Voice/video messages** are files with a `note` (type, duration, waveform) in their first message.
@@ -80,7 +85,7 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
 
 - `npm run build` must pass. There is no unit test runner.
 - `scripts/e2e-media.mjs`: two browsers connect by hand-copied codes and test voice/video messages, the TURN
-  limit and echo detection with the guard. It imports the app's modules in the page, so it needs the dev server:
+  limit, zipped files and echo detection with the guard. It imports the app's modules in the page, so it needs the dev server:
   `VITE_TURN_URL= npx vite --port 5173 --strictPort &` then `node scripts/e2e-media.mjs`.
 - `scripts/e2e-real-relays.mjs` (built app, real relays), `scripts/check-turn.mjs`, `scripts/check-relays.mjs`.
 - Scripts import `playwright`. In the cloud container it is preinstalled outside the project: link it with

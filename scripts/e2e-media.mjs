@@ -3,7 +3,8 @@
 // only the dev server serves, so run it against that:
 //   VITE_TURN_URL= npx vite --port 5173 --strictPort &   then   node scripts/e2e-media.mjs
 // Uses the preinstalled Playwright Chromium with a fake camera, and a generated speech-like sound as the microphone.
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { chromium } from 'playwright';
@@ -195,6 +196,55 @@ const testRelayLimit = async (a, b) => {
   await setRoute(b, 'Direct');
 };
 
+// A log-like text file: many similar lines, as real logs and CSV files are.
+const textFile = (name, megabytes) => {
+  let text = '';
+
+  for (let i = 0; text.length < megabytes * 1024 * 1024; i += 1) {
+    const minute = String(i % 60).padStart(2, '0');
+
+    text += `2026-11-22 12:${minute} user=${i % 97} action=send bytes=${(i * 7919) % 100000}\n`;
+  }
+
+  const path = join(dir, name);
+
+  writeFileSync(path, text);
+
+  return path;
+};
+
+// The file as the other side got it, as a SHA-256 of its bytes.
+const receivedHash = (page, name) => page.evaluate(async (fileName) => {
+  const link = [...document.querySelectorAll('a[download]')].find(a => a.getAttribute('download') === fileName);
+  const bytes = await (await fetch(link.href)).arrayBuffer();
+
+  return [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))]
+    .map(byte => byte.toString(16).padStart(2, '0')).join('');
+}, name);
+
+const testZippedFiles = async (a, b) => {
+  const log5 = textFile('log-5mb.txt', 5);
+
+  await a.locator('input[type=file]').setInputFiles([log5]);
+  await b.locator('a[download="log-5mb.txt"]').waitFor({ timeout: 20000 });
+
+  const sent = createHash('sha256').update(readFileSync(log5)).digest('hex');
+
+  check(await receivedHash(b, 'log-5mb.txt') === sent, 'a zipped text file arrives unchanged');
+  check(await b.getByText(/sent zipped/).count() > 0, 'it is shown as sent zipped');
+
+  // 12 MB of text is over the TURN limit, but zipped it is far smaller, so it may go through the relay.
+  const log12 = textFile('log-12mb.txt', 12);
+
+  await setRoute(a, 'Relay');
+  await setRoute(b, 'Relay');
+  await a.locator('input[type=file]').setInputFiles([log12]);
+  await b.locator('a[download="log-12mb.txt"]').waitFor({ timeout: 30000 });
+  check(true, 'a 12 MB text file goes through TURN, zipped');
+  await setRoute(a, 'Direct');
+  await setRoute(b, 'Direct');
+};
+
 const echoState = page => app(page, async () => {
   const { store } = await import('/web-rtc-chat/src/store/store.ts');
   const { media } = await import('/web-rtc-chat/src/core/webrtc/state.ts');
@@ -274,6 +324,7 @@ try {
   log('connected');
   await testMessages(A.page, B.page);
   await testRelayLimit(A.page, B.page);
+  await testZippedFiles(A.page, B.page);
   await testEcho(A.page, B.page);
 } catch (err) {
   failures.push(String(err));

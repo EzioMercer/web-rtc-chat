@@ -56,6 +56,8 @@ export type FileMeta = {
   mime: string;
   // Voice and video messages (older versions show them as plain files).
   note?: MediaNote;
+  // Sent zipped: this many bytes come, which unzip into `size` (see packFile).
+  packed?: number;
 };
 
 // One direct connection, to a contact (key = contact id) or the manual one (key = MANUAL_KEY).
