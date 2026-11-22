@@ -1,6 +1,7 @@
 import type { MediaNote } from '../../store/chat/types.ts';
 import { FILE_BUFFER_HIGH, FILE_BUFFER_LOW, FILE_CHUNK_SIZE, FILE_DONE, FILE_LABEL } from './config.ts';
 import type { FileMeta } from './types.ts';
+import { trackFileChannel } from './trackFileChannel.ts';
 import { waitForDrain } from './waitForDrain.ts';
 
 type Options = {
@@ -21,6 +22,9 @@ export const sendFile = (
   { note, zipped, onProgress, shouldStop }: Options,
 ): Promise<void> => new Promise((resolve, reject) => {
   const channel = peer.createDataChannel(FILE_LABEL, { ordered: true });
+
+  trackFileChannel(peer, channel);
+
   const data = zipped ?? file;
   const meta: FileMeta = {
     id,

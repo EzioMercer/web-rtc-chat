@@ -52,6 +52,11 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
   signed offer to the contact's daily mailbox (`core/signaling`, `core/nostr`); `receiveOffer` / `receiveAnswer`
   answer it. Once the data channel opens, `sessionOpened` checks the route (direct or TURN) and starts
   `watchPaths`, which moves to a better path or rescues a broken one.
+- **Moving a call off TURN** (`store/thunks/move`): during a call, a direct path isn't searched on the call's own
+  connection (it could drop the call). The impolite side opens a second, direct-only connection (`createMoveLink`),
+  tests it, then the call's tracks, control channel and remote stream move to it (`swapLink`; the session object
+  stays, so code that reads `session.peer` follows). The old connection stays idle for a while to go back to
+  (`moveBack`). `wirePeer` handles both connections' events: only `session.peer` acts on the session.
 - **Chat text** goes over the `control` data channel as JSON (`ControlMessage` in `core/webrtc/types.ts`), with
   an ack. **Files** each get their own data channel (`sendFile` / `receiveFile`); text-like files are zipped
   first (`core/compression/packFile.ts`, `packed` in the file's first message). Over TURN only files up to
@@ -87,6 +92,8 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
 - `scripts/e2e-media.mjs`: two browsers connect by hand-copied codes and test voice/video messages, the TURN
   limit, zipped files and echo detection with the guard. It imports the app's modules in the page, so it needs the dev server:
   `VITE_TURN_URL= npx vite --port 5173 --strictPort &` then `node scripts/e2e-media.mjs`.
+- `scripts/e2e-move.mjs` (same dev server): a call moves to a new connection, goes back when it breaks, and stays when
+  the test fails.
 - `scripts/e2e-real-relays.mjs` (built app, real relays), `scripts/check-turn.mjs`, `scripts/check-relays.mjs`.
 - Scripts import `playwright`. In the cloud container it is preinstalled outside the project: link it with
   `ln -sfn /opt/node-tools/node_modules/playwright node_modules/playwright` (never run `playwright install`).

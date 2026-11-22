@@ -10,3 +10,6 @@ export const media = {
   // (our camera, or nothing in an audio call).
   screen: null as { stream: MediaStream; sender: RTCRtpSender; before: MediaStreamTrack | null } | null,
 };
+
+// Open file channels of each connection, so a connection isn't closed while files still go over it (see move).
+export const fileChannels = new WeakMap<RTCPeerConnection, Set<RTCDataChannel>>();

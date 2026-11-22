@@ -1,5 +1,6 @@
 import type { MediaNote } from '../../store/chat/types.ts';
 import type { SessionRoute } from '../../store/sessions/types.ts';
+import type { TrackKind } from './TrackKind.ts';
 
 // What a control channel message is (its `t`).
 export enum ControlType {
@@ -11,6 +12,8 @@ export enum ControlType {
   Rotate,
   RotateAck,
   RotateDone,
+  // Moving a call to a new, direct connection (see store/thunks/move).
+  Move,
 }
 
 export enum CallAction {
@@ -29,6 +32,31 @@ export type CallSignal =
   // `screen`: they share their screen.
   | { t: ControlType.Call; action: CallAction.State; mic: boolean; cam: boolean; screen?: boolean };
 
+// Steps of moving a call from the TURN relay to a new, direct connection, which is tested before the call goes over
+// and kept until it holds (see store/thunks/move). The impolite side leads.
+export enum MoveStep {
+  // Leader: let's try a direct connection.
+  Ask,
+  // Other side: yes; `kinds` says what our call sends (each a slot on the new connection).
+  Ready,
+  // Leader: the new connection's offer, with what our call sends.
+  Offer,
+  Answer,
+  // Over the new connection while it is tested: every ping must be answered in time.
+  Ping,
+  Pong,
+  // Leader: our call goes out on the new connection now; move over.
+  Switch,
+  // Other side: moved over.
+  Done,
+  // The new connection broke soon after the move: back to the old one.
+  Back,
+  // Give the attempt up (no direct path, or the call changed meanwhile).
+  Abort,
+}
+
+export type MoveSignal = { t: ControlType.Move; step: MoveStep; id: string; sdp?: string; kinds?: TrackKind[] };
+
 // Replacing the shared mailbox secret, over the encrypted direct connection (never through relays):
 // rotate (new secret) -> rotate-ack -> rotate-done.
 export type RotateSignal = {
@@ -46,7 +74,8 @@ export type ControlMessage =
   | { t: ControlType.Sdp; description: RTCSessionDescriptionInit }
   | { t: ControlType.Ice; candidate: RTCIceCandidateInit }
   | CallSignal
-  | RotateSignal;
+  | RotateSignal
+  | MoveSignal;
 
 // First message of every file channel; binary chunks follow.
 export type FileMeta = {
@@ -99,6 +128,35 @@ export type Session = {
   attachOnOffer: boolean;
   // The path broke and we are looking for a new one (through the relays), since this time; null otherwise.
   rescueSince: number | null;
+  // Moving the call to a new, direct connection (see store/thunks/move); null when not moving.
+  move: Move | null;
   // Adds a line to this conversation's connection log (Details), for troubleshooting.
   log: (text: string) => void;
+};
+
+// The parts of a session that belong to one RTCPeerConnection, swapped as a whole when a call moves.
+export type Link = Pick<Session, 'peer' | 'channel' | 'senders' | 'screenSender' | 'remoteStream' | 'iceServers'>;
+
+export enum MovePhase {
+  Asking,
+  Connecting,
+  Testing,
+  // The leader sends the call on both connections and waits for the other side to move over.
+  Switching,
+  // Moved: the old connection is kept for a while, idle, to go back to if the new one breaks.
+  Holding,
+}
+
+export type Move = {
+  id: string;
+  phase: MovePhase;
+  // The other connection: the new one until the call moves to it, then the old one.
+  other: Link;
+  // Our call's senders in pairs: [on the current connection, its place on the other one].
+  pairs: [RTCRtpSender, RTCRtpSender][];
+  // Their call's slots on the new connection, until the call moves.
+  theirs: RTCRtpTransceiver[];
+  // When the last ping was answered (leader, while testing).
+  lastPong: number;
+  timers: number[];
 };

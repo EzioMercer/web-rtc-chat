@@ -31,12 +31,20 @@ export const useCallStats = (key: string | null, active: boolean): CallStats | n
     }
 
     let last: Totals | null = null;
+    let lastPeer: RTCPeerConnection | null = null;
 
     const tick = async () => {
-      const report = await sessions.get(key)?.peer.getStats();
+      const peer = sessions.get(key)?.peer;
+      const report = await peer?.getStats();
 
-      if (!report) {
+      if (!peer || !report) {
         return;
+      }
+
+      // The call moved to a new connection (see store/thunks/move): its counts start from zero.
+      if (peer !== lastPeer) {
+        last = null;
+        lastPeer = peer;
       }
 
       const now: Totals = { sent: 0, received: 0, audioLost: 0, audioReceived: 0 };

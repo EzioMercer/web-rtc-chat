@@ -1,9 +1,10 @@
 import { PATH_CHECK_MS, TURN_RESTART_MS } from '../../../core/webrtc/config.ts';
-import { configureIce } from '../../../core/webrtc/configureIce.ts';
+import { restartPaths } from '../../../core/webrtc/restartPaths.ts';
 import { sessions } from '../../../core/webrtc/state.ts';
 import { ensureTurnServers, turnServers } from '../../../core/webrtc/turnServers.ts';
 import type { Session } from '../../../core/webrtc/types.ts';
-import type { AppDispatch, AppThunk, RootState } from '../../store.ts';
+import type { AppThunk } from '../../store.ts';
+import { startMove } from '../move/startMove.ts';
 import { checkRoute } from './checkRoute.ts';
 import { refreshIceServers } from './rescuePath.ts';
 import { SessionRoute } from '../../sessions/types.ts';
@@ -11,33 +12,35 @@ import { CallStatus } from '../../call/types.ts';
 
 let timer: number | null = null;
 
-// On the relay, search for a path again: a direct one if it works now, otherwise the relay with fresh credentials,
-// so the connection doesn't drop when the old ones expire. One side does it (the other answers), so the searches
-// don't collide; without fresh credentials it waits, so the current relay path isn't lost.
-// During a call the search offers only our relay addresses, so it just renews the relay path: a direct path found
-// mid-call can hold for a moment only (the relay path is let go by then), and the call would drop with it.
-const restartIfRelay = (session: Session, inCall: boolean) => {
-  if (session.route !== SessionRoute.Relay || session.polite || turnServers().length === 0
-    || Date.now() - session.restartedAt < TURN_RESTART_MS) {
+// On the relay, look for a direct path again. One side does it (the other answers), so the searches don't collide;
+// without fresh TURN credentials it waits, so the current relay path isn't lost.
+// Outside a call, the connection searches for a new path itself: a direct one if it works now, otherwise the relay
+// with fresh credentials. During a call, a direct path found that way could hold for a moment only and take the
+// call down with it, so a separate direct connection is tested first and the call moves only if it holds (see
+// startMove); if not, the relay path is renewed.
+const searchIfRelay = (session: Session): AppThunk => (dispatch, getState) => {
+  if (session.route !== SessionRoute.Relay || session.polite || turnServers().length === 0 || session.move
+    || session.rescueSince !== null || Date.now() - session.restartedAt < TURN_RESTART_MS) {
+    return;
+  }
+
+  const { status, key } = getState().call;
+
+  // A call that is still ringing: wait until it is answered.
+  if (key === session.key && status !== CallStatus.Idle && status !== CallStatus.Active) {
     return;
   }
 
   session.restartedAt = Date.now();
 
-  const policy: RTCIceTransportPolicy = inCall ? 'relay' : 'all';
-  const set = session.peer.getConfiguration().iceTransportPolicy === policy
-    || configureIce(session, { iceTransportPolicy: policy });
-
-  // Without relay-only addresses, the search could move the call to a direct path: better skip it.
-  if (!set && inCall) {
-    return;
+  if (key === session.key && status === CallStatus.Active) {
+    dispatch(startMove(session));
+  } else {
+    restartPaths(session, 'all');
   }
-
-  session.log(inCall ? 'Renewing the TURN relay path (kept during the call)…' : 'Looking for a direct path again…');
-  session.peer.restartIce();
 };
 
-const check = async (dispatch: AppDispatch, getState: () => RootState) => {
+const check = (): AppThunk<Promise<void>> => async (dispatch) => {
   const open = [...sessions.values()].filter(s => s.opened && s.peer.connectionState !== 'closed');
 
   if (open.length === 0) {
@@ -47,17 +50,15 @@ const check = async (dispatch: AppDispatch, getState: () => RootState) => {
   await ensureTurnServers();
 
   for (const session of open) {
-    const { status, key } = getState().call;
-
     // Before they expire, give the connection new TURN credentials, so the next path search (ours or the other
     // side's) uses them.
     await refreshIceServers(session);
     await dispatch(checkRoute(session));
-    restartIfRelay(session, status !== CallStatus.Idle && key === session.key);
+    dispatch(searchIfRelay(session));
   }
 };
 
 // Keeps an eye on every open connection, once a minute (started when the first one opens).
-export const watchPaths = (): AppThunk => (dispatch, getState) => {
-  timer ??= window.setInterval(() => void check(dispatch, getState), PATH_CHECK_MS);
+export const watchPaths = (): AppThunk => (dispatch) => {
+  timer ??= window.setInterval(() => void dispatch(check()), PATH_CHECK_MS);
 };

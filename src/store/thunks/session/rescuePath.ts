@@ -2,6 +2,7 @@ import { sendSignal } from '../../../core/signaling/sendSignal.ts';
 import { MANUAL_KEY, RESCUE_TIMEOUT_MS, STUN_SERVERS } from '../../../core/webrtc/config.ts';
 import { configureIce } from '../../../core/webrtc/configureIce.ts';
 import { errorText } from '../../../core/webrtc/errorText.ts';
+import { isWorking } from '../../../core/webrtc/isWorking.ts';
 import { sessions } from '../../../core/webrtc/state.ts';
 import { ensureTurnServers, turnServers } from '../../../core/webrtc/turnServers.ts';
 import type { Session } from '../../../core/webrtc/types.ts';
@@ -11,13 +12,9 @@ import { checkRoute } from './checkRoute.ts';
 import { sessionDropped } from './sessionDropped.ts';
 import { SignalType } from '../../../core/signaling/types.ts';
 
-const working = (session: Session) => (
-  session.peer.iceConnectionState === 'connected' || session.peer.iceConnectionState === 'completed'
-);
-
 // Ends the search if the connection works (again): a new path was found, or the old one came back.
 export const finishRescue = (session: Session): AppThunk => (dispatch) => {
-  if (session.rescueSince === null || !working(session)) {
+  if (session.rescueSince === null || !isWorking(session.peer)) {
     return;
   }
 

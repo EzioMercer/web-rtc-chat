@@ -3,6 +3,7 @@ import type { AppDispatch } from '../../store/store.ts';
 import { receiveCallSignal } from '../../store/thunks/call/receiveCallSignal.ts';
 import { receivePeerText } from '../../store/thunks/chat/receivePeerText.ts';
 import { receiveRotate } from '../../store/thunks/contact/receiveRotate.ts';
+import { receiveMove } from '../../store/thunks/move/receiveMove.ts';
 import { handleCandidate } from './handleCandidate.ts';
 import { handleDescription } from './handleDescription.ts';
 import { sessions } from './state.ts';
@@ -45,6 +46,9 @@ export const handleControlMessage = (key: string, data: unknown, dispatch: AppDi
     case ControlType.RotateAck:
     case ControlType.RotateDone:
       dispatch(receiveRotate(key, message));
+      break;
+    case ControlType.Move:
+      void dispatch(receiveMove(key, message));
       break;
   }
 };

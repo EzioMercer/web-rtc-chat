@@ -21,6 +21,23 @@ export const PATH_CHECK_MS = 60_000;
 // otherwise the relay again with fresh credentials. During a call, only the relay (see watchPaths).
 export const TURN_RESTART_MS = 5 * 60_000;
 
+// Moving a call from the TURN relay to a direct connection (see store/thunks/move). The new connection must open
+// within MOVE_SETUP_MS (both sides gather their addresses first), then carries a ping every MOVE_PING_MS for
+// MOVE_TEST_MS; one answer later than MOVE_PING_LIMIT_MS fails the test. Some routers let a direct path through
+// for a moment only, so a short test isn't enough.
+export const MOVE_SETUP_MS = 25_000;
+export const MOVE_TEST_MS = 10_000;
+export const MOVE_PING_MS = 500;
+export const MOVE_PING_LIMIT_MS = 2000;
+
+// The other side must move over within this time after the leader's switch.
+export const MOVE_SWITCH_MS = 5000;
+
+// After a move, the old connection stays open (idle) this long, to go back to if the new one breaks. It is closed
+// only once no file goes over it any more, checked this often.
+export const MOVE_HOLD_MS = 30_000;
+export const MOVE_FILES_CHECK_MS = 5000;
+
 // Video limit (bits per second) while a call goes through the TURN relay, where traffic counts toward the limit.
 export const TURN_VIDEO_BITRATE = 500_000;
 
