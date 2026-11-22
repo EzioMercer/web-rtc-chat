@@ -12,6 +12,7 @@ import { Button } from '../Button/Button.tsx';
 import { Dialog } from '../Dialog/Dialog.tsx';
 import { LegalDialog } from '../LegalDialog/LegalDialog.tsx';
 import { ProtectionPicker } from '../ProtectionPicker/ProtectionPicker.tsx';
+import { SegmentedControl } from '../SegmentedControl/SegmentedControl.tsx';
 import { downloadBackup } from './downloadBackup.ts';
 import { MODE_LABELS } from './MODE_LABELS.ts';
 import styles from './SettingsDialog.module.css';
@@ -92,20 +93,14 @@ export const SettingsDialog = ({ onClose }: Props) => {
       </section>
 
       <section className={styles.section}>
-        <h3 id="echo-guard-title">Echo guard</h3>
-        <div className={styles.choices} role="radiogroup" aria-labelledby="echo-guard-title">
-          {ECHO_GUARD_OPTIONS.map(({ value, label }) => (
-            <label key={value} className={styles.choice}>
-              <input
-                type="radio"
-                name="echo-guard"
-                value={value}
-                checked={echoGuard === value}
-                onChange={() => dispatch(echoGuardChosen(value))}
-              />
-              {label}
-            </label>
-          ))}
+        <div className={styles.titleRow}>
+          <h3 id="echo-guard-title">Echo guard</h3>
+          <SegmentedControl
+            labelledBy="echo-guard-title"
+            options={ECHO_GUARD_OPTIONS}
+            value={echoGuard}
+            onChange={value => dispatch(echoGuardChosen(value))}
+          />
         </div>
         <p>
           If the other person hears their own voice back, your microphone is picking up your speaker. Echo guard
