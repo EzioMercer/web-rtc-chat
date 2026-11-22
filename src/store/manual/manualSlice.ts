@@ -1,4 +1,5 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import type { SafetyEmoji } from '../../core/crypto/types.ts';
 import { type ManualState, ManualStatus, ManualRole } from './types.ts';
 
 const initialState: ManualState = {
@@ -6,7 +7,7 @@ const initialState: ManualState = {
   status: ManualStatus.Idle,
   myCode: '',
   error: null,
-  safetyWords: null,
+  safetyCode: null,
 };
 
 const manualSlice = createSlice({
@@ -26,10 +27,10 @@ const manualSlice = createSlice({
       state.status = ManualStatus.Connecting;
       state.error = null;
     },
-    connected: (state, { payload }: PayloadAction<string[]>) => {
+    connected: (state, { payload }: PayloadAction<SafetyEmoji[]>) => {
       state.status = ManualStatus.Connected;
       state.error = null;
-      state.safetyWords = payload;
+      state.safetyCode = payload;
     },
     disconnected: (state) => {
       state.status = ManualStatus.Disconnected;

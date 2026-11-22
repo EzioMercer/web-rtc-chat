@@ -1,6 +1,7 @@
 // An invite someone gave us (from a link or QR), waiting for us to name the contact.
 export type ReceivedInvite = {
-  identity: string;
+  // Stands for the inviter's key until they reveal it (see inviteCommitment).
+  commitment: string;
   secret: string;
   expiresAt: number;
 };
@@ -10,6 +11,8 @@ export type ContactRequest = {
   id: string;
   identity: string;
   secret: string;
+  // Their safety code (see inviteSafety).
+  safety: string;
 };
 
 export type InvitesState = {

@@ -1,4 +1,4 @@
-import { safetyWords } from '../../../core/signaling/safetyWords.ts';
+import { keySafetyCode } from '../../../core/signaling/keySafetyCode.ts';
 import { MANUAL_KEY } from '../../../core/webrtc/config.ts';
 import { getFingerprints } from '../../../core/webrtc/getFingerprints.ts';
 import type { Session } from '../../../core/webrtc/types.ts';
@@ -29,11 +29,11 @@ export const sessionOpened = (session: Session): AppThunk<Promise<void>> => asyn
   dispatch(sendPending(session.key));
 
   if (session.key === MANUAL_KEY) {
-    // No identities here, so the safety words come from the two certificate fingerprints.
+    // No identities here, so the safety code comes from the two certificate fingerprints.
     const local = getFingerprints(session.peer.localDescription?.sdp).join(',');
     const remote = getFingerprints(session.peer.remoteDescription?.sdp).join(',');
 
-    dispatch(connected(await safetyWords(local, remote)));
+    dispatch(connected(await keySafetyCode(local, remote)));
     dispatch(addMessage({ key: MANUAL_KEY, from: MessageAuthor.System, text: 'Connected. Say hi!' }));
 
     return;

@@ -24,14 +24,19 @@ const isFresh = (ts: number, nonce: string): boolean => {
   return true;
 };
 
-// Unzips and checks a received signal (see sealEnvelope): addressed to us, fresh, not replayed, and signed by `from`
-// (`expectedFrom` when we know who must have sent it). Returns null for anything else.
-export const openEnvelope = async (text: string, expectedFrom: string | null): Promise<SignedBody | null> => {
+// Unzips and checks a received signal (see sealEnvelope): addressed to `expectedTo` (us, unless it answers an
+// invite), fresh, not replayed, and signed by `from` (`expectedFrom` when we know who must have sent it). Returns
+// null for anything else.
+export const openEnvelope = async (
+  text: string,
+  expectedFrom: string | null,
+  expectedTo = vault.publicKey,
+): Promise<SignedBody | null> => {
   try {
     const { body, sig } = JSON.parse(await unzipText(text)) as Envelope;
     const parsed = JSON.parse(body) as SignedBody;
 
-    if (parsed.to !== vault.publicKey || typeof parsed.from !== 'string' || !parsed.msg) {
+    if (parsed.to !== expectedTo || typeof parsed.from !== 'string' || !parsed.msg) {
       return null;
     }
 

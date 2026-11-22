@@ -18,7 +18,7 @@ export const ManualPane = () => {
   const dispatch = useAppDispatch();
   const manual = useAppSelector(state => state.manual);
   const [showSafety, setShowSafety] = useState(true);
-  const { status, safetyWords } = manual;
+  const { status, safetyCode } = manual;
 
   if (status !== ManualStatus.Connected && status !== ManualStatus.Disconnected) {
     return (
@@ -51,7 +51,7 @@ export const ManualPane = () => {
 
   return (
     <Conversation convKey={MANUAL_KEY} connected={status === ManualStatus.Connected} header={header}>
-      {showSafety && <SafetyPanel words={safetyWords} />}
+      {showSafety && <SafetyPanel code={safetyCode} />}
     </Conversation>
   );
 };

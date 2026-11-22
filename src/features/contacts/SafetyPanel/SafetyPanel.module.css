@@ -9,20 +9,37 @@
   text-align: center;
 }
 
-.words {
+.code {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.word {
-  padding: 4px 12px;
+.item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 68px;
+  padding: 6px 8px;
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: 12px;
   background: var(--card);
-  font-family: var(--mono);
+}
+
+.emoji {
+  font-size: 32px;
+  line-height: 1.2;
+}
+
+.name {
+  font-size: 12px;
   font-weight: 600;
+  color: var(--muted);
 }
 
 .text {

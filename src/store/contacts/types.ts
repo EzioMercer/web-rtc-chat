@@ -6,6 +6,9 @@ export type Contact = {
   favourite: boolean;
   // We compared the safety code with this contact.
   verified: boolean;
+  // The safety code both sides worked out while adding each other (see inviteSafety). Contacts added before invites
+  // hid the inviter's key have none: their code comes from the two keys (keySafetyCode).
+  safety?: string;
   // Their public identity key. Everything they send through relays must be signed by it.
   identity: string;
   // Shared mailbox secrets we listen on, newest first (old ones stay briefly while we rotate).

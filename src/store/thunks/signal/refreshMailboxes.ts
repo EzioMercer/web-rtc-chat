@@ -3,6 +3,7 @@ import { deriveMailbox } from '../../../core/nostr/deriveMailbox.ts';
 import { listen } from '../../../core/nostr/listen.ts';
 import { utcDay } from '../../../core/nostr/utcDay.ts';
 import { activeInvites } from '../../../core/signaling/activeInvites.ts';
+import { pendingJoins } from '../../../core/signaling/pendingJoins.ts';
 import { RouteKind, routes, type Route } from '../../../core/signaling/routes.ts';
 import type { AppThunk } from '../../store.ts';
 import { handleSignal } from './handleSignal.ts';
@@ -11,7 +12,8 @@ import { AppPhase } from '../../app/types.ts';
 let version = 0;
 
 // Listens on every mailbox where someone may reach us: each contact's (yesterday, today and tomorrow, to cover
-// clock differences around midnight, for every secret still in use) and our open invite's.
+// clock differences around midnight, for every secret still in use), our open invite's, and those of invites we
+// used and wait on.
 export const refreshMailboxes = (): AppThunk<Promise<void>> => async (dispatch, getState) => {
   if (getState().app.phase !== AppPhase.Ready) {
     return;
@@ -38,6 +40,11 @@ export const refreshMailboxes = (): AppThunk<Promise<void>> => async (dispatch, 
       keys.set(pk, sk);
       next.set(pk, { kind: RouteKind.Invite });
     }
+  });
+
+  pendingJoins.forEach(({ sk }, pk) => {
+    keys.set(pk, sk);
+    next.set(pk, { kind: RouteKind.Reveal });
   });
 
   // A newer refresh started while this one was deriving keys.

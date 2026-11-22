@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useSafetyWords } from '../../contacts/useSafetyWords.ts';
+import { useSafetyCode } from '../../contacts/useSafetyCode.ts';
 import { verifiedSet } from '../../../store/contacts/contactsSlice.ts';
 import { connectContact } from '../../../store/thunks/contact/connectContact.ts';
 import { useAppDispatch } from '../../../store/useAppDispatch.ts';
@@ -28,7 +28,7 @@ export const ChatPane = ({ id }: Props) => {
   const log = useAppSelector(state => state.sessions.log[id]);
   const route = useAppSelector(state => state.sessions.route[id]);
   const [showLog, setShowLog] = useState(false);
-  const words = useSafetyWords(contact?.identity);
+  const safetyCode = useSafetyCode(contact?.identity, contact?.safety);
   // Open until the contact is verified, so a new contact shows the code right away.
   const [showSafety, setShowSafety] = useState(() => !contact?.verified);
   const connected = status === SessionStatus.Connected;
@@ -76,7 +76,7 @@ export const ChatPane = ({ id }: Props) => {
     <Conversation convKey={id} connected={connected} header={header}>
       {showSafety && (
         <SafetyPanel
-          words={words}
+          code={safetyCode}
           verified={contact.verified}
           onVerify={() => {
             dispatch(verifiedSet({ id, verified: true }));

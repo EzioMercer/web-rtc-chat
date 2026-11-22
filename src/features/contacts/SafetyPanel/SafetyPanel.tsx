@@ -1,20 +1,27 @@
 import { Button } from '../../../ui/Button/Button.tsx';
 import styles from './SafetyPanel.module.css';
 import { ButtonVariant } from '../../../ui/Button/ButtonVariant.ts';
+import type { SafetyEmoji } from '../../../core/crypto/types.ts';
+import { INVITE_CODE_LENGTH } from '../../../core/signaling/config.ts';
 
 type Props = {
-  words: string[] | null;
+  code: SafetyEmoji[] | null;
   verified?: boolean;
   onVerify?: () => void;
   onUnverify?: () => void;
 };
 
 // The safety code and what to do with it.
-export const SafetyPanel = ({ words, verified, onVerify, onUnverify }: Props) => (
+export const SafetyPanel = ({ code, verified, onVerify, onUnverify }: Props) => (
   <div className={styles.panel}>
-    <div className={styles.words} aria-label="Safety code">
-      {(words ?? ['…', '…', '…', '…']).map((word, i) => <span key={i} className={styles.word}>{word}</span>)}
-    </div>
+    <ol className={styles.code} aria-label="Safety code">
+      {(code ?? Array<null>(INVITE_CODE_LENGTH).fill(null)).map((item, i) => (
+        <li key={i} className={styles.item}>
+          <span className={styles.emoji} aria-hidden="true">{item?.emoji ?? '…'}</span>
+          <span className={styles.name}>{item?.name ?? ' '}</span>
+        </li>
+      ))}
+    </ol>
     <p className={styles.text}>
       Compare these with your friend in person or by voice. If they differ, someone is in the middle.
     </p>

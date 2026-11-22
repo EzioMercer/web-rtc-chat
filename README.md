@@ -20,7 +20,7 @@ Live: https://eziomercer.github.io/web-rtc-chat/
 - 👤 No account, phone number or email
 - 📱 Works on phones and computers, nothing to install
 - ➕ Add contacts with a QR code or an invite link
-- ✅ Safety words to check nobody is in the middle
+- ✅ A safety code of 4 emojis to check nobody is in the middle
 - 🔁 Survives short network drops and reconnects by itself
 
 ## How it works, in simple words
@@ -35,9 +35,13 @@ Live: https://eziomercer.github.io/web-rtc-chat/
    - **temporary:** nothing is saved.
 3. **Adding a contact happens once.**
    - You show an invite as a QR code, or send it as a link. It is single-use and expires after 10 minutes.
-   - Your friend opens it, and you accept them.
-   - Both screens then show the same 4 **safety words**. You compare them in person or on a voice call. If they
-     match, nobody is in the middle, and you mark the contact as verified.
+   - The link doesn't contain your key, only a hash of it with a random number. Your friend opens it and sends
+     their key first; only then does your app reveal yours, and theirs checks it against the hash. You accept them.
+   - Both screens then show the same **safety code** of 4 emojis. You compare them in person or on a voice call. If
+     they match, nobody is in the middle, and you mark the contact as verified.
+   - Because each side sends its key before seeing the other's, someone in the middle can't search for a key that
+     gives a matching code: they get one blind try, which works 1 time in 4.3 billion. Contacts added with an older
+     version, and manual mode, show 6 emojis instead, because there that protection is missing.
 4. **Finding each other uses Nostr relays.**
    - Browsers can't accept incoming connections, so they need a meeting point. The app uses 4 public
      [Nostr](https://nostr.com/) relays, hardcoded like the STUN server.
@@ -80,7 +84,7 @@ hand, without contacts or relays.
   - Every connection request is signed with the sender's identity key, and the app drops anything not signed by the
     contact you saved.
   - The request carries the certificate fingerprint of the direct connection, so a relay can't swap in its own.
-  - The safety words prove that the identity keys are the right ones.
+  - The safety code proves that the identity keys are the right ones.
 - **Relays see almost nothing.** They see encrypted, throwaway-signed notes addressed to random-looking mailboxes
   that change daily. They don't see who talks to whom, or any content, and they don't store the notes.
 - **Messages are never stored.** Not on a server, a relay, or your device.
@@ -92,7 +96,7 @@ hand, without contacts or relays.
 ### What it does *not* protect against
 
 - **Skipping the safety check.** If someone intercepted the invite link and used it first, they could pose as your
-  contact. Comparing the safety words catches this, but only if people actually compare them.
+  contact. Comparing the safety code catches this, but only if people actually compare it.
 - **A compromised device.** Malware that can read your screen, keyboard or memory can read anything while the app
   is unlocked. With "no protection", it can also copy your identity key from disk. No app can defend against that.
 - **IP addresses.** The other person sees your IP address when the connection is direct. Relays, the STUN server

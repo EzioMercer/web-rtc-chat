@@ -1,3 +1,5 @@
+import type { SafetyEmoji } from '../../core/crypto/types.ts';
+
 export enum ManualRole {
   None,
   Host,
@@ -20,6 +22,6 @@ export type ManualState = {
   status: ManualStatus;
   myCode: string;
   error: string | null;
-  // Safety words computed from both sides' certificate fingerprints, once connected.
-  safetyWords: string[] | null;
+  // Safety code computed from both sides' certificate fingerprints, once connected.
+  safetyCode: SafetyEmoji[] | null;
 };

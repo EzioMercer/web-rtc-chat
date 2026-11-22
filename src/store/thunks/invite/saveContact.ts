@@ -13,12 +13,13 @@ type NewContact = {
   name: string;
   identity: string;
   secret: string;
+  safety: string;
   // Id of an existing contact this one replaces (e.g. they lost their device), or null for a new one.
   replaceId: string | null;
 };
 
 // Adds a contact, or updates one. Returns its id.
-export const saveContact = ({ name, identity, secret, replaceId }: NewContact): AppThunk<string> => (
+export const saveContact = ({ name, identity, secret, safety, replaceId }: NewContact): AppThunk<string> => (
   dispatch,
   getState,
 ) => {
@@ -31,6 +32,7 @@ export const saveContact = ({ name, identity, secret, replaceId }: NewContact): 
     favourite: old?.favourite ?? false,
     verified: old?.identity === identity ? old.verified : false,
     identity,
+    safety,
     secrets: [secret],
     sendSecret: secret,
   };

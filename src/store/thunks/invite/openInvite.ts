@@ -1,4 +1,4 @@
-import { vault } from '../../../core/identity/vault.ts';
+import { activeInvites } from '../../../core/signaling/activeInvites.ts';
 import { parseInviteLink } from '../../../core/signaling/parseInviteLink.ts';
 import { inviteError, inviteReceived } from '../../invites/invitesSlice.ts';
 import type { AppThunk } from '../../store.ts';
@@ -8,12 +8,12 @@ export const openInvite = (text: string): AppThunk<boolean> => (dispatch) => {
   const payload = parseInviteLink(text);
 
   if (!payload) {
-    dispatch(inviteError('That is not an invite link.'));
+    dispatch(inviteError('That is not an invite link, or it is from an older version of the app. Ask for a new one.'));
 
     return false;
   }
 
-  if (payload.k === vault.publicKey) {
+  if ([...activeInvites.values()].some(invite => invite.commitment === payload.c)) {
     dispatch(inviteError('That is your own invite. Send it to the person you want to add.'));
 
     return false;
@@ -25,7 +25,7 @@ export const openInvite = (text: string): AppThunk<boolean> => (dispatch) => {
     return false;
   }
 
-  dispatch(inviteReceived({ identity: payload.k, secret: payload.s, expiresAt: payload.e * 1000 }));
+  dispatch(inviteReceived({ commitment: payload.c, secret: payload.s, expiresAt: payload.e * 1000 }));
 
   return true;
 };
