@@ -12,20 +12,22 @@ const MAX_WAITED_MS = 7 * 24 * 3600 * 1000;
 
 // `waited`: how long it waited on their side before being sent. It is shown where it was written, among ours.
 export const receivePeerText = (key: string, text: string, id: unknown, waited: unknown): AppThunk => (dispatch) => {
-  if (typeof id === 'string') {
-    // Confirm it arrived, even if it's a copy: the first confirmation may have been lost.
-    sendControl(key, { t: ControlType.Ack, id });
-
-    const ids = seen.get(key) ?? new Set<string>();
-
-    seen.set(key, ids);
-
-    if (ids.has(id)) {
-      return;
-    }
-
-    ids.add(id);
+  if (typeof id !== 'string') {
+    return;
   }
+
+  // Confirm it arrived, even if it's a copy: the first confirmation may have been lost.
+  sendControl(key, { t: ControlType.Ack, id });
+
+  const ids = seen.get(key) ?? new Set<string>();
+
+  seen.set(key, ids);
+
+  if (ids.has(id)) {
+    return;
+  }
+
+  ids.add(id);
 
   const delay = typeof waited === 'number' && waited > 0 && waited < MAX_WAITED_MS ? waited : 0;
 

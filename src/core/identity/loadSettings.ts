@@ -6,22 +6,11 @@ import { kv } from '../storage/kv.ts';
 import { STORAGE_KEYS } from './storageKeys.ts';
 import { vault } from './vault.ts';
 
-// Versions before November 2026 saved words.
-const ECHO_GUARD_WORDS: Record<string, EchoGuardSetting> = {
-  auto: EchoGuardSetting.Auto,
-  on: EchoGuardSetting.On,
-  off: EchoGuardSetting.Off,
-};
-
-const toEchoGuard = (value: unknown): EchoGuardSetting => {
-  if (typeof value === 'string') {
-    return ECHO_GUARD_WORDS[value] ?? DEFAULT_SETTINGS.echoGuard;
-  }
-
-  return Object.values(EchoGuardSetting).includes(value as EchoGuardSetting)
+const toEchoGuard = (value: unknown): EchoGuardSetting => (
+  Object.values(EchoGuardSetting).includes(value as EchoGuardSetting)
     ? value as EchoGuardSetting
-    : DEFAULT_SETTINGS.echoGuard;
-};
+    : DEFAULT_SETTINGS.echoGuard
+);
 
 // This device's saved settings, once the identity is unlocked. Anything missing, unreadable or unknown (e.g. after
 // restoring a backup, which was made with another key) falls back to the default.

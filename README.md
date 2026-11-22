@@ -40,8 +40,8 @@ Live: https://eziomercer.github.io/web-rtc-chat/
    - Both screens then show the same **safety code** of 4 emojis. You compare them in person or on a voice call. If
      they match, nobody is in the middle, and you mark the contact as verified.
    - Because each side sends its key before seeing the other's, someone in the middle can't search for a key that
-     gives a matching code: they get one blind try, which works 1 time in 4.3 billion. Contacts added with an older
-     version, and manual mode, show 6 emojis instead, because there that protection is missing.
+     gives a matching code: they get one blind try, which works 1 time in 4.3 billion. Manual mode shows 6 emojis
+     instead, because there that protection is missing.
 4. **Finding each other uses Nostr relays.**
    - Browsers can't accept incoming connections, so they need a meeting point. The app uses 4 public
      [Nostr](https://nostr.com/) relays, hardcoded like the STUN server.

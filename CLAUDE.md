@@ -83,7 +83,6 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
   CSS class name or a browser/HTML value (ButtonVariant, IconButtonVariant, MessageAuthor, TrackKind, …). Never
   `const enum` (isolatedModules). Enum values in text (logs, file names) must be turned into words
   (e.g. `CallAction[action]`), and CSS classes picked through a lookup table, never `styles[numericEnum]`.
-  Data saved before November 2026 used words: `toProtectionMode` and `loadSettings` still read those.
 - New UI: reuse `ui/` first. Something used by two features belongs in `ui/`, `hooks/` or `utils/`.
 - Git hooks run eslint --fix and tsc on commit.
 
@@ -106,6 +105,8 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
 
 - Simple words, short answers, one step at a time. When they only ask a question, answer it and wait; don't
   start changing code.
+- No backward compatibility: there are no users yet, so old saved data, links and app versions may simply break.
+  Don't write code that reads old formats or talks to old versions.
 - Commit and push on `master` only, as EzioMercer, unsigned, with no Co-Authored-By or other attribution.
 - Keep README.md (features, privacy), the legal text (`features/settings/LegalDialog/LEGAL.ts`) and TODO.md true
   when behaviour changes.

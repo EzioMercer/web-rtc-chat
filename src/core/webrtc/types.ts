@@ -66,10 +66,10 @@ export type RotateSignal = {
 
 // Everything sent over the control channel, as JSON.
 export type ControlMessage =
-  // `id` is answered with "ack", so the sender knows it arrived (older versions send no id).
+  // `id` is answered with "ack", so the sender knows it arrived.
   // `waited`: how long (ms) it waited on the sender's side before this send (it was written while offline), so
   // the receiver can put it in place without relying on the two devices' clocks agreeing.
-  | { t: ControlType.Text; text: string; id?: string; waited?: number }
+  | { t: ControlType.Text; text: string; id: string; waited?: number }
   | { t: ControlType.Ack; id: string }
   | { t: ControlType.Sdp; description: RTCSessionDescriptionInit }
   | { t: ControlType.Ice; candidate: RTCIceCandidateInit }
@@ -83,7 +83,7 @@ export type FileMeta = {
   name: string;
   size: number;
   mime: string;
-  // Voice and video messages (older versions show them as plain files).
+  // Voice and video messages.
   note?: MediaNote;
   // Sent zipped: this many bytes come, which unzip into `size` (see packFile).
   packed?: number;

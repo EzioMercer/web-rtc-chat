@@ -8,7 +8,7 @@ export const openInvite = (text: string): AppThunk<boolean> => (dispatch) => {
   const payload = parseInviteLink(text);
 
   if (!payload) {
-    dispatch(inviteError('That is not an invite link, or it is from an older version of the app. Ask for a new one.'));
+    dispatch(inviteError('That is not an invite link.'));
 
     return false;
   }

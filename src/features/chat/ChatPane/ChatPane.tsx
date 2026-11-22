@@ -28,7 +28,7 @@ export const ChatPane = ({ id }: Props) => {
   const log = useAppSelector(state => state.sessions.log[id]);
   const route = useAppSelector(state => state.sessions.route[id]);
   const [showLog, setShowLog] = useState(false);
-  const safetyCode = useSafetyCode(contact?.identity, contact?.safety);
+  const safetyCode = useSafetyCode(contact?.safety);
   // Open until the contact is verified, so a new contact shows the code right away.
   const [showSafety, setShowSafety] = useState(() => !contact?.verified);
   const connected = status === SessionStatus.Connected;
