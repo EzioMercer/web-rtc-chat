@@ -4,8 +4,9 @@ Only open items. Everything done is described in the README.
 
 ## Next
 
-- [ ] Field test the echo fix on real phones (Firefox and Chrome). If the other side still hears itself, find out
-  which phone and browser causes it.
+- [ ] Field test the echo guard on real phones, Firefox on Android with Safari on iPhone (found: Firefox on Android
+  causes the echo; Chrome on both phones is fine). Check that the prompt comes, and doesn't come in calls without
+  echo; tune ECHO_MATCH in src/webrtc/echoConfig.ts if needed.
 - [ ] Field test the new path search (switching to TURN when the direct path breaks) on real phones: turn Wi-Fi off
   and on during a call.
 - [ ] Field test voice and video messages on real phones, above all an iPhone (Safari) with an Android phone

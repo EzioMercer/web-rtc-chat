@@ -32,8 +32,8 @@ export const LEGAL: LegalSection[] = [
     title: 'Privacy',
     paragraphs: [
       'The author runs no accounts, no analytics, no cookies and no message storage. Messages and calls go directly '
-      + 'between the two browsers, encrypted end to end. Your keys and contacts are saved only on your device, '
-      + 'encrypted (or nowhere, in Temporary mode). Messages are not saved anywhere.',
+      + 'between the two browsers, encrypted end to end. Your keys, contacts and settings are saved only on your '
+      + 'device, encrypted (or nowhere, in Temporary mode). Messages are not saved anywhere.',
       'To make connections work, the app uses third-party services. They can see your IP address, but not your '
       + 'messages or calls:',
     ],

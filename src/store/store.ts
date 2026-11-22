@@ -7,6 +7,7 @@ import { invitesReducer } from './invites/invitesSlice.ts';
 import { manualReducer } from './manual/manualSlice.ts';
 import { persistence } from './persistence.ts';
 import { sessionsReducer } from './sessions/sessionsSlice.ts';
+import { settingsReducer } from './settings/settingsSlice.ts';
 import { uiReducer } from './ui/uiSlice.ts';
 
 export const store = configureStore({
@@ -19,6 +20,7 @@ export const store = configureStore({
     call: callReducer,
     invites: invitesReducer,
     ui: uiReducer,
+    settings: settingsReducer,
   },
   middleware: getDefault => getDefault().prepend(persistence.middleware),
   // The store holds messages and mailbox secrets: no inspection by browser extensions in production.

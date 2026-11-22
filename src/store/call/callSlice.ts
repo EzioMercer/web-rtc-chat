@@ -13,6 +13,8 @@ const initialState: CallState = {
   screen: false,
   remoteScreen: false,
   remoteStreamVersion: 0,
+  echoGuard: false,
+  echoPrompt: 'none',
 };
 
 const callSlice = createSlice({
@@ -21,7 +23,7 @@ const callSlice = createSlice({
   reducers: {
     callStarted: (
       state,
-      { payload }: PayloadAction<{ key: string; status: 'outgoing' | 'incoming'; video: boolean }>,
+      { payload }: PayloadAction<{ key: string; status: 'outgoing' | 'incoming'; video: boolean; echoGuard: boolean }>,
     ) => ({
       ...initialState,
       remoteStreamVersion: state.remoteStreamVersion,
@@ -29,6 +31,7 @@ const callSlice = createSlice({
       status: payload.status,
       video: payload.video,
       ownVideo: payload.video,
+      echoGuard: payload.echoGuard,
     }),
     callActive: (state) => {
       state.status = 'active';
@@ -52,6 +55,19 @@ const callSlice = createSlice({
     screenChanged: (state, { payload }: PayloadAction<boolean>) => {
       state.screen = payload;
     },
+    echoGuardToggled: (state) => {
+      state.echoGuard = !state.echoGuard;
+    },
+    // They hear an echo of themselves: ask once per call, and only while our echo guard is off.
+    echoReported: (state) => {
+      if (state.status === 'active' && !state.echoGuard && state.echoPrompt === 'none') {
+        state.echoPrompt = 'open';
+      }
+    },
+    echoPromptAnswered: (state, { payload }: PayloadAction<boolean>) => {
+      state.echoPrompt = 'done';
+      state.echoGuard = state.echoGuard || payload;
+    },
     remoteStreamChanged: (state) => {
       state.remoteStreamVersion += 1;
     },
@@ -68,6 +84,9 @@ export const {
   remoteMediaChanged,
   remoteStreamChanged,
   screenChanged,
+  echoGuardToggled,
+  echoReported,
+  echoPromptAnswered,
 } = callSlice.actions;
 
 export const callReducer = callSlice.reducer;

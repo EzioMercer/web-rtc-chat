@@ -51,6 +51,7 @@ export const ICON_PATHS = {
   chevronLeft: 'M15 18l-6-6 6-6',
   chevronUp: 'M18 15l-6-6-6 6',
   volumeOff: 'M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6',
+  echo: 'M11 5L6 9H2v6h4l5 4V5zM15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14',
 };
 
 export type IconName = keyof typeof ICON_PATHS;

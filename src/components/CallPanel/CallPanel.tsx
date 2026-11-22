@@ -8,13 +8,17 @@ import { useAppDispatch } from '../../store/useAppDispatch.ts';
 import { useAppSelector } from '../../store/useAppSelector.ts';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useCallStats } from '../../hooks/useCallStats.ts';
+import { useEchoDetector } from '../../hooks/useEchoDetector.ts';
+import { useEchoGuard } from '../../hooks/useEchoGuard.ts';
 import { useFullScreen } from '../../hooks/useFullScreen.ts';
+import { echoGuardToggled } from '../../store/call/callSlice.ts';
 import { cx } from '../../utils/cx.ts';
 import { formatBytes } from '../../utils/formatBytes.ts';
 import { media, sessions } from '../../webrtc/state.ts';
 import { Icon } from '../Icon/Icon.tsx';
 import { IconButton } from '../IconButton/IconButton.tsx';
 import { CallStage } from '../CallStage/CallStage.tsx';
+import { EchoPrompt } from '../EchoPrompt/EchoPrompt.tsx';
 import styles from './CallPanel.module.css';
 
 const TITLES = {
@@ -42,9 +46,13 @@ export const CallPanel = () => {
   const { full, toggleFull } = useFullScreen(panelRef);
   const call = useAppSelector(state => state.call);
   const { status, video, ownVideo, mic, cam, remoteMic, remoteCam, remoteStreamVersion, key } = call;
-  const { screen, remoteScreen } = call;
+  const { screen, remoteScreen, echoGuard, echoPrompt } = call;
   const remoteStream = key ? sessions.get(key)?.remoteStream ?? null : null;
   const stats = useCallStats(key, status === 'active');
+
+  useEchoGuard(key, status === 'active' && echoGuard && mic);
+  useEchoDetector(key, status === 'active');
+
   const [controlsShown, setControlsShown] = useState(true);
   const hideTimer = useRef(0);
   const movedAt = useRef(0);
@@ -169,6 +177,12 @@ export const CallPanel = () => {
                     variant={mic ? 'neutral' : 'off'}
                     onClick={() => dispatch(toggleMic())}
                   />
+                  <IconButton
+                    icon="echo"
+                    label={echoGuard ? 'Turn echo guard off' : 'Turn echo guard on'}
+                    variant={echoGuard ? 'success' : 'neutral'}
+                    onClick={() => dispatch(echoGuardToggled())}
+                  />
                   {ownVideo && (
                     <IconButton
                       icon={cam ? 'video' : 'videoOff'}
@@ -198,6 +212,8 @@ export const CallPanel = () => {
               )}
         </div>
       </div>
+      {/* Inside the panel, so it also shows in full screen. */}
+      {echoPrompt === 'open' && <EchoPrompt />}
     </div>
   );
 };

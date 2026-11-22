@@ -12,7 +12,7 @@ export const updateProtection = (choice: ProtectionChoice): AppThunk<Promise<boo
   dispatch(busyStarted());
 
   try {
-    await changeProtection(choice, getState().contacts.list);
+    await changeProtection(choice, getState().contacts.list, getState().settings);
   } catch (err) {
     dispatch(failed(errorMessage(err)));
 

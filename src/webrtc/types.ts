@@ -2,7 +2,8 @@ import type { MediaNote } from '../store/chat/types.ts';
 
 export type CallSignal =
   | { t: 'call'; action: 'invite'; video: boolean }
-  | { t: 'call'; action: 'accept' | 'decline' | 'end' }
+  // `echo`: they hear an echo of their own voice from our side (see useEchoDetector).
+  | { t: 'call'; action: 'accept' | 'decline' | 'end' | 'echo' }
   // `screen`: they share their screen (older versions don't send it).
   | { t: 'call'; action: 'state'; mic: boolean; cam: boolean; screen?: boolean };
 

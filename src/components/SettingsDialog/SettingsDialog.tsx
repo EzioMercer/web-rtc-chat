@@ -5,6 +5,8 @@ import { resetApp } from '../../store/thunks/app/resetApp.ts';
 import { selectConversation } from '../../store/thunks/chat/selectConversation.ts';
 import { useAppDispatch } from '../../store/useAppDispatch.ts';
 import { useAppSelector } from '../../store/useAppSelector.ts';
+import { echoGuardChosen } from '../../store/settings/settingsSlice.ts';
+import type { EchoGuardSetting } from '../../store/settings/types.ts';
 import { MANUAL_KEY } from '../../webrtc/config.ts';
 import { Button } from '../Button/Button.tsx';
 import { Dialog } from '../Dialog/Dialog.tsx';
@@ -18,9 +20,16 @@ type Props = {
   onClose: () => void;
 };
 
+const ECHO_GUARD_OPTIONS: { value: EchoGuardSetting; label: string }[] = [
+  { value: 'auto', label: 'Auto' },
+  { value: 'on', label: 'On' },
+  { value: 'off', label: 'Off' },
+];
+
 export const SettingsDialog = ({ onClose }: Props) => {
   const dispatch = useAppDispatch();
   const { mode, busy, error } = useAppSelector(state => state.app);
+  const echoGuard = useAppSelector(state => state.settings.echoGuard);
   const [changing, setChanging] = useState(false);
   const [legal, setLegal] = useState(false);
   const [relays, setRelays] = useState(relayStatus);
@@ -80,6 +89,28 @@ export const SettingsDialog = ({ onClose }: Props) => {
             : 'Backups need passkey or passphrase protection.'}
         </p>
         <Button variant="secondary" disabled={!canBackup} onClick={() => void downloadBackup()}>Download backup</Button>
+      </section>
+
+      <section className={styles.section}>
+        <h3 id="echo-guard-title">Echo guard</h3>
+        <div className={styles.choices} role="radiogroup" aria-labelledby="echo-guard-title">
+          {ECHO_GUARD_OPTIONS.map(({ value, label }) => (
+            <label key={value} className={styles.choice}>
+              <input
+                type="radio"
+                name="echo-guard"
+                value={value}
+                checked={echoGuard === value}
+                onChange={() => dispatch(echoGuardChosen(value))}
+              />
+              {label}
+            </label>
+          ))}
+        </div>
+        <p>
+          If the other person hears their own voice back, your microphone is picking up your speaker. Echo guard
+          turns your microphone down while only they are talking.
+        </p>
       </section>
 
       <section className={styles.section}>

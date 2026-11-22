@@ -1,7 +1,8 @@
 import { attachLocalTracks } from '../../../webrtc/attachLocalTracks.ts';
 import { sendControl } from '../../../webrtc/sendControl.ts';
 import type { CallSignal } from '../../../webrtc/types.ts';
-import { callActive, callStarted, remoteMediaChanged } from '../../call/callSlice.ts';
+import { echoGuardFor } from '../../../utils/echoGuardFor.ts';
+import { callActive, callStarted, echoReported, remoteMediaChanged } from '../../call/callSlice.ts';
 import type { AppThunk } from '../../store.ts';
 import { endCall } from './endCall.ts';
 import { sendCallState } from './sendCallState.ts';
@@ -18,7 +19,9 @@ export const receiveCallSignal = (key: string, signal: CallSignal): AppThunk => 
       return;
     }
 
-    dispatch(callStarted({ key, status: 'incoming', video: signal.video }));
+    const echoGuard = echoGuardFor(getState().settings.echoGuard);
+
+    dispatch(callStarted({ key, status: 'incoming', video: signal.video, echoGuard }));
 
     return;
   }
@@ -48,6 +51,9 @@ export const receiveCallSignal = (key: string, signal: CallSignal): AppThunk => 
       break;
     case 'state':
       dispatch(remoteMediaChanged({ mic: signal.mic, cam: signal.cam, screen: signal.screen === true }));
+      break;
+    case 'echo':
+      dispatch(echoReported());
       break;
   }
 };
