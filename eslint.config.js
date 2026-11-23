@@ -100,6 +100,8 @@ export default tseslint.config(
       'no-restricted-properties': banProperties(),
       // Never log message content: only errors and warnings, and those must not include it.
       'no-console': ['error', { allow: ['error', 'warn'] }],
+      // The browser's own popups look foreign and stop the page until answered: use ui/ConfirmDialog.
+      'no-alert': 'error',
     },
   },
   {

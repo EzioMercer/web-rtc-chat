@@ -7,6 +7,7 @@ import { useAppDispatch } from '../../../store/useAppDispatch.ts';
 import { useAppSelector } from '../../../store/useAppSelector.ts';
 import { Button } from '../../../ui/Button/Button.tsx';
 import { Checkbox } from '../../../ui/Checkbox/Checkbox.tsx';
+import { ConfirmDialog } from '../../../ui/ConfirmDialog/ConfirmDialog.tsx';
 import { Dialog } from '../../../ui/Dialog/Dialog.tsx';
 import { SegmentedControl } from '../../../ui/SegmentedControl/SegmentedControl.tsx';
 import { formatBytes } from '../../../utils/formatBytes.ts';
@@ -56,6 +57,8 @@ export const ExportDialog = ({ onClose }: Props) => {
   const [password, setPassword] = useState('');
   const [repeat, setRepeat] = useState('');
   const [busy, setBusy] = useState(false);
+  // Asking first, when a call or connection would end.
+  const [asking, setAsking] = useState(false);
   // undefined: not made yet; null: made; text: what went wrong.
   const [result, setResult] = useState<string | null | undefined>(undefined);
 
@@ -110,10 +113,7 @@ export const ExportDialog = ({ onClose }: Props) => {
   };
 
   const start = async () => {
-    if ((inCall || manual) && !window.confirm('Making a backup ends your call and connections. Continue?')) {
-      return;
-    }
-
+    setAsking(false);
     setBusy(true);
     setResult(await dispatch(exportBackup(
       chosen.map(contact => ({ id: contact.id, media: choiceFor(contact.id).media })),
@@ -211,7 +211,7 @@ export const ExportDialog = ({ onClose }: Props) => {
         <Button
           wide
           disabled={busy || !estimate || !chosen.length || !password || password !== repeat}
-          onClick={() => void start()}
+          onClick={() => (inCall || manual ? setAsking(true) : void start())}
         >
           Make backup
         </Button>
@@ -225,8 +225,20 @@ export const ExportDialog = ({ onClose }: Props) => {
   };
 
   return (
-    <Dialog title="Back up chats" onClose={onClose} dismissible={!busy}>
-      <div className={styles.form}>{body()}</div>
-    </Dialog>
+    <>
+      <Dialog title="Back up chats" onClose={onClose} dismissible={!busy}>
+        <div className={styles.form}>{body()}</div>
+      </Dialog>
+      {asking && (
+        <ConfirmDialog
+          title="End your call?"
+          confirmLabel="Make backup"
+          onConfirm={() => void start()}
+          onCancel={() => setAsking(false)}
+        >
+          Making a backup ends your call and connections.
+        </ConfirmDialog>
+      )}
+    </>
   );
 };

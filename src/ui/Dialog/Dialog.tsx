@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode, type SyntheticEvent } from 'react';
+import { useEffect, useRef, type ReactNode, type SyntheticEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { Icon } from '../Icon/Icon.tsx';
 import styles from './Dialog.module.css';
@@ -13,19 +13,36 @@ type Props = {
   dismissible?: boolean;
 };
 
+// Open dialogs, oldest first. A question can open over another dialog; Escape answers only the top one.
+const open: object[] = [];
+
 // A modal over the whole app. Escape, the X or the backdrop closes it (only Escape when not `dismissible`).
 // In full screen (a call) it opens inside the full-screen element, otherwise it would be hidden behind it.
 export const Dialog = ({ title, children, onClose, dismissible = true }: Props) => {
+  const me = useRef({});
+
+  useEffect(() => {
+    const token = me.current;
+
+    open.push(token);
+
+    return () => {
+      open.splice(open.indexOf(token), 1);
+    };
+  }, []);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' && open.at(-1) === me.current) {
         onClose();
       }
     };
 
-    window.addEventListener('keydown', onKey);
+    // Capture: the backdrop stops key events from bubbling out of the dialog, so a bubbling listener would never
+    // hear Escape pressed inside it.
+    window.addEventListener('keydown', onKey, true);
 
-    return () => window.removeEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey, true);
   }, [onClose]);
 
   // React events bubble through portals to the component that opened the dialog; keep them here.

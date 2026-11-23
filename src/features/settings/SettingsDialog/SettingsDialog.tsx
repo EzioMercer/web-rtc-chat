@@ -9,6 +9,7 @@ import { echoGuardChosen } from '../../../store/settings/settingsSlice.ts';
 import { EchoGuardSetting } from '../../../store/settings/types.ts';
 import { MANUAL_KEY } from '../../../core/webrtc/config.ts';
 import { Button } from '../../../ui/Button/Button.tsx';
+import { ConfirmDialog } from '../../../ui/ConfirmDialog/ConfirmDialog.tsx';
 import { Dialog } from '../../../ui/Dialog/Dialog.tsx';
 import { ExportDialog } from '../../backup/ExportDialog/ExportDialog.tsx';
 import { ImportDialog } from '../../backup/ImportDialog/ImportDialog.tsx';
@@ -19,7 +20,7 @@ import { ProtectionPicker } from '../../setup/ProtectionPicker/ProtectionPicker.
 import { SegmentedControl } from '../../../ui/SegmentedControl/SegmentedControl.tsx';
 import { MODE_LABELS } from './MODE_LABELS.ts';
 import styles from './SettingsDialog.module.css';
-import { ProtectionMode } from '../../../core/identity/types.ts';
+import { type ProtectionChoice, ProtectionMode } from '../../../core/identity/types.ts';
 import { ButtonVariant } from '../../../ui/Button/ButtonVariant.ts';
 
 type Props = {
@@ -32,10 +33,6 @@ const ECHO_GUARD_OPTIONS: { value: EchoGuardSetting; label: string }[] = [
   { value: EchoGuardSetting.Off, label: 'Off' },
 ];
 
-// Going temporary deletes what is saved; the chats stay only in this tab.
-const TEMPORARY_WARNING = 'Temporary deletes your identity, contacts and chats from this device. They stay only in '
-  + 'this tab and disappear when it closes. Make a backup first to keep them. Continue?';
-
 export const SettingsDialog = ({ onClose }: Props) => {
   const dispatch = useAppDispatch();
   const { mode, busy, error } = useAppSelector(state => state.app);
@@ -44,6 +41,9 @@ export const SettingsDialog = ({ onClose }: Props) => {
   const [legal, setLegal] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [importing, setImporting] = useState(false);
+  // Going temporary waits for a yes: it deletes what is saved on this device.
+  const [toTemporary, setToTemporary] = useState<ProtectionChoice | null>(null);
+  const [resetting, setResetting] = useState(false);
   const [relays, setRelays] = useState(relayStatus);
 
   useEffect(() => {
@@ -64,34 +64,62 @@ export const SettingsDialog = ({ onClose }: Props) => {
     return <ImportDialog fresh={false} onClose={() => setImporting(false)} />;
   }
 
-  if (changing) {
+  if (resetting) {
     return (
-      <Dialog title="Change protection" onClose={() => setChanging(false)}>
-        <ProtectionPicker
-          submitLabel="Switch"
-          busy={busy}
-          error={error}
-          current={mode}
-          onSubmit={async (choice) => {
-            if (choice.mode === ProtectionMode.Temporary && mode !== ProtectionMode.Temporary
-              && !window.confirm(TEMPORARY_WARNING)) {
-              return;
-            }
-
-            if (await dispatch(updateProtection(choice))) {
-              setChanging(false);
-            }
-          }}
-        />
-      </Dialog>
+      <ConfirmDialog
+        title="Delete everything?"
+        confirmLabel="Delete"
+        danger
+        onConfirm={() => void resetApp()}
+        onCancel={() => setResetting(false)}
+      >
+        Your identity, contacts and chats will be deleted from this device. This can&apos;t be undone.
+      </ConfirmDialog>
     );
   }
 
-  const reset = () => {
-    if (window.confirm('Delete your identity, contacts and chats from this device? This can\'t be undone.')) {
-      void resetApp();
-    }
-  };
+  if (changing) {
+    const switchTo = async (choice: ProtectionChoice) => {
+      if (await dispatch(updateProtection(choice))) {
+        setChanging(false);
+      }
+    };
+
+    return (
+      <>
+        <Dialog title="Change protection" onClose={() => setChanging(false)}>
+          <ProtectionPicker
+            submitLabel="Switch"
+            busy={busy}
+            error={error}
+            current={mode}
+            onSubmit={(choice) => {
+              if (choice.mode === ProtectionMode.Temporary && mode !== ProtectionMode.Temporary) {
+                setToTemporary(choice);
+              } else {
+                void switchTo(choice);
+              }
+            }}
+          />
+        </Dialog>
+        {toTemporary && (
+          <ConfirmDialog
+            title="Switch to temporary?"
+            confirmLabel="Switch"
+            danger
+            onConfirm={() => {
+              setToTemporary(null);
+              void switchTo(toTemporary);
+            }}
+            onCancel={() => setToTemporary(null)}
+          >
+            Your identity, contacts and chats will be deleted from this device. They stay only in this tab and
+            disappear when it closes. Make a backup first to keep them.
+          </ConfirmDialog>
+        )}
+      </>
+    );
+  }
 
   return (
     <Dialog title="Settings" onClose={onClose}>
@@ -155,7 +183,9 @@ export const SettingsDialog = ({ onClose }: Props) => {
 
       <section className={styles.section}>
         <h3>This device</h3>
-        <Button variant={ButtonVariant.Danger} onClick={reset}>Delete identity, contacts and chats</Button>
+        <Button variant={ButtonVariant.Danger} onClick={() => setResetting(true)}>
+          Delete identity, contacts and chats
+        </Button>
       </section>
     </Dialog>
   );

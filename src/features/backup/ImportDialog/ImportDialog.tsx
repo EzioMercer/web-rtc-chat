@@ -12,6 +12,7 @@ import { useAppDispatch } from '../../../store/useAppDispatch.ts';
 import { useAppSelector } from '../../../store/useAppSelector.ts';
 import { Button } from '../../../ui/Button/Button.tsx';
 import { Checkbox } from '../../../ui/Checkbox/Checkbox.tsx';
+import { ConfirmDialog } from '../../../ui/ConfirmDialog/ConfirmDialog.tsx';
 import { Dialog } from '../../../ui/Dialog/Dialog.tsx';
 import { SegmentedControl } from '../../../ui/SegmentedControl/SegmentedControl.tsx';
 import { TextField } from '../../../ui/TextField/TextField.tsx';
@@ -71,6 +72,8 @@ export const ImportDialog = ({ fresh, onClose }: Props) => {
   const [sameForAll, setSameForAll] = useState(true);
   const [allAnswer, setAllAnswer] = useState(Clash.KeepBoth);
   const [busy, setBusy] = useState(false);
+  // Asking first, when a call would end; holds the protection chosen for the restore.
+  const [asking, setAsking] = useState<{ choice: ProtectionChoice | null } | null>(null);
   const [error, setError] = useState<string | null>(null);
   // Restored; on the setup screen, with this protection.
   const [done, setDone] = useState<{ mode: ProtectionMode | null } | null>(null);
@@ -140,14 +143,20 @@ export const ImportDialog = ({ fresh, onClose }: Props) => {
     return next;
   });
 
+  const askRestore = (choice: ProtectionChoice | null) => {
+    if (inCall) {
+      setAsking({ choice });
+    } else {
+      void restore(choice);
+    }
+  };
+
   const restore = async (choice: ProtectionChoice | null) => {
     if (!file || !preview) {
       return;
     }
 
-    if (inCall && !window.confirm('Restoring ends your call and connections. Continue?')) {
-      return;
-    }
+    setAsking(null);
 
     const plan: RestorePlan = {
       include: new Set(included.map(chat => chat.id).filter(id => !clashes.some(
@@ -309,14 +318,14 @@ export const ImportDialog = ({ fresh, onClose }: Props) => {
                   submitLabel="Restore"
                   busy={busy}
                   error={error}
-                  onSubmit={choice => void restore(choice)}
+                  onSubmit={askRestore}
                 />
               </>
             )
           : (
               <>
                 {error && <p className={styles.error}>{error}</p>}
-                <Button wide disabled={busy || !included.length} onClick={() => void restore(null)}>Restore</Button>
+                <Button wide disabled={busy || !included.length} onClick={() => askRestore(null)}>Restore</Button>
               </>
             )}
       </>
@@ -324,8 +333,20 @@ export const ImportDialog = ({ fresh, onClose }: Props) => {
   };
 
   return (
-    <Dialog title="Restore a backup" onClose={onClose} dismissible={!busy}>
-      <div className={styles.form}>{body()}</div>
-    </Dialog>
+    <>
+      <Dialog title="Restore a backup" onClose={onClose} dismissible={!busy}>
+        <div className={styles.form}>{body()}</div>
+      </Dialog>
+      {asking && (
+        <ConfirmDialog
+          title="End your call?"
+          confirmLabel="Restore"
+          onConfirm={() => void restore(asking.choice)}
+          onCancel={() => setAsking(null)}
+        >
+          Restoring ends your call and connections.
+        </ConfirmDialog>
+      )}
+    </>
   );
 };

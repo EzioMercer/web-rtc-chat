@@ -11,7 +11,8 @@ explains the product and its privacy promises; read it before changing anything 
 src/
   ui/         Reusable building blocks. Look here before writing a new button, dialog or field.
                 Button, IconButton, Icon (+ paths.ts: every icon), Dialog (dismissible={false} for questions that
-                must be answered), TextField, CodeField, CopyButton, SegmentedControl (radio or tabs), Checkbox,
+                must be answered), ConfirmDialog (a yes/no question: never the browser's confirm/alert/prompt),
+                TextField, CodeField, CopyButton, SegmentedControl (radio or tabs), Checkbox,
                 MediaVideo (plays a MediaStream), QrCode, QrScanner, Logo, Avatar (a picture, letter or icon)
   features/   Screens, one folder per feature, with the hooks and helpers only that feature uses.
                 app/        Messenger (main layout), Sidebar, EmptyPane, UpdateNotice, OtherTabScreen
