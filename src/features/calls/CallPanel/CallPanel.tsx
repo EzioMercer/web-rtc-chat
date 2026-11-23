@@ -1,6 +1,7 @@
 import { acceptCall } from '../../../store/thunks/call/acceptCall.ts';
 import { declineCall } from '../../../store/thunks/call/declineCall.ts';
 import { hangUp } from '../../../store/thunks/call/hangUp.ts';
+import { switchCamera } from '../../../store/thunks/call/switchCamera.ts';
 import { toggleCam } from '../../../store/thunks/call/toggleCam.ts';
 import { toggleMic } from '../../../store/thunks/call/toggleMic.ts';
 import { canShareScreen, toggleScreen } from '../../../store/thunks/call/toggleScreen.ts';
@@ -8,6 +9,7 @@ import { useAppDispatch } from '../../../store/useAppDispatch.ts';
 import { useAppSelector } from '../../../store/useAppSelector.ts';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useCallStats } from '../useCallStats.ts';
+import { useCameraCount } from '../useCameraCount.ts';
 import { useEchoDetector } from '../useEchoDetector.ts';
 import { useEchoGuard } from '../useEchoGuard.ts';
 import { useFullScreen } from '../../../hooks/useFullScreen.ts';
@@ -48,9 +50,13 @@ export const CallPanel = () => {
   const { full, toggleFull } = useFullScreen(panelRef);
   const call = useAppSelector(state => state.call);
   const { status, video, ownVideo, mic, cam, remoteMic, remoteCam, remoteStreamVersion, key } = call;
-  const { screen, remoteScreen, echoGuard, echoPrompt } = call;
+  const { screen, remoteScreen, echoGuard, echoPrompt, rearCamera, localStreamVersion } = call;
   const remoteStream = key ? sessions.get(key)?.remoteStream ?? null : null;
   const stats = useCallStats(key, status === CallStatus.Active);
+
+  // Switching cameras is offered while ours is on and shown.
+  const canSwitch = status === CallStatus.Active && ownVideo && cam && !screen;
+  const cameras = useCameraCount(canSwitch);
 
   useEchoGuard(key, status === CallStatus.Active && echoGuard && mic);
   useEchoDetector(key, status === CallStatus.Active);
@@ -102,8 +108,9 @@ export const CallPanel = () => {
             remoteVersion={remoteStreamVersion}
             showRemote={showRemoteVideo}
             localStream={screen ? media.screen?.stream ?? null : media.localStream}
+            localVersion={localStreamVersion}
             showLocal={showLocalVideo}
-            mirrorLocal={!screen}
+            mirrorLocal={!screen && !rearCamera}
             bottomInset={full ? FULL_BOTTOM_PX : 10}
           />
         )}
@@ -190,12 +197,21 @@ export const CallPanel = () => {
                     variant={echoGuard ? IconButtonVariant.Success : IconButtonVariant.Neutral}
                     onClick={() => dispatch(echoGuardToggled())}
                   />
-                  {ownVideo && (
+                  {/* Also after answering a video call with audio only: it turns our camera on. */}
+                  {video && (
                     <IconButton
                       icon={cam ? 'video' : 'videoOff'}
                       label={cam ? 'Turn camera off' : 'Turn camera on'}
                       variant={cam ? IconButtonVariant.Neutral : IconButtonVariant.Off}
                       onClick={() => dispatch(toggleCam())}
+                    />
+                  )}
+                  {canSwitch && cameras > 1 && (
+                    <IconButton
+                      icon="switchCamera"
+                      label="Switch camera"
+                      variant={IconButtonVariant.Neutral}
+                      onClick={() => void dispatch(switchCamera())}
                     />
                   )}
                   {canShareScreen() && (

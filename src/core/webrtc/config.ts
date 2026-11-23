@@ -38,6 +38,9 @@ export const MOVE_SWITCH_MS = 5000;
 export const MOVE_HOLD_MS = 30_000;
 export const MOVE_FILES_CHECK_MS = 5000;
 
+// The camera's picture size in calls (the browser picks the nearest the camera can do).
+export const CAMERA_VIDEO: MediaTrackConstraints = { width: { ideal: 1280 }, height: { ideal: 720 } };
+
 // Video limit (bits per second) while a call goes through the TURN relay, where traffic counts toward the limit.
 export const TURN_VIDEO_BITRATE = 500_000;
 

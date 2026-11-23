@@ -9,5 +9,14 @@ export const createMoveLink = (session: Session, dispatch: AppDispatch): Link =>
 
   wirePeer(session, peer, dispatch);
 
-  return { peer, channel: null, senders: [], screenSender: null, remoteStream: null, iceServers: [] };
+  return {
+    peer,
+    channel: null,
+    senders: [],
+    screenSender: null,
+    remoteStream: null,
+    iceServers: [],
+    ourRelay: null,
+    theirRelay: false,
+  };
 };

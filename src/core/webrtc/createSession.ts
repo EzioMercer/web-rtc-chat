@@ -30,6 +30,8 @@ export const createSession = (options: Options, dispatch: AppDispatch): Session 
     lateTimer: null,
     iceServers,
     route: null,
+    ourRelay: null,
+    theirRelay: false,
     restartedAt: Date.now(),
     attachOnOffer: false,
     rescueSince: null,

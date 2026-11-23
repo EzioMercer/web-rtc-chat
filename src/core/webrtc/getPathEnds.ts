@@ -1,5 +1,3 @@
-import { SessionRoute } from '../../store/sessions/types.ts';
-
 type Stat = {
   type: string;
   selectedCandidatePairId?: string;
@@ -11,9 +9,9 @@ type Stat = {
   state?: string;
 };
 
-// Whether the open connection goes straight between the devices or through the TURN relay; null while the browser
-// has no path chosen (e.g. during a path search), so a missing answer isn't taken for a direct path.
-export const getRoute = async (peer: RTCPeerConnection): Promise<SessionRoute | null> => {
+// What each end of the open connection's path is ('host', 'srflx', 'prflx' or 'relay': the TURN relay); null while
+// the browser has no path chosen (e.g. during a path search).
+export const getPathEnds = async (peer: RTCPeerConnection): Promise<{ ours: string; theirs: string } | null> => {
   const report = await peer.getStats();
   const stats = [...report.values()] as Stat[];
   const pairId = stats.find(s => s.type === 'transport' && s.selectedCandidatePairId)?.selectedCandidatePairId;
@@ -26,8 +24,7 @@ export const getRoute = async (peer: RTCPeerConnection): Promise<SessionRoute | 
     return null;
   }
 
-  const types = [pair.localCandidateId, pair.remoteCandidateId]
-    .map(id => (id ? (report.get(id) as Stat | undefined)?.candidateType : undefined));
+  const type = (id?: string) => (id ? (report.get(id) as Stat | undefined)?.candidateType : undefined) ?? 'unknown';
 
-  return types.includes('relay') ? SessionRoute.Relay : SessionRoute.Direct;
+  return { ours: type(pair.localCandidateId), theirs: type(pair.remoteCandidateId) };
 };

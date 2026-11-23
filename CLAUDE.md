@@ -73,7 +73,11 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
   (`sealEnvelope` / `openEnvelope`) and the manual codes. Always before encrypting; unzipping is size-capped.
   Chat text is not zipped: it is too short to gain anything.
 - **Calls** use media tracks on the same connection; call control (`invite`, `accept`, `state`, `echo`, …) goes
-  over the control channel and is handled in `store/thunks/call/receiveCallSignal.ts`.
+  over the control channel and is handled in `store/thunks/call/receiveCallSignal.ts`. Switching cameras replaces
+  the track on the senders (`replaceCamera`, no new offer); turning the camera on after an audio-only answer
+  (`startCamera`) adds a track, which sends a new offer.
+- **Route shown** (`checkRoute`): through TURN if either end of the selected path is the relay. Their relay address
+  can look ordinary to us ("prflx"), so each side tells the other about its own end (`ControlType.Route`).
 - **Voice/video messages** are files with a `note` (type, duration, waveform) in their first message.
 - **Echo guard:** the side that hears its own voice back (`useEchoDetector`) sends `echo`; the other side is asked
   (`EchoPrompt`) and its `useEchoGuard` turns the microphone off while they talk. Both only read
@@ -122,6 +126,8 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
 - `scripts/e2e-backup.mjs` (same dev server): saved chats, backups and restores in Chromium, Firefox and WebKit
   (also across them), errors, name clashes, protection changes, one tab, and a 1 GB backup's memory use.
   Restart the dev server after editing files: a reloaded module is a second copy, and the test would talk to that.
+- `scripts/e2e-camera.mjs` (same dev server): a video call answered with audio only, then the camera turned on;
+  switching between two (fake) cameras; the route shown from the other side's word about its end of the path.
 - `scripts/e2e-move.mjs` (same dev server): a call moves to a new connection, goes back when it breaks, and stays when
   the test fails.
 - `scripts/e2e-real-relays.mjs` (built app, `npx vite preview --port 4173`, real relays): Chromium adds Firefox and

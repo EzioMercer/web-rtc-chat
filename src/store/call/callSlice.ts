@@ -8,11 +8,13 @@ const initialState: CallState = {
   ownVideo: false,
   mic: true,
   cam: true,
+  rearCamera: false,
   remoteMic: true,
   remoteCam: true,
   screen: false,
   remoteScreen: false,
   remoteStreamVersion: 0,
+  localStreamVersion: 0,
   echoGuard: false,
   echoPrompt: EchoPromptState.None,
 };
@@ -52,6 +54,13 @@ const callSlice = createSlice({
     camToggled: (state) => {
       state.cam = !state.cam;
     },
+    // We turned our camera on in a call we answered without it, or switched to another camera.
+    cameraChanged: (state, { payload }: PayloadAction<{ rear: boolean }>) => {
+      state.ownVideo = true;
+      state.cam = true;
+      state.rearCamera = payload.rear;
+      state.localStreamVersion += 1;
+    },
     remoteMediaChanged: (state, { payload }: PayloadAction<{ mic: boolean; cam: boolean; screen: boolean }>) => {
       state.remoteMic = payload.mic;
       state.remoteCam = payload.cam;
@@ -86,6 +95,7 @@ export const {
   callEnded,
   micToggled,
   camToggled,
+  cameraChanged,
   remoteMediaChanged,
   remoteStreamChanged,
   screenChanged,

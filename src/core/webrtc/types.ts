@@ -15,6 +15,8 @@ export enum ControlType {
   RotateDone = 7,
   // Moving a call to a new, direct connection (see store/thunks/move).
   Move = 8,
+  // Whether our end of the path is the TURN relay (see checkRoute).
+  Route = 9,
 }
 
 // Saved or sent as numbers: never change a value; add new ones at the end.
@@ -78,7 +80,8 @@ export type ControlMessage =
   | { t: ControlType.Ice; candidate: RTCIceCandidateInit }
   | CallSignal
   | RotateSignal
-  | MoveSignal;
+  | MoveSignal
+  | { t: ControlType.Route; relay: boolean };
 
 // First message of every file channel; binary chunks follow.
 export type FileMeta = {
@@ -125,6 +128,10 @@ export type Session = {
   iceServers: RTCIceServer[];
   // How the open connection travels (null until it opens), and when we last looked for a new path.
   route: SessionRoute | null;
+  // Whether our end of the path is the TURN relay, as we last told them (null: not told yet), and theirs, as they
+  // told us. Their relay address can look like an ordinary one to us, so only they know for sure (see checkRoute).
+  ourRelay: boolean | null;
+  theirRelay: boolean;
   restartedAt: number;
   // We accepted a call: our camera/microphone go into the answer to the caller's next offer (see handleDescription),
   // so only one side ever offers and the two offers can't collide.
@@ -138,7 +145,10 @@ export type Session = {
 };
 
 // The parts of a session that belong to one RTCPeerConnection, swapped as a whole when a call moves.
-export type Link = Pick<Session, 'peer' | 'channel' | 'senders' | 'screenSender' | 'remoteStream' | 'iceServers'>;
+export type Link = Pick<
+  Session,
+  'peer' | 'channel' | 'senders' | 'screenSender' | 'remoteStream' | 'iceServers' | 'ourRelay' | 'theirRelay'
+>;
 
 export enum MovePhase {
   Asking,

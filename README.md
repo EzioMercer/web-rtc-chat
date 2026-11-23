@@ -10,7 +10,8 @@ Live: https://eziomercer.github.io/web-rtc-chat/
 ## Features
 
 - 💬 Private chat, straight from one browser to another
-- 📞 Audio and video calls
+- 📞 Audio and video calls: switch between the front and back camera, or turn your camera on after answering with
+  audio only
 - 🖥️ Screen sharing
 - 🔇 Echo guard: if the other person hears their own voice back, the app notices and offers to fix it
 - 🎙️ Voice messages and round video messages: tap the button to switch, hold to record, let go to send

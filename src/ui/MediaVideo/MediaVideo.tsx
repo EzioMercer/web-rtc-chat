@@ -13,13 +13,23 @@ type Props = {
 // <video> that plays a MediaStream.
 export const MediaVideo = ({ stream, className, muted, version, onShape }: Props) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const attached = useRef<number | undefined>(undefined);
 
+  // Not every browser shows a track added to the stream it already plays (Safari), so the same stream is attached
+  // again when `version` changes.
   useEffect(() => {
     const video = videoRef.current;
 
-    if (video && video.srcObject !== stream) {
-      video.srcObject = stream;
+    if (!video || (video.srcObject === stream && attached.current === version)) {
+      return;
     }
+
+    if (video.srcObject === stream) {
+      video.srcObject = null;
+    }
+
+    video.srcObject = stream;
+    attached.current = version;
   }, [stream, version]);
 
   useEffect(() => {

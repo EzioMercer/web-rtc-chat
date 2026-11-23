@@ -10,6 +10,8 @@ type Props = {
   // Their video is on (camera or screen). Their element stays mounted anyway: it also plays their audio.
   showRemote: boolean;
   localStream: MediaStream | null;
+  // Changes when our camera's track in `localStream` is replaced (another camera).
+  localVersion: number;
   showLocal: boolean;
   // Our camera is shown mirrored, like a mirror; a shared screen isn't.
   mirrorLocal: boolean;
@@ -36,7 +38,8 @@ const pipSize = (ratio: number, w: number, h: number) => {
 // Their video big and ours small (tap the small one to swap). Both <video> elements stay in place and only
 // change size, so swapping never interrupts their audio.
 export const CallStage = (props: Props) => {
-  const { remoteStream, remoteVersion, showRemote, localStream, showLocal, mirrorLocal, bottomInset } = props;
+  const { remoteStream, remoteVersion, showRemote, localStream, localVersion, showLocal, mirrorLocal } = props;
+  const { bottomInset } = props;
   const [swapped, setSwapped] = useState(false);
   const [shapes, setShapes] = useState({ remote: 16 / 9, local: 4 / 3 });
   const [stage, setStage] = useState({ w: 0, h: 0 });
@@ -88,6 +91,7 @@ export const CallStage = (props: Props) => {
         >
           <MediaVideo
             stream={localStream}
+            version={localVersion}
             className={cx(styles.video, mirrorLocal && styles.mirror)}
             muted
             onShape={local => setShapes(s => (s.local === local ? s : { ...s, local }))}

@@ -12,6 +12,9 @@ Only open items. Everything done is described in the README.
 - [ ] Field test moving a call from the TURN relay to a direct connection on real phones (e.g. start on mobile data,
   then join the same Wi-Fi): the call must move without dropping. Also a call that stays on the relay for over an
   hour must not drop.
+- [ ] Field test switching cameras in a call on real phones, above all an iPhone (Safari runs one camera at a time,
+  so the old one is stopped first): the other side must see the back camera, and our preview isn't mirrored. Also
+  turning the camera on after answering a video call with audio only.
 - [ ] Field test voice and video messages on real phones, above all an iPhone (Safari) with an Android phone
   (Chrome and Firefox): each side must play what the other recorded.
 - [ ] Two devices on the same Wi-Fi with "AP isolation" (guest networks often have it) can't connect directly; check
