@@ -7,7 +7,7 @@ import { ProtectionMode } from './types.ts';
 
 // Encrypts and saves what our contacts see of us, like the contacts. Temporary identities save nothing.
 export const saveProfile = async (profile: ProfileState) => {
-  if (!vault.vaultKey || vault.mode === ProtectionMode.Temporary || !vault.mode) {
+  if (!vault.vaultKey || vault.mode === null || vault.mode === ProtectionMode.Temporary) {
     return;
   }
 

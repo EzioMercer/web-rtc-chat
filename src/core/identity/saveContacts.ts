@@ -6,7 +6,7 @@ import { vault } from './vault.ts';
 
 // Encrypts and saves the contact list and our keys for them, together. Temporary identities save nothing.
 export const saveContacts = async (contacts: Contact[]) => {
-  if (!vault.vaultKey || vault.mode === ProtectionMode.Temporary || !vault.mode) {
+  if (!vault.vaultKey || vault.mode === null || vault.mode === ProtectionMode.Temporary) {
     return;
   }
 
