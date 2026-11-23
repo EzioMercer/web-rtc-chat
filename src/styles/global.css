@@ -28,9 +28,15 @@
   box-sizing: border-box;
 }
 
+/* The page background is drawn over this box: at least the screen's height, so a short screen (unlock) doesn't
+   repeat the glow in bands down the page. */
+html {
+  min-height: 100%;
+}
+
 body {
   margin: 0;
-  background: radial-gradient(1200px 600px at 50% -200px, var(--bg-glow), var(--bg));
+  background: var(--bg) radial-gradient(1200px 600px at 50% -200px, var(--bg-glow), var(--bg)) no-repeat;
   color: var(--text);
   font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
 }
