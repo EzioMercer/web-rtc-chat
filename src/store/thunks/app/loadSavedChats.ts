@@ -1,5 +1,7 @@
 import { historySaver } from '../../../core/history/historySaver.ts';
 import { loadHistory } from '../../../core/history/loadHistory.ts';
+import { ProtectionMode } from '../../../core/identity/types.ts';
+import { vault } from '../../../core/identity/vault.ts';
 import { requestPersistence } from '../../../core/storage/requestPersistence.ts';
 import { addMessage, historyLoaded } from '../../chat/chatSlice.ts';
 import type { AppThunk } from '../../store.ts';
@@ -14,7 +16,8 @@ const saveFailedText = (err: unknown) => (
     : `Not saved on this device: ${err instanceof Error ? err.message : 'storage failed'}.`
 );
 
-// After unlocking: the saved chats back into the store, and asks the browser to keep them.
+// After unlocking: the saved chats back into the store, and asks the browser to keep them (not for a temporary
+// identity: it saves nothing, so the browser's prompt would only confuse).
 export const loadSavedChats = (): AppThunk<Promise<void>> => async (dispatch, getState) => {
   historySaver.reset();
   historySaver.setErrorHandler((chat, err) => {
@@ -30,5 +33,8 @@ export const loadSavedChats = (): AppThunk<Promise<void>> => async (dispatch, ge
 
   dispatch(historyLoaded(history));
   historySaver.loaded(getState().chat.conversations);
-  void requestPersistence();
+
+  if (vault.mode !== ProtectionMode.Temporary) {
+    void requestPersistence();
+  }
 };

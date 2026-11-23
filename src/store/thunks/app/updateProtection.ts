@@ -3,6 +3,7 @@ import { keepFilesInMemory } from '../../../core/history/keepFilesInMemory.ts';
 import { saveAllChats } from '../../../core/history/saveAllChats.ts';
 import { slots } from '../../../core/history/slots.ts';
 import { changeProtection } from '../../../core/identity/changeProtection.ts';
+import { requestPersistence } from '../../../core/storage/requestPersistence.ts';
 import { type ProtectionChoice, ProtectionMode } from '../../../core/identity/types.ts';
 import { busyStarted, failed, unlocked } from '../../app/appSlice.ts';
 import type { AppThunk } from '../../store.ts';
@@ -34,6 +35,7 @@ export const updateProtection = (choice: ProtectionChoice): AppThunk<Promise<boo
       slots.map.clear();
     } else if (startsSaving) {
       await saveAllChats(chats, chat.unread);
+      void requestPersistence();
     }
   } catch (err) {
     dispatch(failed(errorMessage(err)));
