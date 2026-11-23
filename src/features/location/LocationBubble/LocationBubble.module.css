@@ -15,10 +15,22 @@
   text-decoration: none;
 }
 
+/* Corners follow the bubble's: its radius (14px) less its padding (4px), so both curves run side by side. Where the
+   map meets the bubble's tail corner (4px), that leaves none. The map is clipped to this shape. */
 .frame {
+  position: relative;
   display: block;
-  border-radius: 12px;
+  overflow: hidden;
+  border-radius: 10px;
   transition: filter 0.15s;
+}
+
+.tailRight .frame {
+  border-bottom-right-radius: 0;
+}
+
+.tailLeft .frame {
+  border-bottom-left-radius: 0;
 }
 
 .open:hover .frame {
@@ -28,18 +40,24 @@
 .open:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
-  border-radius: 12px;
+  border-radius: 10px;
 }
 
-/* A live one is framed in green while it runs, so it can't be taken for a one-time place. */
-.running .frame {
-  box-shadow: 0 0 0 2px var(--ok);
+/* A live one is framed in green while it runs, so it can't be taken for a one-time place. Drawn on the map's own
+   edge, with the same corners, so no gap shows between them. */
+.running .frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--ok);
+  border-radius: inherit;
+  pointer-events: none;
 }
 
 .badge {
   position: absolute;
-  top: 8px;
-  left: 8px;
+  top: 10px;
+  left: 10px;
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -67,8 +85,8 @@
 
 .left {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 10px;
+  right: 10px;
   padding: 2px 8px;
   border-radius: 999px;
   background: rgb(10 14 30 / 0.75);
@@ -77,19 +95,24 @@
   font-weight: 600;
 }
 
+/* The time left, as a thin pill inside the frame: white like the time chip, so it isn't mistaken for the green
+   frame, and as far in from the edges as the chips. */
 .progress {
   position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  right: 10px;
+  bottom: 10px;
+  left: 10px;
   height: 4px;
-  background: rgb(0 0 0 / 0.35);
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(10 14 30 / 0.6);
 }
 
 .bar {
   display: block;
   height: 100%;
-  background: var(--ok);
+  border-radius: inherit;
+  background: #ffffff;
   transition: width 1s linear;
 }
 
@@ -118,8 +141,8 @@
 /* Our one-time place has no line under the map, so its tick sits on the map's corner. */
 .onMap {
   position: absolute;
-  right: 6px;
-  bottom: 6px;
+  right: 10px;
+  bottom: 10px;
   padding: 0 6px;
   border-radius: 999px;
   background: rgb(10 14 30 / 0.7);

@@ -24,9 +24,8 @@ type Props = {
 
 // A shared place: a drawn map with a pin. It is a Google Maps link, so a long tap or right click offers the browser's
 // "Copy link"; a tap opens it the device's own way: Android's list of apps, a short list on an iPhone, iPad or Mac
-// (which have none of their own), Google Maps in the browser elsewhere. A live one has the
-// A live one has the person's picture as its pin, a LIVE badge, the time left and, under it, when it last moved;
-// ours can be stopped.
+// (which have none of their own), Google Maps in the browser elsewhere. A live one has the person's picture as its
+// pin, a LIVE badge, the time left and, under it, when it last moved; ours can be stopped.
 export const LocationBubble = ({ chat, location }: Props) => {
   const dispatch = useAppDispatch();
   const [choosing, setChoosing] = useState(false);
@@ -73,7 +72,15 @@ export const LocationBubble = ({ chat, location }: Props) => {
   );
 
   return (
-    <div className={cx(styles.card, live && styles.live, running && styles.running)}>
+    <div
+      className={cx(
+        styles.card,
+        live && styles.live,
+        running && styles.running,
+        // Without a line under it, the map reaches the bubble's tail corner.
+        !live && (mine ? styles.tailRight : styles.tailLeft),
+      )}
+    >
       <a
         className={styles.open}
         href={googleMapsUrl(location)}
