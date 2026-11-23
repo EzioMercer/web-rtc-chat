@@ -25,6 +25,9 @@ src/
                 calls/      CallPanel (controls), CallStage (videos), CallBanner, EchoPrompt, useEchoGuard,
                             useEchoDetector, useCallStats, useCallSounds
                 manual/     ManualPane, ManualSetup (connect by copying codes, no relays)
+                location/   LocationBubble (one-time and live; a Google Maps link, a tap opens it the device's way:
+                            geo: on Android, OpenWithDialog on Apple devices), LocationDialog (find
+                            and send), LocationMap (a drawn map: made-up streets from a seed, no map pictures loaded)
   core/       Engine code with no React in it.
                 webrtc/     sessions (state.ts holds the live RTCPeerConnections), data channels, files, routes,
                             config.ts (all timeouts and limits, TURN_FILE_LIMIT), echoConfig.ts
@@ -43,6 +46,9 @@ src/
                 media/      recording engine (MediaRecorder, format choice, square crop, waveform)
                 compression/  zip/unzip (deflate-raw) for files, relay notes and manual codes
                 profile/    our picture: makePicture (photo -> 256 px JPEG data URL), isPicture, pictureHash
+                location/   finding the place (findPosition), distanceMeters, the links (googleMapsUrl, appleMapsUrl,
+                            geoUrl: built when shown, never saved), config.ts (live durations, how often a live
+                            location is sent), liveWatches
                 sound/      ringtone (Web Audio, paused when nothing rings: see the comment there)
   store/      Redux: one folder per slice (app, contacts, sessions, chat, call, invites, manual, ui, settings,
               profile, backup), thunks/<area>/ for everything with side effects, persistence.ts saves contacts, settings,
@@ -82,6 +88,10 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
 - **Profile pictures** (`store/thunks/profile`): ours is in the `profile` slice, saved like the settings but put in
   backups (Info record). When a contact's connection opens, or we change ours, we send its hash (`ControlType.Picture`);
   if theirs differs they ask by that hash (`PictureAsk`) and we send it. Theirs is `Contact.picture`.
+- **Locations** (`store/thunks/location`): a `Location` message, sent like a text (`ControlType.Location`, acked,
+  resent by `sendPending`). A live one keeps its id: each move, stop or heartbeat sends its whole latest state with
+  a higher `rev` and the time left (`live`, ms, so clocks needn't agree); the ack carries the `rev`. Ours follows
+  `watchPosition` (`startLiveLocation`) while the app is open; after a reload it ends (`fromStored`).
 - **Voice/video messages** are files with a `note` (type, duration, waveform) in their first message.
 - **Echo guard:** the side that hears its own voice back (`useEchoDetector`) sends `echo`; the other side is asked
   (`EchoPrompt`) and its `useEchoGuard` turns the microphone off while they talk. Both only read
@@ -138,6 +148,10 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
   change and remove them, and keep them after a reload.
 - `scripts/e2e-real-relays.mjs` (built app, `npx vite preview --port 4173`, real relays): Chromium adds Firefox and
   WebKit with invites, checks safety codes, one saved key per contact and a reconnect after reload.
+- `scripts/e2e-location.mjs` (same dev server): a one-time and a live location between Chromium and Chromium and
+  WebKit (moves, stop), then every bubble and both share windows drawn in all three engines, and what a tap opens
+  as an iPhone, an Android phone, a Mac and other computers; pass a folder to get screenshots. (Firefox can't
+  connect to another browser in the cloud container.)
 - `scripts/check-turn.mjs`, `scripts/check-relays.mjs`.
 - Scripts import `playwright`. In the cloud container it is preinstalled outside the project: link it with
   `ln -sfn /opt/node-tools/node_modules/playwright node_modules/playwright` (never run `playwright install`).

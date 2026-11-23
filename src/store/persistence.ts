@@ -15,8 +15,11 @@ import {
   fileAdded,
   fileCompleted,
   fileFailed,
+  locationAdded,
+  locationChanged,
   messageDelivered,
   messageQueued,
+  peerLocationReceived,
   peerTextReceived,
   unreadAdded,
 } from './chat/chatSlice.ts';
@@ -88,7 +91,18 @@ persistence.startListening({
 // Saves a contact's chat a moment after it changes (not the manual connection, which isn't a contact). A file's
 // progress doesn't change what is saved, so it doesn't count.
 persistence.startListening({
-  matcher: isAnyOf(addMessage, peerTextReceived, messageQueued, messageDelivered, fileAdded, fileCompleted, fileFailed),
+  matcher: isAnyOf(
+    addMessage,
+    peerTextReceived,
+    messageQueued,
+    messageDelivered,
+    fileAdded,
+    fileCompleted,
+    fileFailed,
+    locationAdded,
+    peerLocationReceived,
+    locationChanged,
+  ),
   effect: (action, api) => {
     const { key } = (action as unknown as { payload: { key: string } }).payload;
 

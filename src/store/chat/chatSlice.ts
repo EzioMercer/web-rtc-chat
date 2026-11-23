@@ -3,6 +3,7 @@ import {
   type ChatState,
   type FileMessage,
   FileStatus,
+  type LocationMessage,
   type Message,
   MessageAuthor,
   MessageKind,
@@ -35,7 +36,15 @@ const findFile = (state: ChatState, key: string, id: string) => state.conversati
   (message): message is FileMessage => message.kind === MessageKind.File && message.id === id,
 );
 
+const findLocation = (state: ChatState, key: string, id: string) => state.conversations[key]?.find(
+  (message): message is LocationMessage => message.kind === MessageKind.Location && message.id === id,
+);
+
 type Keyed<T> = { key: string } & T;
+
+// What changes on a location already in the chat (a live one moving, stopping, or being confirmed).
+type LocationChange = Partial<Pick<LocationMessage, 'lat' | 'lng' | 'accuracy' | 'liveUntil' | 'updatedAt' | 'rev'
+  | 'pending'>>;
 
 const chatSlice = createSlice({
   name: 'chat',
@@ -60,11 +69,32 @@ const chatSlice = createSlice({
 
       push(state, key, { kind: MessageKind.Text, id, from: MessageAuthor.Me, text, pending: true });
     },
-    messageDelivered: (state, { payload }: PayloadAction<Keyed<{ id: string }>>) => {
+    // `rev`: which change of a live location they confirm; an older one leaves a newer change waiting.
+    messageDelivered: (state, { payload }: PayloadAction<Keyed<{ id: string; rev?: number }>>) => {
       const message = state.conversations[payload.key]?.find(m => m.id === payload.id);
 
-      if (message?.kind === MessageKind.Text) {
+      if (message?.kind === MessageKind.Text
+        || (message?.kind === MessageKind.Location && (message.rev ?? 0) === (payload.rev ?? 0))) {
         delete message.pending;
+      }
+    },
+    // Ours, waiting to be confirmed like a text.
+    locationAdded: (state, { payload }: PayloadAction<Keyed<{ message: LocationMessage }>>) => {
+      push(state, payload.key, payload.message);
+    },
+    // Theirs, put where its time belongs like a text. `id` is theirs (see peerMessageId).
+    peerLocationReceived: (state, { payload }: PayloadAction<Keyed<{ message: LocationMessage & { at: number } }>>) => {
+      insertByTime(state, payload.key, payload.message);
+    },
+    locationChanged: (state, { payload }: PayloadAction<Keyed<{ id: string; change: LocationChange }>>) => {
+      const location = findLocation(state, payload.key, payload.id);
+
+      if (location) {
+        Object.assign(location, payload.change);
+
+        if (payload.change.pending === false) {
+          delete location.pending;
+        }
       }
     },
     fileAdded: (state, { payload }: PayloadAction<Keyed<{ file: Omit<FileMessage, 'kind'> }>>) => {
@@ -117,6 +147,9 @@ export const {
   peerTextReceived,
   messageQueued,
   messageDelivered,
+  locationAdded,
+  peerLocationReceived,
+  locationChanged,
   fileAdded,
   fileProgress,
   fileCompleted,

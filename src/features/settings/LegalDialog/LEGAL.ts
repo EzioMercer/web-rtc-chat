@@ -37,6 +37,10 @@ export const LEGAL: LegalSection[] = [
       + 'them on its own, for example when the device runs low on space.',
       'If you set a picture, it goes the same way, directly to each of your contacts, who keep it on their device. '
       + 'Every contact gets the same picture.',
+      'A location you share goes the same way, only to that person. The map in the chat is drawn by the app, so no '
+      + 'map service sees the place, unless someone opens it in a maps or taxi app or shares it: then that app\'s '
+      + 'maker gets it, under its own privacy policy. A live location is sent while the app is open, until it ends or '
+      + 'you stop it.',
       'A backup file is encrypted with a password you choose. It is yours: the author never sees it, and where you '
       + 'keep it and who you give it to is up to you.',
       'To make connections work, the app uses third-party services. They can see your IP address, but not your '

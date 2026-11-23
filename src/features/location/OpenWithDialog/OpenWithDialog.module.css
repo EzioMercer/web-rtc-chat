@@ -1,0 +1,40 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: -8px -10px 0;
+}
+
+.app {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px;
+  border: none;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-weight: 500;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.app:hover,
+.app:focus-visible {
+  background: var(--theirs);
+  outline: none;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--theirs);
+  color: var(--accent);
+}
+

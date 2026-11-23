@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import { type Message, MessageKind, NoteType } from '../../../store/chat/types.ts';
 import { useAppSelector } from '../../../store/useAppSelector.ts';
 import { cx } from '../../../utils/cx.ts';
+import { LocationBubble } from '../../location/LocationBubble/LocationBubble.tsx';
 import { FileBubble } from '../FileBubble/FileBubble.tsx';
 import { MessageMenu } from '../MessageMenu/MessageMenu.tsx';
 import styles from './MessageList.module.css';
@@ -28,6 +29,8 @@ const content = (convKey: string, message: Message) => {
       return <FileBubble chat={convKey} file={message} />;
     case MessageKind.Text:
       return message.text;
+    case MessageKind.Location:
+      return <LocationBubble chat={convKey} location={message} />;
     default:
       return <i>This message needs a newer version of the app.</i>;
   }
@@ -82,6 +85,7 @@ export const MessageList = ({ convKey }: Props) => {
             styles[message.from],
             tappable(message) && styles.tappable,
             bare(message) && styles.bare,
+            message.kind === MessageKind.Location && styles.card,
           )}
           onPointerDown={(e) => {
             press.current = { at: e.timeStamp, touch: e.pointerType !== 'mouse' };

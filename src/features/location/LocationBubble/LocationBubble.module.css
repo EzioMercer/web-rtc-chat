@@ -1,0 +1,161 @@
+/* As wide as a photo; narrower on a small phone (the message may take 80% of the chat). */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 290px;
+  max-width: 100%;
+}
+
+.open {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.frame {
+  display: block;
+  border-radius: 12px;
+  transition: filter 0.15s;
+}
+
+.open:hover .frame {
+  filter: brightness(1.12);
+}
+
+.open:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 12px;
+}
+
+/* A live one is framed in green while it runs, so it can't be taken for a one-time place. */
+.running .frame {
+  box-shadow: 0 0 0 2px var(--ok);
+}
+
+.badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgb(10 14 30 / 0.75);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.on {
+  background: var(--ok);
+  color: #06261a;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: blink 1.6s ease-in-out infinite;
+}
+
+.left {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgb(10 14 30 / 0.75);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.progress {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  background: rgb(0 0 0 / 0.35);
+}
+
+.bar {
+  display: block;
+  height: 100%;
+  background: var(--ok);
+  transition: width 1s linear;
+}
+
+.info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 6px 2px;
+}
+
+.meta {
+  flex: 1;
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.stale {
+  color: var(--warn);
+}
+
+.tick {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+/* Our one-time place has no line under the map, so its tick sits on the map's corner. */
+.onMap {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgb(10 14 30 / 0.7);
+  color: #ffffff;
+  line-height: 18px;
+}
+
+.pending {
+  opacity: 0.6;
+}
+
+.stop {
+  min-height: 36px;
+  padding: 7px 12px;
+  border: none;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 0.12);
+  color: #ffc2c2;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.stop:hover {
+  background: rgb(255 255 255 / 0.2);
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot {
+    animation: none;
+  }
+}

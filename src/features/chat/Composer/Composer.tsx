@@ -6,7 +6,8 @@ import { useAppDispatch } from '../../../store/useAppDispatch.ts';
 import { useAppSelector } from '../../../store/useAppSelector.ts';
 import { hasKeyboard } from '../../../utils/hasKeyboard.ts';
 import { MANUAL_KEY } from '../../../core/webrtc/config.ts';
-import { IconButton } from '../../../ui/IconButton/IconButton.tsx';
+import { LocationDialog } from '../../location/LocationDialog/LocationDialog.tsx';
+import { AttachMenu } from '../AttachMenu/AttachMenu.tsx';
 import { RecordButton } from '../../recording/RecordButton/RecordButton.tsx';
 import { RecordingBar } from '../../recording/RecordingBar/RecordingBar.tsx';
 import { VideoNotePreview } from '../../recording/VideoNotePreview/VideoNotePreview.tsx';
@@ -22,6 +23,8 @@ type Props = {
 export const Composer = ({ convKey, connected }: Props) => {
   const dispatch = useAppDispatch();
   const [text, setText] = useState('');
+  // Which location window is open: a one-time place, or a live one.
+  const [locating, setLocating] = useState<'once' | 'live' | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   // The microphone and camera are busy during a call.
   const inCall = useAppSelector(state => state.call.status !== CallStatus.Idle);
@@ -60,11 +63,18 @@ export const Composer = ({ convKey, connected }: Props) => {
     <form className={styles.composer} onSubmit={submit}>
       <input ref={fileInputRef} type="file" multiple hidden onChange={pickFiles} />
       <div className={styles.field}>
-        <IconButton
-          icon="paperclip"
-          label="Attach files"
-          disabled={!connected}
-          onClick={() => fileInputRef.current?.click()}
+        <AttachMenu
+          disabled={!canType}
+          items={[
+            {
+              icon: 'file',
+              label: connected ? 'Photo or file' : 'Photo or file (needs the connection)',
+              disabled: !connected,
+              onPick: () => fileInputRef.current?.click(),
+            },
+            { icon: 'pin', label: 'Location', onPick: () => setLocating('once') },
+            { icon: 'live', label: 'Live location', onPick: () => setLocating('live') },
+          ]}
         />
         <input
           className={styles.input}
@@ -105,6 +115,9 @@ export const Composer = ({ convKey, connected }: Props) => {
             />
           )}
       {recorder?.video && <VideoNotePreview recorder={recorder} />}
+      {locating && (
+        <LocationDialog convKey={convKey} live={locating === 'live'} onClose={() => setLocating(null)} />
+      )}
     </form>
   );
 };

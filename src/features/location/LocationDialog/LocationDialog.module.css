@@ -1,0 +1,31 @@
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(10 14 30 / 0.6);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.place {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.error {
+  margin: 0;
+  color: var(--error);
+}
+
+.note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.buttons {
+  display: flex;
+}

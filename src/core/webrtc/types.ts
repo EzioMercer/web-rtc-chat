@@ -20,6 +20,8 @@ export enum ControlType {
   // Our picture's hash, or the picture itself; and asking for it (see store/thunks/profile).
   Picture = 10,
   PictureAsk = 11,
+  // A shared place, or a live location's latest state (see store/thunks/location).
+  Location = 12,
 }
 
 // Saved or sent as numbers: never change a value; add new ones at the end.
@@ -78,19 +80,36 @@ export type PictureSignal =
   | { t: ControlType.Picture; hash: string; picture?: string }
   | { t: ControlType.PictureAsk; hash: string };
 
+// A shared place, answered with "ack" (with its `rev`). A live location is sent again, with the same id, each time
+// it moves or changes, and now and then while it stays put; `live` is how long it still runs (ms; 0 once it
+// stopped), so the two devices' clocks needn't agree. Missing for a one-time location.
+export type LocationSignal = {
+  t: ControlType.Location;
+  id: string;
+  lat: number;
+  lng: number;
+  accuracy?: number;
+  live?: number;
+  rev: number;
+  // Like a text's: how long it waited on the sender's side before its first send.
+  waited?: number;
+};
+
 // Everything sent over the control channel, as JSON.
 export type ControlMessage =
   // `id` is answered with "ack", so the sender knows it arrived.
   // `waited`: how long (ms) it waited on the sender's side before this send (it was written while offline), so
   // the receiver can put it in place without relying on the two devices' clocks agreeing.
   | { t: ControlType.Text; text: string; id: string; waited?: number }
-  | { t: ControlType.Ack; id: string }
+  // `rev`: which change of a live location arrived (see LocationSignal).
+  | { t: ControlType.Ack; id: string; rev?: number }
   | { t: ControlType.Sdp; description: RTCSessionDescriptionInit }
   | { t: ControlType.Ice; candidate: RTCIceCandidateInit }
   | CallSignal
   | RotateSignal
   | MoveSignal
   | PictureSignal
+  | LocationSignal
   | { t: ControlType.Route; relay: boolean };
 
 // First message of every file channel; binary chunks follow.

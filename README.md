@@ -17,6 +17,11 @@ Live: https://eziomercer.github.io/web-rtc-chat/
 - 🎙️ Voice messages and round video messages: tap the button to switch, hold to record, let go to send
 - 📎 Files, photos and videos of any size (up to 10 MB when the connection goes through the TURN relay); text files
   are sent zipped, often 5-10 times smaller
+- 📍 Share your location once, or live for 15 min, 30 min or 1 hour (it follows you while the app is open, and you
+  can stop it any time). It shows as a drawn map with a pin (a live one: your picture, a LIVE badge, the time left
+  and when it last moved). A tap opens it the device's way: Android's own list of map and taxi apps; on an iPhone,
+  iPad or Mac, a choice of Apple Maps, Google Maps or Share…; Google Maps elsewhere. A long tap or right click
+  copies a Google Maps link
 - 🔒 End-to-end encrypted, messages never touch a server
 - 💾 Chats and files are saved on your device, encrypted, and are still there after a reload
 - 📦 Backup to a password-locked file (text only or with media, for all chats or each on its own) to move to another
@@ -112,6 +117,10 @@ hand, without contacts or relays.
   - Browsers may delete a site's data when the device runs low on space. The app asks the browser to keep it
     ("persistent storage"); installed apps usually get that. Safari on iPhone and iPad deletes the data of sites
     not visited for 7 days, unless the app is added to the Home Screen. Keep a backup.
+- **Locations stay between the two of you.** A shared place goes over the direct connection like a message. The
+  map in the chat is drawn by the app (made-up streets, no map pictures are loaded), so no map service learns the
+  place. Only the app you open it in (or share it to) gets it. Only the latest spot of a live location is kept, not the
+  way it went.
 - **No accounts, analytics, trackers or third-party scripts.**
 
 ## Backups

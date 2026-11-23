@@ -2,6 +2,7 @@ import { messageDelivered } from '../../store/chat/chatSlice.ts';
 import type { AppDispatch } from '../../store/store.ts';
 import { receiveCallSignal } from '../../store/thunks/call/receiveCallSignal.ts';
 import { receivePeerText } from '../../store/thunks/chat/receivePeerText.ts';
+import { receiveLocation } from '../../store/thunks/location/receiveLocation.ts';
 import { receiveRotate } from '../../store/thunks/contact/receiveRotate.ts';
 import { receiveMove } from '../../store/thunks/move/receiveMove.ts';
 import { receivePicture } from '../../store/thunks/profile/receivePicture.ts';
@@ -27,7 +28,9 @@ export const handleControlMessage = (key: string, data: unknown, dispatch: AppDi
       break;
     case ControlType.Ack:
       if (typeof message.id === 'string') {
-        dispatch(messageDelivered({ key, id: message.id }));
+        const rev = typeof message.rev === 'number' ? message.rev : undefined;
+
+        dispatch(messageDelivered({ key, id: message.id, rev }));
       }
 
       break;
@@ -58,6 +61,9 @@ export const handleControlMessage = (key: string, data: unknown, dispatch: AppDi
     case ControlType.Picture:
     case ControlType.PictureAsk:
       void dispatch(receivePicture(key, message));
+      break;
+    case ControlType.Location:
+      dispatch(receiveLocation(key, message));
       break;
   }
 };

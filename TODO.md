@@ -17,6 +17,10 @@ Only open items. Everything done is described in the README.
   turning the camera on after answering a video call with audio only.
 - [ ] Field test voice and video messages on real phones, above all an iPhone (Safari) with an Android phone
   (Chrome and Firefox): each side must play what the other recorded.
+- [ ] Field test live location on real phones, above all an iPhone (Safari): updates while walking, what happens
+  when the screen locks or the app goes to the background (the other side should see "last updated … ago"), and
+  what a tap opens: Android's list of apps (geo:), and on an iPhone Apple Maps / Google Maps (the app, if it is
+  installed) and Share….
 - [ ] Two devices on the same Wi-Fi with "AP isolation" (guest networks often have it) can't connect directly; check
   that they fall back to TURN quickly.
 

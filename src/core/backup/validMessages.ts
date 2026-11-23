@@ -1,5 +1,6 @@
 import type { StoredMessage } from '../history/types.ts';
-import { FileStatus, MessageAuthor, MessageKind } from '../../store/chat/types.ts';
+import { FileStatus, type LocationMessage, MessageAuthor, MessageKind } from '../../store/chat/types.ts';
+import { validPoint } from '../location/validPoint.ts';
 
 const AUTHORS = new Set<string>(Object.values(MessageAuthor));
 
@@ -10,5 +11,6 @@ export const validMessages = (messages: unknown): StoredMessage[] => (Array.isAr
     && typeof m?.id === 'string' && /^[\w.-]{1,70}$/.test(m.id)
     && typeof m.kind === 'number' && AUTHORS.has(String(m.from))
     && (m.kind !== MessageKind.Text || typeof m.text === 'string')
+    && (m.kind !== MessageKind.Location || validPoint(m as Partial<LocationMessage>))
     && (m.kind !== MessageKind.File || (typeof m.name === 'string' && typeof m.mime === 'string'
       && Number.isSafeInteger(m.size) && (m.size ?? -1) >= 0 && FileStatus[m.status as FileStatus] !== undefined)));

@@ -53,3 +53,8 @@
   padding: 0;
   background: none;
 }
+
+/* A map fills the bubble almost to its edge. */
+.card {
+  padding: 4px;
+}

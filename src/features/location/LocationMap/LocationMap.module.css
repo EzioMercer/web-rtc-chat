@@ -1,0 +1,156 @@
+.map {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 300 / 160;
+  border-radius: 10px;
+  background: #222c52;
+  isolation: isolate;
+}
+
+.svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.street {
+  fill: #2b3766;
+}
+
+.block {
+  fill: #1a2244;
+}
+
+.alt {
+  fill: #1e2750;
+}
+
+.park {
+  fill: #1d3f3c;
+}
+
+.water {
+  fill: none;
+  stroke: #173a6b;
+  stroke-width: 30;
+}
+
+.roadEdge {
+  fill: none;
+  stroke: #1a2244;
+  stroke-width: 9;
+}
+
+.road {
+  fill: none;
+  stroke: #4b5c9c;
+  stroke-width: 6;
+}
+
+/* Darker towards the edges, so the eye goes to the pin. */
+.vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 45%, rgb(8 12 28 / 0.55));
+  pointer-events: none;
+}
+
+.faded {
+  filter: grayscale(1) brightness(0.8);
+}
+
+/* A classic map pin: its point stands on the middle of the map. */
+.pin {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: flex;
+  transform: translate(-50%, -100%);
+  filter: drop-shadow(0 3px 3px rgb(0 0 0 / 0.55));
+}
+
+.pin::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -3px;
+  width: 14px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 0.45);
+  transform: translateX(-50%);
+  z-index: -1;
+}
+
+.pinBody {
+  fill: #ff5a5f;
+  stroke: #ffffff;
+  stroke-width: 2;
+}
+
+.pinDot {
+  fill: #ffffff;
+}
+
+/* A live location: the person's picture in a green ring, with a pulse spreading out while it runs. */
+.livePin {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--ok);
+  box-shadow: 0 3px 10px rgb(0 0 0 / 0.5);
+}
+
+.face {
+  border: 2px solid #ffffff;
+  background: var(--accent-fill);
+  color: #ffffff;
+}
+
+.pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--ok);
+  opacity: 0;
+  z-index: -1;
+}
+
+.running .pulse {
+  animation: pulse 2.4s ease-out infinite;
+}
+
+.running .pulse + .pulse {
+  animation-delay: 1.2s;
+}
+
+.faded .livePin {
+  background: var(--muted);
+}
+
+@keyframes pulse {
+  from {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(3.2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .running .pulse {
+    animation: none;
+    opacity: 0.25;
+    transform: scale(1.7);
+  }
+}
