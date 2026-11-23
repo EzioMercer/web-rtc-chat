@@ -12,8 +12,12 @@ import { SessionStatus } from '../../sessions/types.ts';
 // Gives up on `session` if it hasn't connected in time. Waiting for the answer and finding a network path are
 // timed separately: a path can take much longer, and cutting it short makes both sides start over forever.
 export const armTimeout = (session: Session): AppThunk => (dispatch) => {
+  // A replaced attempt's connection is closed, and Firefox throws when a closed connection is read, so this is
+  // checked before anything else.
+  const stillTrying = () => sessions.get(session.key) === session && !session.opened;
+
   const giveUp = (reason: string) => {
-    if (sessions.get(session.key) !== session || session.opened) {
+    if (!stillTrying()) {
       return;
     }
 
@@ -29,7 +33,7 @@ export const armTimeout = (session: Session): AppThunk => (dispatch) => {
   };
 
   window.setTimeout(() => {
-    if (!session.peer.remoteDescription) {
+    if (stillTrying() && !session.peer.remoteDescription) {
       giveUp(`No answer within ${ANSWER_TIMEOUT_MS / 1000}s.`);
     }
   }, ANSWER_TIMEOUT_MS);

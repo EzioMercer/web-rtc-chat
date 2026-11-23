@@ -19,8 +19,9 @@ export const meterLevels = (stream: MediaStream): Meter => {
     const data = new Float32Array(analyser.fftSize);
 
     context.createMediaStreamSource(stream).connect(analyser);
-    // Safari starts it paused when it is not created right in a tap.
-    void context.resume();
+    // Safari starts it paused when it is not created right in a tap. A quick stop closes it before it has started,
+    // which fails the start: nothing to do then.
+    context.resume().catch(() => undefined);
 
     const timer = window.setInterval(() => {
       analyser.getFloatTimeDomainData(data);
@@ -36,7 +37,7 @@ export const meterLevels = (stream: MediaStream): Meter => {
       now: () => levels.at(-1) ?? 0,
       stop: () => {
         window.clearInterval(timer);
-        void context.close();
+        context.close().catch(() => undefined);
       },
     };
   } catch {
