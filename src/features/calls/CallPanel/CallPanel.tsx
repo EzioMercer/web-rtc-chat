@@ -17,6 +17,7 @@ import { echoGuardToggled } from '../../../store/call/callSlice.ts';
 import { cx } from '../../../utils/cx.ts';
 import { formatBytes } from '../../../utils/formatBytes.ts';
 import { media, sessions } from '../../../core/webrtc/state.ts';
+import { Avatar } from '../../../ui/Avatar/Avatar.tsx';
 import { Icon } from '../../../ui/Icon/Icon.tsx';
 import { IconButton } from '../../../ui/IconButton/IconButton.tsx';
 import { CallStage } from '../CallStage/CallStage.tsx';
@@ -51,6 +52,7 @@ export const CallPanel = () => {
   const call = useAppSelector(state => state.call);
   const { status, video, ownVideo, mic, cam, remoteMic, remoteCam, remoteStreamVersion, key } = call;
   const { screen, remoteScreen, echoGuard, echoPrompt, rearCamera, localStreamVersion } = call;
+  const contact = useAppSelector(state => state.contacts.list.find(c => c.id === key));
   const remoteStream = key ? sessions.get(key)?.remoteStream ?? null : null;
   const stats = useCallStats(key, status === CallStatus.Active);
 
@@ -116,7 +118,7 @@ export const CallPanel = () => {
         )}
         {!showRemoteVideo && (
           <div className={styles.placeholder}>
-            <span className={styles.avatar}><Icon name="user" size={36} /></span>
+            <Avatar picture={contact?.picture} size={72} />
             {status === CallStatus.Incoming && <span>{`${TITLES.incoming} ${kind} call`}</span>}
             {status === CallStatus.Outgoing && <span>{TITLES.outgoing}</span>}
           </div>

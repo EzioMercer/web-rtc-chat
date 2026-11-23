@@ -7,6 +7,7 @@ import { contactsReducer } from './contacts/contactsSlice.ts';
 import { invitesReducer } from './invites/invitesSlice.ts';
 import { manualReducer } from './manual/manualSlice.ts';
 import { persistence } from './persistence.ts';
+import { profileReducer } from './profile/profileSlice.ts';
 import { sessionsReducer } from './sessions/sessionsSlice.ts';
 import { settingsReducer } from './settings/settingsSlice.ts';
 import { uiReducer } from './ui/uiSlice.ts';
@@ -22,6 +23,7 @@ export const store = configureStore({
     invites: invitesReducer,
     ui: uiReducer,
     settings: settingsReducer,
+    profile: profileReducer,
     backup: backupReducer,
   },
   middleware: getDefault => getDefault().prepend(persistence.middleware),

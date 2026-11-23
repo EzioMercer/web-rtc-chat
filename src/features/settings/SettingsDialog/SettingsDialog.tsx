@@ -13,6 +13,7 @@ import { Dialog } from '../../../ui/Dialog/Dialog.tsx';
 import { ExportDialog } from '../../backup/ExportDialog/ExportDialog.tsx';
 import { ImportDialog } from '../../backup/ImportDialog/ImportDialog.tsx';
 import { LegalDialog } from '../LegalDialog/LegalDialog.tsx';
+import { PictureSection } from '../PictureSection/PictureSection.tsx';
 import { StorageSection } from '../StorageSection/StorageSection.tsx';
 import { ProtectionPicker } from '../../setup/ProtectionPicker/ProtectionPicker.tsx';
 import { SegmentedControl } from '../../../ui/SegmentedControl/SegmentedControl.tsx';
@@ -94,6 +95,8 @@ export const SettingsDialog = ({ onClose }: Props) => {
 
   return (
     <Dialog title="Settings" onClose={onClose}>
+      <PictureSection />
+
       <section className={styles.section}>
         <h3>Protection</h3>
         <p>{mode ? MODE_LABELS[mode] : ''}</p>

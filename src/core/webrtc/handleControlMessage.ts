@@ -4,6 +4,7 @@ import { receiveCallSignal } from '../../store/thunks/call/receiveCallSignal.ts'
 import { receivePeerText } from '../../store/thunks/chat/receivePeerText.ts';
 import { receiveRotate } from '../../store/thunks/contact/receiveRotate.ts';
 import { receiveMove } from '../../store/thunks/move/receiveMove.ts';
+import { receivePicture } from '../../store/thunks/profile/receivePicture.ts';
 import { receiveRoute } from '../../store/thunks/session/receiveRoute.ts';
 import { handleCandidate } from './handleCandidate.ts';
 import { handleDescription } from './handleDescription.ts';
@@ -53,6 +54,10 @@ export const handleControlMessage = (key: string, data: unknown, dispatch: AppDi
       break;
     case ControlType.Route:
       void dispatch(receiveRoute(key, message.relay === true));
+      break;
+    case ControlType.Picture:
+    case ControlType.PictureAsk:
+      void dispatch(receivePicture(key, message));
       break;
   }
 };

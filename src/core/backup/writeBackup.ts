@@ -22,6 +22,8 @@ export type BackupSource = {
   conversations: Record<string, Message[]>;
   // The chats to back up, in order, and whether with media.
   choices: ChatChoice[];
+  // Our picture, which our contacts see.
+  picture: string | null;
 };
 
 const MISSING = 'Not in the backup (it was missing on the device it came from).';
@@ -68,6 +70,7 @@ export const writeBackup = async (
         mediaBytes: media ? savedFiles(messages).reduce((total, file) => total + file.size, 0) : 0,
       };
     }),
+    ...(source.picture ? { picture: source.picture } : {}),
   };
 
   await writer.json(RecordType.Info, info);

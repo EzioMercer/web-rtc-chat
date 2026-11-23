@@ -16,6 +16,8 @@ export type Contact = {
   secrets: string[];
   // The shared secret we use to reach them.
   sendSecret: string;
+  // The picture they sent us (see core/profile); none when missing.
+  picture?: string;
 };
 
 export type ContactsState = {

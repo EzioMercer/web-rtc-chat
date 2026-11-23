@@ -10,6 +10,7 @@ import { keepScreenOn } from '../../../utils/keepScreenOn.ts';
 import { backupEnded, backupStarted } from '../../backup/backupSlice.ts';
 import { historyLoaded } from '../../chat/chatSlice.ts';
 import { contactsLoaded } from '../../contacts/contactsSlice.ts';
+import { pictureChosen } from '../../profile/profileSlice.ts';
 import type { AppThunk } from '../../store.ts';
 import { errorMessage } from '../app/errorMessage.ts';
 import { loadSavedChats } from '../app/loadSavedChats.ts';
@@ -85,6 +86,11 @@ export const importBackup = (
     );
 
     dispatch(contactsLoaded(result.contacts));
+
+    // The backup's picture comes back only if we have none: a picture chosen on this device stays.
+    if (result.picture && !getState().profile.picture) {
+      dispatch(pictureChosen(result.picture));
+    }
 
     if (isSaving()) {
       await dispatch(loadSavedChats());

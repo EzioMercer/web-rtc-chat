@@ -17,6 +17,9 @@ export enum ControlType {
   Move = 8,
   // Whether our end of the path is the TURN relay (see checkRoute).
   Route = 9,
+  // Our picture's hash, or the picture itself; and asking for it (see store/thunks/profile).
+  Picture = 10,
+  PictureAsk = 11,
 }
 
 // Saved or sent as numbers: never change a value; add new ones at the end.
@@ -69,6 +72,12 @@ export type RotateSignal = {
   secret: string;
 };
 
+// When the connection opens or our picture changes, we send its hash ('' for none). If theirs differs, they ask for
+// it by that hash, and we send it with `picture`.
+export type PictureSignal =
+  | { t: ControlType.Picture; hash: string; picture?: string }
+  | { t: ControlType.PictureAsk; hash: string };
+
 // Everything sent over the control channel, as JSON.
 export type ControlMessage =
   // `id` is answered with "ack", so the sender knows it arrived.
@@ -81,6 +90,7 @@ export type ControlMessage =
   | CallSignal
   | RotateSignal
   | MoveSignal
+  | PictureSignal
   | { t: ControlType.Route; relay: boolean };
 
 // First message of every file channel; binary chunks follow.

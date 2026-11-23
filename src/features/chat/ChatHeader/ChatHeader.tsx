@@ -12,11 +12,13 @@ type Props = {
   title: string;
   subtitle: string;
   connected: boolean;
+  // The contact's picture, before the title.
+  avatar?: ReactNode;
   // Extra buttons, e.g. the safety code.
   actions?: ReactNode;
 };
 
-export const ChatHeader = ({ convKey, title, subtitle, connected, actions }: Props) => {
+export const ChatHeader = ({ convKey, title, subtitle, connected, avatar, actions }: Props) => {
   const dispatch = useAppDispatch();
   const idle = useAppSelector(state => state.call.status === CallStatus.Idle);
   const disabled = !connected || !idle;
@@ -26,6 +28,7 @@ export const ChatHeader = ({ convKey, title, subtitle, connected, actions }: Pro
       <span className={styles.back}>
         <IconButton icon="back" label="Back to contacts" onClick={() => dispatch(selectConversation(null))} />
       </span>
+      {avatar && <span className={styles.avatar}>{avatar}</span>}
       <div className={styles.titles}>
         <span className={styles.title}>{title}</span>
         <span className={styles.subtitle}>{subtitle}</span>

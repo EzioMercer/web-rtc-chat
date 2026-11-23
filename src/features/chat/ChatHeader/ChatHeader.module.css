@@ -18,6 +18,11 @@
   }
 }
 
+.avatar {
+  display: inline-flex;
+  margin-right: 6px;
+}
+
 .titles {
   flex: 1;
   min-width: 0;

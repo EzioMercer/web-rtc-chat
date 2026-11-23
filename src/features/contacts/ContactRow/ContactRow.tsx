@@ -3,6 +3,7 @@ import type { Contact } from '../../../store/contacts/types.ts';
 import { useAppSelector } from '../../../store/useAppSelector.ts';
 import { cx } from '../../../utils/cx.ts';
 import { ContactMenu } from '../ContactMenu/ContactMenu.tsx';
+import { Avatar } from '../../../ui/Avatar/Avatar.tsx';
 import { Icon } from '../../../ui/Icon/Icon.tsx';
 import { SessionStatus } from '../../../store/sessions/types.ts';
 import styles from './ContactRow.module.css';
@@ -16,7 +17,7 @@ type Props = {
   sortProps: Record<string, unknown>;
 };
 
-// One contact in the list: name, status and unread count (never a message preview).
+// One contact in the list: picture, name, status and unread count (never a message preview).
 // The status dot's colour (grey otherwise).
 const DOT_CLASSES: Partial<Record<SessionStatus, string>> = {
   [SessionStatus.Connecting]: styles.connecting,
@@ -39,10 +40,9 @@ export const ContactRow = ({ contact, selected, dragging, onOpen, sortProps }: P
         aria-label={unread > 0 ? `${contact.name}, ${unread} unread` : contact.name}
         onClick={onOpen}
       >
-        <span className={styles.avatar}>
-          {contact.name.trim().charAt(0).toUpperCase() || '?'}
+        <Avatar picture={contact.picture} name={contact.name} size={40} className={styles.avatar}>
           <span className={cx(styles.dot, DOT_CLASSES[status])} />
-        </span>
+        </Avatar>
         <span className={styles.name}>{contact.name}</span>
         {contact.favourite && <span className={styles.star} title="Favourite"><Icon name="star" size={14} /></span>}
         {contact.verified && (

@@ -3,11 +3,13 @@ import { randomBytes } from '../crypto/randomBytes.ts';
 import { seal } from '../crypto/seal.ts';
 import { unseal } from '../crypto/unseal.ts';
 import type { Contact } from '../../store/contacts/types.ts';
+import type { ProfileState } from '../../store/profile/types.ts';
 import type { SettingsState } from '../../store/settings/types.ts';
 import { kv } from '../storage/kv.ts';
 import { contactKeys } from './contactKeys.ts';
 import { keyForChoice } from './keyForChoice.ts';
 import { saveContacts } from './saveContacts.ts';
+import { saveProfile } from './saveProfile.ts';
 import { saveSettings } from './saveSettings.ts';
 import { STORAGE_KEYS } from './storageKeys.ts';
 import { type ProtectionChoice, type StoredMeta, ProtectionMode } from './types.ts';
@@ -21,6 +23,7 @@ export const changeProtection = async (
   choice: ProtectionChoice,
   contacts: Contact[],
   settings: SettingsState,
+  profile: ProfileState,
 ): Promise<boolean> => {
   if (!vault.vaultKey) {
     throw new Error('Identity is locked');
@@ -68,6 +71,7 @@ export const changeProtection = async (
   if (!before) {
     await saveContacts(contacts);
     await saveSettings(settings);
+    await saveProfile(profile);
   }
 
   // Last: until this is written, the old protection still opens everything.

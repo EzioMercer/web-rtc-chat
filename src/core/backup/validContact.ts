@@ -1,3 +1,4 @@
+import { isPicture } from '../profile/isPicture.ts';
 import type { Contact } from '../../store/contacts/types.ts';
 
 const isText = (value: unknown) => typeof value === 'string';
@@ -10,5 +11,6 @@ export const validContact = (contact: unknown): contact is Contact => {
     && typeof c?.id === 'string' && /^[\w-]{1,64}$/.test(c.id)
     && isText(c.name) && isText(c.safety) && isText(c.identity) && isText(c.myKey) && isText(c.sendSecret)
     && typeof c.favourite === 'boolean' && typeof c.verified === 'boolean'
-    && Array.isArray(c.secrets) && c.secrets.every(isText);
+    && Array.isArray(c.secrets) && c.secrets.every(isText)
+    && (c.picture === undefined || isPicture(c.picture));
 };

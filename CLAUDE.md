@@ -12,11 +12,11 @@ src/
   ui/         Reusable building blocks. Look here before writing a new button, dialog or field.
                 Button, IconButton, Icon (+ paths.ts: every icon), Dialog (dismissible={false} for questions that
                 must be answered), TextField, CodeField, CopyButton, SegmentedControl (radio or tabs), Checkbox,
-                MediaVideo (plays a MediaStream), QrCode, QrScanner, Logo
+                MediaVideo (plays a MediaStream), QrCode, QrScanner, Logo, Avatar (a picture, letter or icon)
   features/   Screens, one folder per feature, with the hooks and helpers only that feature uses.
                 app/        Messenger (main layout), Sidebar, EmptyPane, UpdateNotice, OtherTabScreen
                 setup/      SetupScreen, UnlockScreen, ProtectionPicker
-                settings/   SettingsDialog, StorageSection, LegalDialog (LEGAL.ts: disclaimer and privacy text)
+                settings/   SettingsDialog, PictureSection, StorageSection, LegalDialog (LEGAL.ts: disclaimer and privacy text)
                 backup/     ExportDialog, ImportDialog, BackupProgress (covers the app while one runs)
                 contacts/   AddContactDialog (invite / join), ContactList, ContactRow, SafetyPanel, dialogs
                 chat/       ChatPane, Conversation, ChatHeader, MessageList, Composer, FileBubble
@@ -42,9 +42,10 @@ src/
                 turn/, update/  the only modules allowed to fetch (lint enforces it)
                 media/      recording engine (MediaRecorder, format choice, square crop, waveform)
                 compression/  zip/unzip (deflate-raw) for files, relay notes and manual codes
+                profile/    our picture: makePicture (photo -> 256 px JPEG data URL), isPicture, pictureHash
                 sound/      ringtone (Web Audio, paused when nothing rings: see the comment there)
   store/      Redux: one folder per slice (app, contacts, sessions, chat, call, invites, manual, ui, settings,
-              backup), thunks/<area>/ for everything with side effects, persistence.ts saves contacts, settings,
+              profile, backup), thunks/<area>/ for everything with side effects, persistence.ts saves contacts, settings,
               chats, files and unread counts as they change.
   hooks/      Generic hooks (useElapsed, useFullScreen, useDragSort). Feature hooks live in their feature.
   utils/      Generic helpers (cx, formatBytes, formatDuration, hasKeyboard, trackWindowHeight).
@@ -78,6 +79,9 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
   (`startCamera`) adds a track, which sends a new offer.
 - **Route shown** (`checkRoute`): through TURN if either end of the selected path is the relay. Their relay address
   can look ordinary to us ("prflx"), so each side tells the other about its own end (`ControlType.Route`).
+- **Profile pictures** (`store/thunks/profile`): ours is in the `profile` slice, saved like the settings but put in
+  backups (Info record). When a contact's connection opens, or we change ours, we send its hash (`ControlType.Picture`);
+  if theirs differs they ask by that hash (`PictureAsk`) and we send it. Theirs is `Contact.picture`.
 - **Voice/video messages** are files with a `note` (type, duration, waveform) in their first message.
 - **Echo guard:** the side that hears its own voice back (`useEchoDetector`) sends `echo`; the other side is asked
   (`EchoPrompt`) and its `useEchoGuard` turns the microphone off while they talk. Both only read
@@ -130,6 +134,8 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
   switching between two (fake) cameras; the route shown from the other side's word about its end of the path.
 - `scripts/e2e-move.mjs` (same dev server): a call moves to a new connection, goes back when it breaks, and stays when
   the test fails.
+- `scripts/e2e-picture.mjs` (same dev server): pictures made in Chromium, Firefox and WebKit; two browsers swap,
+  change and remove them, and keep them after a reload.
 - `scripts/e2e-real-relays.mjs` (built app, `npx vite preview --port 4173`, real relays): Chromium adds Firefox and
   WebKit with invites, checks safety codes, one saved key per contact and a reconnect after reload.
 - `scripts/check-turn.mjs`, `scripts/check-relays.mjs`.

@@ -6,6 +6,7 @@ import { useAppDispatch } from '../../../store/useAppDispatch.ts';
 import { useAppSelector } from '../../../store/useAppSelector.ts';
 import { ChatHeader } from '../ChatHeader/ChatHeader.tsx';
 import { Conversation } from '../Conversation/Conversation.tsx';
+import { Avatar } from '../../../ui/Avatar/Avatar.tsx';
 import { IconButton } from '../../../ui/IconButton/IconButton.tsx';
 import { SafetyPanel } from '../../contacts/SafetyPanel/SafetyPanel.tsx';
 import styles from './ChatPane.module.css';
@@ -53,6 +54,7 @@ export const ChatPane = ({ id }: Props) => {
       title={contact.name}
       subtitle={`${getStatusText(status, route)}${contact.verified ? ' · verified' : ''}`}
       connected={connected}
+      avatar={<Avatar picture={contact.picture} name={contact.name} size={36} />}
       actions={(
         <>
           <IconButton

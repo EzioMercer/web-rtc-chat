@@ -32,9 +32,11 @@ export const LEGAL: LegalSection[] = [
     title: 'Privacy',
     paragraphs: [
       'The author runs no accounts, no analytics, no cookies and no message storage. Messages and calls go directly '
-      + 'between the two browsers, encrypted end to end. Your keys, contacts, settings and chats (messages and '
-      + 'files) are saved only on your device, encrypted (or nowhere, in Temporary mode). Your browser may delete '
+      + 'between the two browsers, encrypted end to end. Your keys, contacts, settings, pictures and chats (messages '
+      + 'and files) are saved only on your device, encrypted (or nowhere, in Temporary mode). Your browser may delete '
       + 'them on its own, for example when the device runs low on space.',
+      'If you set a picture, it goes the same way, directly to each of your contacts, who keep it on their device. '
+      + 'Every contact gets the same picture.',
       'A backup file is encrypted with a password you choose. It is yours: the author never sees it, and where you '
       + 'keep it and who you give it to is up to you.',
       'To make connections work, the app uses third-party services. They can see your IP address, but not your '

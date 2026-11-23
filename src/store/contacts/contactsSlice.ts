@@ -51,6 +51,18 @@ const contactsSlice = createSlice({
         contact.verified = payload.verified;
       }
     },
+    // They sent their picture, or told us they have none.
+    pictureReceived: (state, { payload }: PayloadAction<{ id: string; picture: string | null }>) => {
+      const contact = find(state, payload.id);
+
+      if (contact) {
+        if (payload.picture) {
+          contact.picture = payload.picture;
+        } else {
+          delete contact.picture;
+        }
+      }
+    },
     // Moves `id` to where `beforeId` is (or to the end of its group when null).
     contactMoved: (state, { payload }: PayloadAction<{ id: string; beforeId: string | null }>) => {
       const from = state.list.findIndex(contact => contact.id === payload.id);
@@ -105,6 +117,7 @@ export const {
   contactDeleted,
   favouriteToggled,
   verifiedSet,
+  pictureReceived,
   contactMoved,
   secretProposed,
   secretAdopted,

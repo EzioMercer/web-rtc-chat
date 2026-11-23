@@ -19,7 +19,7 @@ export const updateProtection = (choice: ProtectionChoice): AppThunk<Promise<boo
   try {
     await historySaver.flush();
 
-    const { contacts, chat, settings } = getState();
+    const { contacts, chat, settings, profile } = getState();
     const chats = Object.fromEntries(Object.entries(chat.conversations)
       .filter(([key]) => contacts.list.some(contact => contact.id === key)));
 
@@ -27,7 +27,7 @@ export const updateProtection = (choice: ProtectionChoice): AppThunk<Promise<boo
       await keepFilesInMemory(chats);
     }
 
-    const startsSaving = await changeProtection(choice, contacts.list, settings);
+    const startsSaving = await changeProtection(choice, contacts.list, settings, profile);
 
     if (choice.mode === ProtectionMode.Temporary) {
       historySaver.reset();

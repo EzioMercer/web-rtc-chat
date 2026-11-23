@@ -6,6 +6,7 @@ import { memoryFiles } from '../core/history/memoryFiles.ts';
 import { saveFileBytes } from '../core/history/saveFileBytes.ts';
 import { saveUnread } from '../core/history/saveUnread.ts';
 import { saveContacts } from '../core/identity/saveContacts.ts';
+import { saveProfile } from '../core/identity/saveProfile.ts';
 import { saveSettings } from '../core/identity/saveSettings.ts';
 import {
   addMessage,
@@ -27,12 +28,15 @@ import {
   contactRenamed,
   contactReplaced,
   favouriteToggled,
+  pictureReceived,
   secretAdopted,
   secretConfirmed,
   secretProposed,
   verifiedSet,
 } from './contacts/contactsSlice.ts';
 import type { Contact } from './contacts/types.ts';
+import { pictureChosen } from './profile/profileSlice.ts';
+import type { ProfileState } from './profile/types.ts';
 import { echoGuardChosen } from './settings/settingsSlice.ts';
 import type { SettingsState } from './settings/types.ts';
 import { refreshMailboxes } from './thunks/signal/refreshMailboxes.ts';
@@ -50,6 +54,7 @@ persistence.startListening({
     contactRenamed,
     contactReplaced,
     favouriteToggled,
+    pictureReceived,
     secretAdopted,
     secretConfirmed,
     secretProposed,
@@ -69,6 +74,14 @@ persistence.startListening({
   actionCreator: echoGuardChosen,
   effect: async (_action, api) => {
     await saveSettings((api.getState() as { settings: SettingsState }).settings);
+  },
+});
+
+// Saves what our contacts see of us (encrypted) whenever we change it.
+persistence.startListening({
+  actionCreator: pictureChosen,
+  effect: async (_action, api) => {
+    await saveProfile((api.getState() as { profile: ProfileState }).profile);
   },
 });
 
