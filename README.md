@@ -9,29 +9,22 @@ Live: https://eziomercer.github.io/web-rtc-chat/
 
 ## Features
 
-- 💬 Private chat, straight from one browser to another
-- 📞 Audio and video calls: switch between the front and back camera, or turn your camera on after answering with
-  audio only
-- 🖥️ Screen sharing
-- 🔇 Echo guard: if the other person hears their own voice back, the app notices and offers to fix it
-- 🎙️ Voice messages and round video messages: tap the button to switch, hold to record, let go to send
-- 📎 Files, photos and videos of any size (up to 10 MB when the connection goes through the TURN relay); text files
-  are sent zipped, often 5-10 times smaller
-- 📍 Share your location once, or live for 15 min, 30 min or 1 hour (it follows you while the app is open, and you
-  can stop it any time). It shows as a drawn map with a pin (a live one: your picture, a LIVE badge, the time left
-  and when it last moved). A tap opens it the device's way: Android's own list of map and taxi apps; on an iPhone,
-  iPad or Mac, a choice of Apple Maps, Google Maps or Share…; Google Maps elsewhere. A long tap or right click
-  copies a Google Maps link
-- 🔒 End-to-end encrypted, messages never touch a server
-- 💾 Chats and files are saved on your device, encrypted, and are still there after a reload
-- 📦 Backup to a password-locked file (text only or with media, for all chats or each on its own) to move to another
-  device
-- 👤 No account, phone number or email
-- 🖼️ A profile picture, sent straight to your contacts and nowhere else
-- 📱 Works on phones and computers, nothing to install
-- ➕ Add contacts with a QR code or an invite link
-- ✅ A safety code of 4 emojis to check nobody is in the middle
-- 🔁 Survives short network drops and reconnects by itself
+- 💬 **Private chat**, straight from your browser to theirs
+- 📞 **Audio and video calls**, with front and back camera
+- 🖥️ **Screen sharing**
+- 🎙️ **Voice and round video messages**: hold to record, let go to send
+- 📎 **Files of any size**: photos, videos, documents
+- 📍 **Share your location**, once or live
+- 🖼️ **Profile pictures**, seen only by your contacts
+- 🔒 **End-to-end encrypted**: no server ever sees your messages
+- 👤 **No account**: no phone number, no email, no sign-up
+- 💾 **Your chats stay with you**, encrypted on your device
+- 📦 **Password-locked backups** to move to a new device
+- ➕ **Add a friend in seconds** with a QR code or a link
+- ✅ **A safety code of 4 emojis** proves nobody is in the middle
+- 🔇 **Echo guard** notices echo in a call and fixes it
+- 🔁 **Reconnects by itself** after a network drop
+- 📱 **Phones and computers**, nothing to install
 
 ## How it works, in simple words
 
