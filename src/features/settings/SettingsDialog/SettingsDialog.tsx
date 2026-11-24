@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { relayStatus } from '../../../core/nostr/relayStatus.ts';
 import { updateProtection } from '../../../store/thunks/app/updateProtection.ts';
 import { resetApp } from '../../../store/thunks/app/resetApp.ts';
@@ -14,6 +14,8 @@ import { Dialog } from '../../../ui/Dialog/Dialog.tsx';
 import { ExportDialog } from '../../backup/ExportDialog/ExportDialog.tsx';
 import { ImportDialog } from '../../backup/ImportDialog/ImportDialog.tsx';
 import { LegalDialog } from '../LegalDialog/LegalDialog.tsx';
+import type { ProfileDialog } from '../ProfileDialog/ProfileDialog.tsx';
+import { loadProfileDialog } from '../ProfileDialog/loadProfileDialog.ts';
 import { ProfileRow } from '../ProfileRow/ProfileRow.tsx';
 import { StorageSection } from '../StorageSection/StorageSection.tsx';
 import { ProtectionPicker } from '../../setup/ProtectionPicker/ProtectionPicker.tsx';
@@ -27,11 +29,6 @@ type Props = {
   onClose: () => void;
 };
 
-// Loaded only when opened (see ProfileDialog).
-const ProfileDialog = lazy(() => import('../ProfileDialog/ProfileDialog.tsx').then(
-  module => ({ default: module.ProfileDialog }),
-));
-
 const ECHO_GUARD_OPTIONS: { value: EchoGuardSetting; label: string }[] = [
   { value: EchoGuardSetting.Auto, label: 'Auto' },
   { value: EchoGuardSetting.On, label: 'On' },
@@ -44,7 +41,9 @@ export const SettingsDialog = ({ onClose }: Props) => {
   const echoGuard = useAppSelector(state => state.settings.echoGuard);
   const [changing, setChanging] = useState(false);
   const [legal, setLegal] = useState(false);
-  const [profile, setProfile] = useState(false);
+  // The Profile info window, once its code is loaded and it is open.
+  const [Profile, setProfile] = useState<typeof ProfileDialog | null>(null);
+  const [profileError, setProfileError] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [importing, setImporting] = useState(false);
   // Going temporary waits for a yes: it deletes what is saved on this device.
@@ -52,32 +51,43 @@ export const SettingsDialog = ({ onClose }: Props) => {
   const [resetting, setResetting] = useState(false);
   const [relays, setRelays] = useState(relayStatus);
 
+  // Loaded now, so tapping Profile info opens it at once.
+  useEffect(() => {
+    loadProfileDialog().catch(() => undefined);
+  }, []);
+
   useEffect(() => {
     const timer = window.setInterval(() => setRelays(relayStatus()), 2000);
 
     return () => window.clearInterval(timer);
   }, []);
 
-  if (profile) {
-    const close = () => setProfile(false);
-
-    return (
-      <Suspense fallback={<Dialog title="Profile info" onClose={close}><p>Loading…</p></Dialog>}>
-        <ProfileDialog onClose={close} />
-      </Suspense>
-    );
+  if (Profile) {
+    return <Profile onBack={() => setProfile(null)} onClose={onClose} />;
   }
 
+  // Settings stays until the window's code is there (it usually is already).
+  const openProfile = async () => {
+    try {
+      const module = await loadProfileDialog();
+
+      setProfileError(false);
+      setProfile(() => module.ProfileDialog);
+    } catch {
+      setProfileError(true);
+    }
+  };
+
   if (legal) {
-    return <LegalDialog onClose={() => setLegal(false)} />;
+    return <LegalDialog onBack={() => setLegal(false)} onClose={onClose} />;
   }
 
   if (exporting) {
-    return <ExportDialog onClose={() => setExporting(false)} />;
+    return <ExportDialog onBack={() => setExporting(false)} onClose={onClose} />;
   }
 
   if (importing) {
-    return <ImportDialog fresh={false} onClose={() => setImporting(false)} />;
+    return <ImportDialog fresh={false} onBack={() => setImporting(false)} onClose={onClose} />;
   }
 
   if (resetting) {
@@ -103,7 +113,7 @@ export const SettingsDialog = ({ onClose }: Props) => {
 
     return (
       <>
-        <Dialog title="Change protection" onClose={() => setChanging(false)}>
+        <Dialog title="Change protection" onBack={() => setChanging(false)} onClose={onClose}>
           <ProtectionPicker
             submitLabel="Switch"
             busy={busy}
@@ -139,7 +149,8 @@ export const SettingsDialog = ({ onClose }: Props) => {
 
   return (
     <Dialog title="Settings" onClose={onClose}>
-      <ProfileRow onOpen={() => setProfile(true)} />
+      <ProfileRow onOpen={() => void openProfile()} />
+      {profileError && <p className={styles.loadError}>Couldn&apos;t load it. Check the connection and try again.</p>}
 
       <section className={styles.section}>
         <h3>Protection</h3>

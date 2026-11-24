@@ -4,13 +4,16 @@ import { PictureSection } from '../PictureSection/PictureSection.tsx';
 import settingsStyles from '../SettingsDialog/SettingsDialog.module.css';
 
 type Props = {
+  // Back to Settings.
+  onBack: () => void;
+  // Settings closes too.
   onClose: () => void;
 };
 
 // What our contacts see of us: the picture, the phone number and the description. Loaded only when opened: the phone
 // number's checks and the flags are big.
-export const ProfileDialog = ({ onClose }: Props) => (
-  <Dialog title="Profile info" onClose={onClose}>
+export const ProfileDialog = ({ onBack, onClose }: Props) => (
+  <Dialog title="Profile info" onBack={onBack} onClose={onClose}>
     <PictureSection />
     <InfoSection />
     <section className={settingsStyles.section}>

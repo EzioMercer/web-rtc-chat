@@ -21,6 +21,8 @@ import { ManualStatus } from '../../../store/manual/types.ts';
 
 type Props = {
   onClose: () => void;
+  // Opened in place of Settings: back to it (also Cancel and Done).
+  onBack?: () => void;
 };
 
 type Estimate = Awaited<ReturnType<typeof measureBackup>>;
@@ -42,7 +44,7 @@ const CHAT_OPTIONS = [
 
 // Chooses what goes into a backup and makes it: text only or with media (files, voice and video messages), for
 // all chats or each on its own, and the password that locks the file.
-export const ExportDialog = ({ onClose }: Props) => {
+export const ExportDialog = ({ onClose, onBack }: Props) => {
   const dispatch = useAppDispatch();
   const mode = useAppSelector(state => state.app.mode);
   const contacts = useAppSelector(state => state.contacts.list);
@@ -140,7 +142,7 @@ export const ExportDialog = ({ onClose }: Props) => {
             A restored backup has the same keys as this device: if both are open, both answer your contacts and the
             chats split between them.
           </p>
-          <Button wide onClick={onClose}>Done</Button>
+          <Button wide onClick={onBack ?? onClose}>Done</Button>
         </>
       );
     }
@@ -219,14 +221,14 @@ export const ExportDialog = ({ onClose }: Props) => {
         {conversations[MANUAL_KEY] && (
           <p className={styles.muted}>The manual connection&apos;s chat is never saved, so it isn&apos;t backed up.</p>
         )}
-        <Button variant={ButtonVariant.Ghost} onClick={onClose}>Cancel</Button>
+        <Button variant={ButtonVariant.Ghost} onClick={onBack ?? onClose}>Cancel</Button>
       </>
     );
   };
 
   return (
     <>
-      <Dialog title="Back up chats" onClose={onClose} dismissible={!busy}>
+      <Dialog title="Back up chats" onClose={onClose} onBack={busy ? undefined : onBack} dismissible={!busy}>
         <div className={styles.form}>{body()}</div>
       </Dialog>
       {asking && (

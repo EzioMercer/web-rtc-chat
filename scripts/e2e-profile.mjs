@@ -162,6 +162,15 @@ const testMaking = async (type, name) => {
     check(picture.length <= 64_000, `${name}: it fits in one message (${picture.length} chars)`);
   }
 
+  // Back returns to Settings; the X closes both.
+  await openProfile(page);
+  await page.getByRole('button', { name: 'Back' }).click();
+  check(await page.getByRole('button', { name: /Profile info/ }).isVisible(), `${name}: Back returns to Settings`);
+  await page.getByRole('button', { name: /Profile info/ }).click();
+  await page.getByLabel('Phone number').waitFor();
+  await page.getByRole('button', { name: 'Close' }).click();
+  check(await page.getByRole('dialog').count() === 0, `${name}: the X closes Profile info and Settings`);
+
   await openProfile(page);
   check(await page.locator(`img[src="${picture}"]`).count() > 0, `${name}: the Profile info window shows it`);
   await page.locator('input[type=file][accept="image/*"]').setInputFiles({

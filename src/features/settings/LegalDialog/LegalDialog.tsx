@@ -4,10 +4,12 @@ import styles from './LegalDialog.module.css';
 
 type Props = {
   onClose: () => void;
+  // Opened in place of Settings: back to it.
+  onBack?: () => void;
 };
 
-export const LegalDialog = ({ onClose }: Props) => (
-  <Dialog title="Legal" onClose={onClose}>
+export const LegalDialog = ({ onClose, onBack }: Props) => (
+  <Dialog title="Legal" onClose={onClose} onBack={onBack}>
     {LEGAL.map(section => (
       <section key={section.title} className={styles.section}>
         <h3>{section.title}</h3>

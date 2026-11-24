@@ -29,12 +29,20 @@
   border-bottom: 1px solid var(--border);
 }
 
+/* The back button sits where the padding was, its arrow lined up under the body's left edge. */
+.withBack {
+  gap: 4px;
+  padding-left: 10px;
+}
+
 .title {
+  flex: 1;
+  min-width: 0;
   margin: 0;
   font-size: 17px;
 }
 
-.close {
+.headerButton {
   display: inline-flex;
   padding: 8px;
   border: none;
@@ -44,7 +52,7 @@
   cursor: pointer;
 }
 
-.close:hover {
+.headerButton:hover {
   color: var(--text);
 }
 

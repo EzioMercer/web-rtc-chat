@@ -29,6 +29,8 @@ type Props = {
   // On the setup screen: the backup becomes a new identity, protected as chosen here.
   fresh: boolean;
   onClose: () => void;
+  // Opened in place of Settings: back to it (also when the restore is done).
+  onBack?: () => void;
 };
 
 type Preview = Awaited<ReturnType<typeof readBackupPreview>>;
@@ -56,7 +58,7 @@ const sameName = (a: string, b: string) => a.trim().toLowerCase() === b.trim().t
 // Restores a backup file: choose the file, open it with its password, choose which chats (and whether with media),
 // and answer for chats whose name is already taken here. Chats from the backup replace the same chats here; other
 // chats on this device stay.
-export const ImportDialog = ({ fresh, onClose }: Props) => {
+export const ImportDialog = ({ fresh, onClose, onBack }: Props) => {
   const dispatch = useAppDispatch();
   const contacts = useAppSelector(state => state.contacts.list);
   const device = fresh ? NONE : contacts;
@@ -185,7 +187,7 @@ export const ImportDialog = ({ fresh, onClose }: Props) => {
     if (done?.mode !== null && done?.mode !== undefined) {
       dispatch(openRestored(done.mode));
     } else {
-      onClose();
+      (onBack ?? onClose)();
     }
   };
 
@@ -334,7 +336,7 @@ export const ImportDialog = ({ fresh, onClose }: Props) => {
 
   return (
     <>
-      <Dialog title="Restore a backup" onClose={onClose} dismissible={!busy}>
+      <Dialog title="Restore a backup" onClose={onClose} onBack={busy ? undefined : onBack} dismissible={!busy}>
         <div className={styles.form}>{body()}</div>
       </Dialog>
       {asking && (
