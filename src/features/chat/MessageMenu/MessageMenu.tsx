@@ -15,6 +15,7 @@ type Props = {
 };
 
 const LABELS: Record<MessageAction, string> = {
+  [MessageAction.Reply]: 'Reply',
   [MessageAction.Copy]: 'Copy text',
   [MessageAction.DontSend]: 'Don\'t send',
   [MessageAction.SendAgain]: 'Send again',

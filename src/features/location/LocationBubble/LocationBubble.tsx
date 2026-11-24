@@ -9,10 +9,10 @@ import { useAppDispatch } from '../../../store/useAppDispatch.ts';
 import { useAppSelector } from '../../../store/useAppSelector.ts';
 import { isAndroid } from '../../../utils/isAndroid.ts';
 import { isAppleDevice } from '../../../utils/isAppleDevice.ts';
-import { DeliveryMark } from '../../../ui/DeliveryMark/DeliveryMark.tsx';
+import { MessageMeta } from '../../../ui/MessageMeta/MessageMeta.tsx';
 import { cx } from '../../../utils/cx.ts';
 import { formatAgo } from '../formatAgo.ts';
-import { formatClock } from '../formatClock.ts';
+import { formatClock } from '../../../utils/formatClock.ts';
 import { formatLeft } from '../formatLeft.ts';
 import { LocationMap } from '../LocationMap/LocationMap.tsx';
 import { OpenWithDialog } from '../OpenWithDialog/OpenWithDialog.tsx';
@@ -62,12 +62,14 @@ export const LocationBubble = ({ chat, location }: Props) => {
     }
   };
 
-  const tick = mine && (
-    <DeliveryMark
-      pending={location.pending}
-      sent={location.sent}
-      tried={location.tried}
-      unsent={location.unsent}
+  // When it was sent and, for ours, where it is.
+  const meta = (overlay: boolean) => (
+    <MessageMeta
+      at={location.at}
+      mark={mine
+        ? { pending: location.pending, sent: location.sent, tried: location.tried, unsent: location.unsent }
+        : undefined}
+      overlay={overlay}
     />
   );
 
@@ -105,7 +107,7 @@ export const LocationBubble = ({ chat, location }: Props) => {
               </span>
             )}
             {running && <span className={styles.left}>{`${formatLeft(until - now)} left`}</span>}
-            {!live && tick && <span className={styles.onMap}>{tick}</span>}
+            {!live && <span className={styles.onMap}>{meta(true)}</span>}
             {running && (
               <span className={styles.progress}>
                 <span className={styles.bar} style={{ width: `${Math.max(0, Math.min(1, progress)) * 100}%` }} />
@@ -116,7 +118,7 @@ export const LocationBubble = ({ chat, location }: Props) => {
         {live && (
           <span className={styles.info}>
             <span className={styles.meta}>{status()}</span>
-            {tick}
+            {meta(false)}
           </span>
         )}
       </a>

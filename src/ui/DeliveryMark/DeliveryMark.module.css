@@ -1,16 +1,14 @@
 .mark {
+  display: inline-flex;
+  align-items: center;
   font-size: 11px;
-  letter-spacing: -2px;
-  opacity: 0.8;
   white-space: nowrap;
 }
 
 .pending {
-  opacity: 0.6;
+  opacity: 0.75;
 }
 
 .unsent {
-  letter-spacing: normal;
   color: var(--error);
-  opacity: 1;
 }

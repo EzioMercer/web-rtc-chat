@@ -1,5 +1,7 @@
 // What the message menu offers.
 export enum MessageAction {
+  // Answer it: the next message we send quotes it.
+  Reply,
   Copy,
   // Ours that hasn't gone out yet: it is removed and never sent.
   DontSend,

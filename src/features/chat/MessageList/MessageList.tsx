@@ -1,20 +1,27 @@
-import { useEffect, useRef, useState, type MouseEvent, type PointerEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type MouseEvent, type PointerEvent } from 'react';
+import { canReply } from '../../../store/chat/canReply.ts';
 import { type Message, MessageAuthor, MessageKind, NoteType } from '../../../store/chat/types.ts';
 import { deleteMessage } from '../../../store/thunks/chat/deleteMessage.ts';
 import { findMessage } from '../../../store/thunks/chat/findMessage.ts';
 import { sendAgain } from '../../../store/thunks/chat/sendAgain.ts';
 import { useAppDispatch } from '../../../store/useAppDispatch.ts';
 import { useAppSelector } from '../../../store/useAppSelector.ts';
+import { replyStarted } from '../../../store/ui/uiSlice.ts';
+import { Icon } from '../../../ui/Icon/Icon.tsx';
 import { ConfirmDialog } from '../../../ui/ConfirmDialog/ConfirmDialog.tsx';
-import { DeliveryMark } from '../../../ui/DeliveryMark/DeliveryMark.tsx';
+import { MessageMeta } from '../../../ui/MessageMeta/MessageMeta.tsx';
 import { cx } from '../../../utils/cx.ts';
 import { LocationBubble } from '../../location/LocationBubble/LocationBubble.tsx';
 import { FileBubble } from '../FileBubble/FileBubble.tsx';
 import { MessageAction } from '../MessageMenu/MessageAction.ts';
 import { MessageMenu } from '../MessageMenu/MessageMenu.tsx';
+import { ReplyQuote } from '../ReplyQuote/ReplyQuote.tsx';
+import { usePeerName } from '../usePeerName.ts';
 import { deleteQuestion } from './deleteQuestion.ts';
 import { messageActions } from './messageActions.ts';
+import { metaFor } from './metaFor.ts';
 import styles from './MessageList.module.css';
+import { useSwipeReply } from './useSwipeReply.ts';
 
 type Props = {
   convKey: string;
@@ -24,6 +31,9 @@ const NONE: Message[] = [];
 
 // A touch held longer than this is the phone's text selection, not a tap.
 const TAP_MS = 400;
+
+// A message shown from a reply's quote stands out this long (ms).
+const FLASH_MS = 1500;
 
 // Holding a file or location this long opens its menu (a tap there plays or opens it)...
 const HOLD_MS = 500;
@@ -35,6 +45,22 @@ const tappable = (message: Message) => message.kind === MessageKind.Text;
 
 // Round video messages stand on their own, without a bubble around them.
 const bare = (message: Message) => message.kind === MessageKind.File && message.note?.type === NoteType.Video;
+
+// Where the time and mark go: in the corner of a text or voice message, next to its last line when there's room
+// (a hidden copy keeps the room free); on a line of its own under a file or round video; a location draws its own.
+// The app's own notes have none.
+const metaPlace = (message: Message): 'corner' | 'line' | null => {
+  if (message.from === MessageAuthor.System) {
+    return null;
+  }
+
+  if (message.kind === MessageKind.Text
+    || (message.kind === MessageKind.File && message.note?.type === NoteType.Voice)) {
+    return 'corner';
+  }
+
+  return message.kind === MessageKind.File ? 'line' : null;
+};
 
 // A kind this version doesn't know was saved by a newer one: it stays saved as it is, shown as a note.
 const content = (convKey: string, message: Message) => {
@@ -64,6 +90,33 @@ export const MessageList = ({ convKey }: Props) => {
   const held = useRef(false);
   const asked = messages.find(message => message.id === asking);
   const last = messages.at(-1)?.id;
+  // Messages by id, for the quotes of replies.
+  const byId = useMemo(() => new Map(messages.map(message => [message.id, message])), [messages]);
+  const peerName = usePeerName(convKey);
+  // The message just shown from a quote.
+  const [flash, setFlash] = useState<string | null>(null);
+  const flashTimer = useRef(0);
+
+  const startReply = (id: string) => {
+    setMenu(null);
+    dispatch(replyStarted({ key: convKey, id }));
+  };
+
+  const swipe = useSwipeReply(startReply);
+
+  // A reply's quote was tapped: the message it answers comes into view and stands out for a moment.
+  const showOriginal = (id: string) => {
+    const element = listRef.current?.querySelector(`[data-id="${CSS.escape(id)}"]`);
+
+    if (!element) {
+      return;
+    }
+
+    element.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    setFlash(id);
+    window.clearTimeout(flashTimer.current);
+    flashTimer.current = window.setTimeout(() => setFlash(null), FLASH_MS);
+  };
 
   const textSelected = () => !(window.getSelection()?.isCollapsed ?? true);
 
@@ -78,7 +131,9 @@ export const MessageList = ({ convKey }: Props) => {
   const act = (id: string, action: MessageAction) => {
     const now = dispatch(findMessage(convKey, id));
 
-    if (action === MessageAction.DontSend && now && messageActions(now).includes(MessageAction.DontSend)) {
+    if (action === MessageAction.Reply) {
+      startReply(id);
+    } else if (action === MessageAction.DontSend && now && messageActions(now).includes(MessageAction.DontSend)) {
       dispatch(deleteMessage(convKey, id));
     } else if (action === MessageAction.DeleteForMe || action === MessageAction.DontSend) {
       setAsking(id);
@@ -89,7 +144,7 @@ export const MessageList = ({ convKey }: Props) => {
 
   // On a phone, a tap opens the message menu; a long press (selecting text) is left to the phone and its menu.
   const tap = (e: MouseEvent, id: string) => {
-    if (!press.current.touch || textSelected() || e.timeStamp - press.current.at > TAP_MS) {
+    if (swipe.justSwiped() || !press.current.touch || textSelected() || e.timeStamp - press.current.at > TAP_MS) {
       return;
     }
 
@@ -143,7 +198,7 @@ export const MessageList = ({ convKey }: Props) => {
 
   // The click after a long press only closes the press.
   const swallowClick = (e: MouseEvent) => {
-    if (held.current) {
+    if (swipe.justSwiped() || held.current) {
       held.current = false;
       e.preventDefault();
       e.stopPropagation();
@@ -160,7 +215,10 @@ export const MessageList = ({ convKey }: Props) => {
     }
   };
 
-  useEffect(() => endHold, []);
+  useEffect(() => () => {
+    endHold();
+    window.clearTimeout(flashTimer.current);
+  }, []);
 
   // Keep the newest message in view when one is added (not when an older one is deleted).
   useEffect(() => {
@@ -173,51 +231,119 @@ export const MessageList = ({ convKey }: Props) => {
 
   return (
     <div ref={listRef} className={styles.list}>
-      {messages.map(message => message.kind !== MessageKind.Deleted && (
-        <div
-          key={message.id}
-          className={cx(
-            styles.msg,
-            styles[message.from],
-            tappable(message) ? styles.tappable : styles.holdable,
-            bare(message) && styles.bare,
-            message.kind === MessageKind.Location && styles.card,
-          )}
-          onPointerDown={(e) => {
-            press.current = { at: e.timeStamp, touch: e.pointerType !== 'mouse' };
+      {messages.map((message) => {
+        if (message.kind === MessageKind.Deleted) {
+          return null;
+        }
 
-            if (!tappable(message)) {
-              startHold(e, message.id);
-            }
-          }}
-          onPointerMove={tappable(message) ? undefined : moveHold}
-          onPointerUp={tappable(message) ? undefined : endHold}
-          onPointerCancel={tappable(message) ? undefined : endHold}
-          onClickCapture={tappable(message) ? undefined : swallowClick}
-          onClick={tappable(message) ? e => tap(e, message.id) : undefined}
-          onContextMenu={e => (tappable(message) ? contextMenu(e, message.id) : holdMenu(e, message.id))}
-        >
-          {content(convKey, message)}
-          {message.kind === MessageKind.Text && message.from === MessageAuthor.Me && (
-            <DeliveryMark
-              pending={message.pending}
-              sent={message.sent}
-              tried={message.tried}
-              unsent={message.unsent}
-              className={styles.tick}
-            />
-          )}
-          {menu?.id === message.id && (
-            <MessageMenu
-              actions={menu.actions}
-              text={message.kind === MessageKind.Text ? message.text : null}
-              mine={message.from === MessageAuthor.Me}
-              onClose={() => setMenu(null)}
-              onAction={action => act(message.id, action)}
-            />
-          )}
-        </div>
-      ))}
+        const original = message.replyTo === undefined ? undefined : byId.get(message.replyTo);
+        const mine = message.from === MessageAuthor.Me;
+        const answerable = canReply(message);
+        const swiped = swipe.swipe?.id === message.id ? swipe.swipe : null;
+
+        return (
+          <div
+            key={message.id}
+            data-id={message.id}
+            className={cx(
+              styles.msg,
+              styles[message.from],
+              tappable(message) ? styles.tappable : styles.holdable,
+              bare(message) && styles.bare,
+              message.kind === MessageKind.Location && styles.card,
+              flash === message.id && styles.flash,
+              swiped && styles.swiping,
+            )}
+            style={swiped ? { transform: `translateX(${swiped.offset}px)` } : undefined}
+            onPointerDown={(e) => {
+              press.current = { at: e.timeStamp, touch: e.pointerType !== 'mouse' };
+              swipe.down(e, message.id, answerable);
+
+              if (!tappable(message)) {
+                startHold(e, message.id);
+              }
+            }}
+            onPointerMove={(e) => {
+              if (swipe.move(e)) {
+                endHold();
+              } else if (!tappable(message)) {
+                moveHold(e);
+              }
+            }}
+            onPointerUp={() => {
+              endHold();
+              swipe.up();
+            }}
+            onPointerCancel={() => {
+              endHold();
+              swipe.cancel();
+            }}
+            onClickCapture={tappable(message) ? undefined : swallowClick}
+            onClick={tappable(message) ? e => tap(e, message.id) : undefined}
+            onContextMenu={e => (tappable(message) ? contextMenu(e, message.id) : holdMenu(e, message.id))}
+          >
+            {original && (
+              <ReplyQuote
+                message={original}
+                peerName={peerName}
+                onMine={mine && !bare(message)}
+                onOpen={() => showOriginal(original.id)}
+              />
+            )}
+            {content(convKey, message)}
+            {metaPlace(message) === 'corner' && (
+              <>
+                {message.kind === MessageKind.Text && (
+                  <span className={styles.room} aria-hidden="true">
+                    <MessageMeta {...metaFor(message)} />
+                  </span>
+                )}
+                <MessageMeta {...metaFor(message)} className={styles.corner} />
+              </>
+            )}
+            {metaPlace(message) === 'line' && (
+              <div className={styles.metaLine}>
+                <MessageMeta {...metaFor(message)} overlay={bare(message)} />
+              </div>
+            )}
+            {answerable && (
+              // With a mouse: shows beside the bubble while the pointer is over it.
+              <button
+                className={styles.replyButton}
+                type="button"
+                title="Reply"
+                aria-label="Reply"
+                onPointerDown={e => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  startReply(message.id);
+                }}
+              >
+                <span className={styles.replyCircle}>
+                  <Icon name="reply" size={16} />
+                </span>
+              </button>
+            )}
+            {swiped && (
+              <span
+                className={cx(styles.swipeArrow, swiped.ready && styles.ready)}
+                style={{ opacity: swiped.progress }}
+              >
+                <Icon name="reply" size={18} />
+              </span>
+            )}
+            {menu?.id === message.id && (
+              <MessageMenu
+                actions={menu.actions}
+                text={message.kind === MessageKind.Text ? message.text : null}
+                mine={mine}
+                onClose={() => setMenu(null)}
+                onAction={action => act(message.id, action)}
+              />
+            )}
+          </div>
+        );
+      })}
       {asked && (
         <ConfirmDialog
           title="Delete for me?"

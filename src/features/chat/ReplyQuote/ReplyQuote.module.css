@@ -1,0 +1,50 @@
+.quote {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  max-width: 100%;
+  padding: 4px 8px;
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  background: rgb(255 255 255 / 0.08);
+  text-align: left;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.button {
+  width: 100%;
+  margin: 0 0 6px;
+  border-top: none;
+  border-right: none;
+  border-bottom: none;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.button:hover {
+  background: rgb(255 255 255 / 0.14);
+}
+
+.author {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.preview {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  opacity: 0.85;
+}
+
+/* The accent doesn't stand out on our own (blue) bubbles. */
+.onMine {
+  border-left-color: rgb(255 255 255 / 0.85);
+}
+
+.onMine .author {
+  color: #ffffff;
+}

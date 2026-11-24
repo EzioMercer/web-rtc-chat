@@ -15,8 +15,10 @@ Live: https://eziomercer.github.io/web-rtc-chat/
 - 🎙️ **Voice and round video messages**: hold to record, let go to send
 - 📎 **Files of any size**: photos, videos, documents
 - 📍 **Share your location**, once or live
-- 📬 **Delivery marks**: ◷ waiting, ↻ sent again, ✓ sent, ✓✓ delivered; what waits goes by itself when you're
-  both online
+- 📬 **Time and delivery marks** on every message: ◷ waiting, ↻ sent again, ✓ sent, ✓✓ delivered; what waits
+  goes by itself when you're both online
+- ↩️ **Replies**: answer any message, file, voice message or location; swipe left on a phone, the arrow beside
+  the bubble on a computer, or the menu. A tap on the quote shows the message answered
 - 🗑️ **Delete for me**: a message, file or location goes from your device only
 - 🖼️ **Profile**: picture, phone number and description, seen only by your contacts
 - 🔒 **End-to-end encrypted**: no server ever sees your messages
@@ -124,6 +126,9 @@ hand, without contacts or relays.
   - Browsers may delete a site's data when the device runs low on space. The app asks the browser to keep it
     ("persistent storage"); installed apps usually get that. Safari on iPhone and iPad deletes the data of sites
     not visited for 7 days, unless the app is added to the Home Screen. Keep a backup.
+- **A reply carries no copy.** It sends only the id of the message it answers, and each side draws the quote from
+  its own chat. When that message is deleted (Delete for me deletes it here only), the replies to it become normal
+  messages, with no quote left behind.
 - **Locations stay between the two of you.** A shared place goes over the direct connection like a message. The
   map in the chat is drawn by the app (made-up streets, no map pictures are loaded), so no map service learns the
   place. Only the app you open it in (or share it to) gets it. Only the latest spot of a live location is kept, not the

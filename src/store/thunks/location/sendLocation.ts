@@ -6,10 +6,11 @@ import { type GeoPoint, type LocationMessage, MessageAuthor, MessageKind } from 
 import { ManualStatus } from '../../manual/types.ts';
 import type { AppThunk } from '../../store.ts';
 import { connectContact } from '../contact/connectContact.ts';
+import { takeReply } from '../chat/takeReply.ts';
 import { locationSignal } from './locationSignal.ts';
 
 // Adds our location to the conversation and sends it, like a text (see sendMessage): once, or live for `liveFor`
-// ms. Returns its id, or null if it can't be sent.
+// ms. It answers the message chosen for a reply, if any (see takeReply). Returns its id, or null if it can't be sent.
 export const sendLocation = (key: string, point: GeoPoint, liveFor?: number): AppThunk<string | null> => (
   dispatch,
   getState,
@@ -19,6 +20,7 @@ export const sendLocation = (key: string, point: GeoPoint, liveFor?: number): Ap
   }
 
   const now = Date.now();
+  const replyTo = dispatch(takeReply(key));
   const message: LocationMessage = {
     kind: MessageKind.Location,
     id: nanoid(),
@@ -27,6 +29,7 @@ export const sendLocation = (key: string, point: GeoPoint, liveFor?: number): Ap
     at: now,
     ...(liveFor === undefined ? {} : { liveUntil: now + liveFor, updatedAt: now, rev: 0 }),
     pending: true,
+    ...(replyTo === undefined ? {} : { replyTo }),
   };
 
   dispatch(locationAdded({ key, message }));

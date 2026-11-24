@@ -16,8 +16,66 @@ const initialState: ChatState = {
   unread: {},
 };
 
+type Linked = TextMessage | FileMessage | LocationMessage;
+
+// Messages that can answer or be answered (a deleted one's marker, or a kind this version doesn't know, can't).
+const linkable = (message: Message | undefined): message is Linked => message?.kind === MessageKind.Text
+  || message?.kind === MessageKind.File || message?.kind === MessageKind.Location;
+
+// A message about to join `list`: if it answers one, that one learns of it; if that one isn't here (deleted, or it
+// never came), it joins as a normal message.
+const linked = <T extends Message>(list: Message[], message: T): T => {
+  if (!linkable(message) || message.replyTo === undefined) {
+    return message;
+  }
+
+  const original = list.find(m => m.id === message.replyTo);
+
+  if (!linkable(original) || original.id === message.id) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { replyTo, ...rest } = message;
+
+    return rest as T;
+  }
+
+  if (!original.replies?.includes(message.id)) {
+    original.replies = [...(original.replies ?? []), message.id];
+  }
+
+  return message;
+};
+
+// A message leaving `list`: its replies become normal messages, and the one it answers forgets it.
+const unlink = (list: Message[], message: Message) => {
+  if (!linkable(message)) {
+    return;
+  }
+
+  const replies = new Set(message.replies);
+
+  list.forEach((other) => {
+    if (!linkable(other)) {
+      return;
+    }
+
+    if (replies.has(other.id) && other.replyTo === message.id) {
+      delete other.replyTo;
+    }
+
+    if (other.id === message.replyTo && other.replies) {
+      other.replies = other.replies.filter(id => id !== message.id);
+
+      if (!other.replies.length) {
+        delete other.replies;
+      }
+    }
+  });
+};
+
 const push = (state: ChatState, key: string, message: Message) => {
-  (state.conversations[key] ??= []).push({ ...message, at: message.at ?? Date.now() });
+  const list = (state.conversations[key] ??= []);
+
+  list.push(linked(list, { ...message, at: message.at ?? Date.now() }));
 };
 
 // Puts a message where its time belongs. Only messages that waited (written while the connection was down) move
@@ -30,7 +88,7 @@ const insertByTime = (state: ChatState, key: string, message: Message & { at: nu
     index -= 1;
   }
 
-  list.splice(index, 0, message);
+  list.splice(index, 0, linked(list, message));
 };
 
 const findFile = (state: ChatState, key: string, id: string) => state.conversations[key]?.find(
@@ -74,16 +132,34 @@ const chatSlice = createSlice({
         payload: { key, message: { kind: MessageKind.Text as const, id: nanoid(), from, text } },
       }),
     },
-    // Their text, written `at` (already converted to our clock). `id` is theirs (see peerMessageId).
-    peerTextReceived: (state, { payload }: PayloadAction<Keyed<{ id: string; text: string; at: number }>>) => {
-      const { key, id, text, at } = payload;
+    // Their text, written `at` (already converted to our clock). `id` is theirs (see peerMessageId); `replyTo` is
+    // in our chat's terms (see parseReplyTo).
+    peerTextReceived: (
+      state,
+      { payload }: PayloadAction<Keyed<{ id: string; text: string; at: number; replyTo?: string }>>,
+    ) => {
+      const { key, id, text, at, replyTo } = payload;
 
-      insertByTime(state, key, { kind: MessageKind.Text, id, from: MessageAuthor.Peer, text, at });
+      insertByTime(state, key, {
+        kind: MessageKind.Text,
+        id,
+        from: MessageAuthor.Peer,
+        text,
+        at,
+        ...(replyTo === undefined ? {} : { replyTo }),
+      });
     },
-    messageQueued: (state, { payload }: PayloadAction<Keyed<{ id: string; text: string }>>) => {
-      const { key, id, text } = payload;
+    messageQueued: (state, { payload }: PayloadAction<Keyed<{ id: string; text: string; replyTo?: string }>>) => {
+      const { key, id, text, replyTo } = payload;
 
-      push(state, key, { kind: MessageKind.Text, id, from: MessageAuthor.Me, text, pending: true });
+      push(state, key, {
+        kind: MessageKind.Text,
+        id,
+        from: MessageAuthor.Me,
+        text,
+        pending: true,
+        ...(replyTo === undefined ? {} : { replyTo }),
+      });
     },
     // The open connection took these (texts and locations of ours): they are on their way.
     messagesSent: (state, { payload }: PayloadAction<Keyed<{ ids: string[] }>>) => {
@@ -257,7 +333,7 @@ const chatSlice = createSlice({
     },
     // Deleted on this device only. Theirs leaves a marker for a while (see DeletedMessage); ours goes completely,
     // except a live location whose stop isn't confirmed yet: it waits to be sent until `stopUntil` (when it would
-    // have ended anyway).
+    // have ended anyway). Its replies become normal messages, here only (see unlink).
     messageDeleted: (state, { payload }: PayloadAction<Keyed<{ id: string; stopUntil?: number }>>) => {
       const list = state.conversations[payload.key];
       const index = list?.findIndex(message => message.id === payload.id) ?? -1;
@@ -270,10 +346,15 @@ const chatSlice = createSlice({
 
       const { id, from, at } = message;
 
+      unlink(list, message);
+
       if (from === MessageAuthor.Peer) {
         list[index] = { kind: MessageKind.Deleted, id, from, at, until: markerEnd(message, now) };
       } else if (message.kind === MessageKind.Location && message.pending && payload.stopUntil) {
-        list[index] = { kind: MessageKind.Deleted, id, from, at, until: payload.stopUntil, stop: message };
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { replyTo, replies, ...stop } = message;
+
+        list[index] = { kind: MessageKind.Deleted, id, from, at, until: payload.stopUntil, stop };
       } else {
         list.splice(index, 1);
       }

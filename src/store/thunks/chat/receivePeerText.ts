@@ -1,13 +1,21 @@
 import { RESEND_MS } from '../../../core/webrtc/config.ts';
 import { sendControl } from '../../../core/webrtc/sendControl.ts';
 import { peerTextReceived } from '../../chat/chatSlice.ts';
+import { parseReplyTo } from '../../chat/parseReplyTo.ts';
 import { peerMessageId } from '../../chat/peerMessageId.ts';
 import type { AppThunk } from '../../store.ts';
 import { countUnread } from './countUnread.ts';
 import { ControlType } from '../../../core/webrtc/types.ts';
 
 // `waited`: how long it waited on their side before being sent. It is shown where it was written, among ours.
-export const receivePeerText = (key: string, text: string, id: unknown, waited: unknown): AppThunk => (
+// `replyTo`: the message it answers, in our terms (see parseReplyTo); if we don't have it, it comes as a normal one.
+export const receivePeerText = (
+  key: string,
+  text: string,
+  id: unknown,
+  waited: unknown,
+  replyTo: unknown,
+): AppThunk => (
   dispatch,
   getState,
 ) => {
@@ -29,6 +37,6 @@ export const receivePeerText = (key: string, text: string, id: unknown, waited: 
   // They stop sending it again after RESEND_MS: a longer wait is not believed, and it counts as written now.
   const delay = typeof waited === 'number' && waited > 0 && waited <= RESEND_MS ? waited : 0;
 
-  dispatch(peerTextReceived({ key, id: ours, text, at: Date.now() - delay }));
+  dispatch(peerTextReceived({ key, id: ours, text, at: Date.now() - delay, replyTo: parseReplyTo(replyTo) }));
   dispatch(countUnread(key));
 };

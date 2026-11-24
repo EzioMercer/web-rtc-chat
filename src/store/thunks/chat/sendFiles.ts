@@ -11,12 +11,14 @@ import { type MediaNote, NoteType, MessageAuthor, FileStatus } from '../../chat/
 import type { AppThunk } from '../../store.ts';
 import { connectContact } from '../contact/connectContact.ts';
 import { checkRoute } from '../session/checkRoute.ts';
+import { takeReply } from './takeReply.ts';
 import { uploadFile } from './uploadFile.ts';
 
 // Adds each file to the chat and sends it over its own data channel, in parallel (see uploadFile). `note` marks a
 // recorded voice or video message. Without a connection they wait and go when one opens, like texts (see
 // sendPending); the manual connection can't come back, so there they are not sent. Through the TURN relay only small
-// files go out (counted zipped); a direct connection takes any size.
+// files go out (counted zipped); a direct connection takes any size. The first one that goes answers the message
+// chosen for a reply, if any (see takeReply).
 export const sendFiles = (key: string, files: File[], note?: MediaNote): AppThunk<Promise<void>> => async (
   dispatch,
 ) => {
@@ -31,6 +33,8 @@ export const sendFiles = (key: string, files: File[], note?: MediaNote): AppThun
 
     return;
   }
+
+  let replyTo = dispatch(takeReply(key));
 
   // Right after connecting, the path may not be known yet.
   if (open && session.route === null) {
@@ -53,7 +57,9 @@ export const sendFiles = (key: string, files: File[], note?: MediaNote): AppThun
     }
 
     const id = nanoid();
+    const answers = replyTo;
 
+    replyTo = undefined;
     memoryFiles.set(memoryFileKey(key, id), file);
     dispatch(fileAdded({
       key,
@@ -67,6 +73,7 @@ export const sendFiles = (key: string, files: File[], note?: MediaNote): AppThun
         transferred: 0,
         status: FileStatus.Waiting,
         ...(note ? { note } : {}),
+        ...(answers === undefined ? {} : { replyTo: answers }),
       },
     }));
 

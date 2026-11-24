@@ -95,6 +95,8 @@ export type LocationSignal = {
   rev: number;
   // Like a text's: how long it waited on the sender's side before its first send.
   waited?: number;
+  // Like a text's (see ControlMessage).
+  replyTo?: string;
 };
 
 // Everything sent over the control channel, as JSON.
@@ -102,7 +104,8 @@ export type ControlMessage =
   // `id` is answered with "ack", so the sender knows it arrived.
   // `waited`: how long (ms) it waited on the sender's side before this send (it was written while offline), so
   // the receiver can put it in place without relying on the two devices' clocks agreeing.
-  | { t: ControlType.Text; text: string; id: string; waited?: number }
+  // `replyTo`: the message it answers, as the receiver knows it (see ReplyLinks, toTheirId).
+  | { t: ControlType.Text; text: string; id: string; waited?: number; replyTo?: string }
   // `rev`: which change of a live location arrived (see LocationSignal).
   | { t: ControlType.Ack; id: string; rev?: number }
   | { t: ControlType.Sdp; description: RTCSessionDescriptionInit }
@@ -126,6 +129,8 @@ export type FileMeta = {
   packed?: number;
   // How long it waited on their side since it was written (ms): sent again after the connection broke.
   waited?: number;
+  // The message it answers, as the receiver knows it (see ReplyLinks, toTheirId).
+  replyTo?: string;
 };
 
 // One direct connection, to a contact (key = contact id) or the manual one (key = MANUAL_KEY).

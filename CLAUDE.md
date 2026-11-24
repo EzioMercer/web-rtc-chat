@@ -15,7 +15,8 @@ src/
                 over another window gets only X), ConfirmDialog (a yes/no question: never the browser's
                 confirm/alert/prompt),
                 TextField, CodeField, CopyButton, SegmentedControl (radio or tabs), Checkbox,
-                MediaVideo (plays a MediaStream), QrCode, QrScanner, Logo, Avatar (a picture, letter or icon)
+                MediaVideo (plays a MediaStream), QrCode, QrScanner, Logo, Avatar (a picture, letter or icon),
+                MessageMeta (a message's time and DeliveryMark, in the bubble's corner)
   features/   Screens, one folder per feature, with the hooks and helpers only that feature uses.
                 app/        Messenger (main layout), Sidebar, EmptyPane, UpdateNotice, OtherTabScreen
                 setup/      SetupScreen, UnlockScreen, ProtectionPicker
@@ -64,7 +65,7 @@ src/
               profile, backup), thunks/<area>/ for everything with side effects, persistence.ts saves contacts, settings,
               chats, files and unread counts as they change.
   hooks/      Generic hooks (useElapsed, useFullScreen, useDragSort). Feature hooks live in their feature.
-  utils/      Generic helpers (cx, formatBytes, formatDuration, hasKeyboard, trackWindowHeight).
+  utils/      Generic helpers (cx, formatBytes, formatClock, formatDuration, hasKeyboard, trackWindowHeight).
 ```
 
 Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
@@ -105,6 +106,12 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
   a higher `rev` and the time left (`live`, ms, so clocks needn't agree); the ack carries the `rev`. Ours follows
   `watchPosition` (`startLiveLocation`) while the app is open; after a reload it ends (`fromStored`).
 - **Voice/video messages** are files with a `note` (type, duration, waveform) in their first message.
+- **Replies** (`ReplyLinks`): a reply has `replyTo` (the id it answers), the answered message has `replies`; only ids
+  travel (`replyTo` on a text, `LocationSignal` or `FileMeta`, in the receiver's ids: `toTheirId`), and each side
+  draws the quote from its own chat. The chat slice links them as a message joins (`linked`: if the original isn't
+  there, it joins as a normal message) and `unlink`s them when either is deleted. The reply being written is
+  `ui.replying`; whatever is sent next takes it (`takeReply`). `canReply`: not our files before they are sent, not
+  ours given up on.
 - **Sending and deleting** (`store/thunks/chat`): ours is `pending` until acked, `sent` while the open connection
   took it (cleared by `connectionLost`), `tried` once one did: ◷ / ↻ / ✓ / ✓✓ (`ui/DeliveryMark`); only ◷ offers
   "Don't send". `app.online` follows the browser: offline, `connectContact` doesn't try; back online and after
@@ -179,6 +186,9 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
   only changed files downloaded, and in Chromium a full reload and DevTools' "Disable cache".
 - `scripts/e2e-delete.mjs` (same dev server): Delete for me / Don't send / Send again, the delivery marks, resending
   for an hour and placing by time, file retries, markers, in Chromium with Chromium and with WebKit.
+- `scripts/e2e-reply.mjs` (same dev server): replies between Chromium and Chromium and WebKit (menu, button, links,
+  deleting either end, odd ids, resending, reload, backups), then the bubbles and the bar on an iPhone, an Android
+  phone (a real finger swipe) and three computers; pass a folder to get screenshots.
 - `scripts/check-turn.mjs`, `scripts/check-relays.mjs`.
 - Scripts import `playwright`. In the cloud container it is preinstalled outside the project: link it with
   `ln -sfn /opt/node-tools/node_modules/playwright node_modules/playwright` (never run `playwright install`).

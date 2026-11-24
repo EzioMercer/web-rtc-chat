@@ -1,4 +1,5 @@
 import { type MediaNote, NoteType } from '../../store/chat/types.ts';
+import { parseReplyTo } from '../../store/chat/parseReplyTo.ts';
 import type { FileMeta } from './types.ts';
 
 // A voice message longer than a day, or a waveform with more bars than we draw, is not from this app.
@@ -48,6 +49,7 @@ export const parseFileMeta = (data: unknown): FileMeta | null => {
 
     const note = parseNote(meta.note);
     const { id, name, size, mime, packed, waited } = meta as FileMeta;
+    const replyTo = parseReplyTo(meta.replyTo);
     const delay = typeof waited === 'number' && Number.isFinite(waited) && waited > 0 ? waited : 0;
 
     return {
@@ -58,6 +60,7 @@ export const parseFileMeta = (data: unknown): FileMeta | null => {
       ...(note ? { note } : {}),
       ...(packed ? { packed } : {}),
       ...(delay ? { waited: delay } : {}),
+      ...(replyTo === undefined ? {} : { replyTo }),
     };
   } catch {
     return null;

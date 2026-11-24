@@ -1,10 +1,16 @@
+import { canReply } from '../../../store/chat/canReply.ts';
 import { FileStatus, type Message, MessageAuthor, MessageKind } from '../../../store/chat/types.ts';
 import { MessageAction } from '../MessageMenu/MessageAction.ts';
 
 // The menu of one message. Ours that never left can only be held back ("Don't send"); once a connection took it (it
 // may have arrived), or for anything else, it is deleted on this device only. One given up on can be sent again.
+// Anything the other side has, or gets first, can be answered (see canReply).
 export const messageActions = (message: Message): MessageAction[] => {
-  const copy = message.kind === MessageKind.Text ? [MessageAction.Copy] : [];
+  // Reply and Copy text come first, where offered.
+  const first = [
+    ...(canReply(message) ? [MessageAction.Reply] : []),
+    ...(message.kind === MessageKind.Text ? [MessageAction.Copy] : []),
+  ];
   const mine = message.from === MessageAuthor.Me;
   const file = message.kind === MessageKind.File ? message : null;
   const once = message.kind === MessageKind.Text
@@ -19,12 +25,12 @@ export const messageActions = (message: Message): MessageAction[] => {
   }
 
   if (mine && once && message.pending && message.unsent) {
-    return [...copy, MessageAction.SendAgain, MessageAction.DeleteForMe];
+    return [...first, MessageAction.SendAgain, MessageAction.DeleteForMe];
   }
 
   if (mine && once && message.pending && !message.sent && !message.tried) {
-    return [...copy, MessageAction.DontSend];
+    return [...first, MessageAction.DontSend];
   }
 
-  return [...copy, MessageAction.DeleteForMe];
+  return [...first, MessageAction.DeleteForMe];
 };

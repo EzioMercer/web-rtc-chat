@@ -4,6 +4,7 @@ import { messagesExpired, messagesSent } from '../../chat/chatSlice.ts';
 import { FileStatus, MessageAuthor, MessageKind } from '../../chat/types.ts';
 import { ControlType } from '../../../core/webrtc/types.ts';
 import { locationSignal } from '../location/locationSignal.ts';
+import { replyField } from '../../chat/replyField.ts';
 import { uploadFile } from './uploadFile.ts';
 
 // The connection (re)opened: send every message, location and file the other side hasn't confirmed, in order, unless
@@ -18,7 +19,13 @@ export const sendPending = (key: string): AppThunk => (dispatch, getState) => {
     const waited = Date.now() - (message.at ?? Date.now());
 
     if (message.kind === MessageKind.Text && message.pending && !message.unsent
-      && sendControl(key, { t: ControlType.Text, text: message.text, id: message.id, waited })) {
+      && sendControl(key, {
+        t: ControlType.Text,
+        text: message.text,
+        id: message.id,
+        waited,
+        ...replyField(message),
+      })) {
       sent.push(message.id);
     }
 

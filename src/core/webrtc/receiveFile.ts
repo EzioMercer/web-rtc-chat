@@ -131,7 +131,7 @@ export const receiveFile = (key: string, channel: RTCDataChannel, dispatch: AppD
       return true;
     }
 
-    const { name, size, mime, note, packed, waited } = meta;
+    const { name, size, mime, note, packed, waited, replyTo } = meta;
 
     dispatch(fileAdded({
       key,
@@ -146,6 +146,7 @@ export const receiveFile = (key: string, channel: RTCDataChannel, dispatch: AppD
         status: FileStatus.Transferring,
         ...(note ? { note } : {}),
         ...(packed ? { packed } : {}),
+        ...(replyTo === undefined ? {} : { replyTo }),
         // They stop sending it again after RESEND_MS: a longer wait counts as sent now (see receivePeerText).
         ...(waited && waited <= RESEND_MS ? { at: Date.now() - waited } : {}),
       },

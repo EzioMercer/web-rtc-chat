@@ -22,13 +22,15 @@ Only open items. Everything done is described in the README.
 - [ ] Feedback: links that open a GitHub Issue (bugs) or Discussion (ideas), filled in; logs are attached by hand,
   the app sends nothing by itself.
 - [ ] GIFs: they already play when sent as files. Decide whether a GIF search is worth a third-party server.
-- [ ] Deleting a message on both sides (the other side could still keep a copy).
+- [ ] Deleting a message on both sides (the other side could still keep a copy). Its replies become normal
+  messages on both sides, as Delete for me does on one (see `unlink` in chatSlice); a hidden marker keeps a late copy
+  out.
 - [ ] Hiding profile info one piece at a time, from everyone or per contact; hiding asks their device to remove it
   (they could still keep a copy).
 - [ ] Selecting several messages, then: Delete for me, Delete for everyone (needs the item above), or Copy as plain
   text that shows who wrote each one, to whom and when, so it reads clearly when pasted into Notepad or similar.
 - [ ] Selecting several chats, then: Delete (not decided what it does), Block, Archive, Mark as read or Snooze.
-- [ ] Editing sent messages, with an "edited" mark.
+- [ ] Editing sent messages, with an "edited" mark. Quotes need nothing: they are drawn from the message as it is.
 - [ ] Pinning and unpinning a message, for me or for both of us.
 - [ ] Reactions.
 - [ ] Read receipts (a double check).
@@ -42,7 +44,9 @@ Only open items. Everything done is described in the README.
 - [ ] Sending photos and videos in a lower resolution (the original is not kept).
 - [ ] Link previews, if free: a server would fetch the page (and see the link). The sender makes the preview and sends
   it, so the receiver's browser never visits the site.
-- [ ] Loading long chats a page at a time as you scroll, instead of all at start.
+- [ ] Loading long chats a page at a time as you scroll, instead of all at start. Replies need a message found by
+  id without loading its page (linking a reply, unlinking on delete, a tap on a quote).
+- [ ] Threads: a message's replies on their own (each message already lists them, `replies`).
 - [ ] Video calls showing both cameras and shared screens at once (like Google Meet).
 - [ ] Sorting chats into categories or with tags (not decided which).
 - [ ] Temporary chats inside the other three protection modes: one chat that saves nothing.

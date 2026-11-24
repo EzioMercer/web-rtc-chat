@@ -24,7 +24,7 @@ export const handleControlMessage = (key: string, data: unknown, dispatch: AppDi
 
   switch (message.t) {
     case ControlType.Text:
-      dispatch(receivePeerText(key, String(message.text), message.id, message.waited));
+      dispatch(receivePeerText(key, String(message.text), message.id, message.waited, message.replyTo));
       break;
     case ControlType.Ack:
       if (typeof message.id === 'string') {

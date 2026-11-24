@@ -5,6 +5,7 @@ import { sendControl } from '../../../core/webrtc/sendControl.ts';
 import { ControlType, type LocationSignal } from '../../../core/webrtc/types.ts';
 import { locationChanged, peerLocationReceived } from '../../chat/chatSlice.ts';
 import { MessageAuthor, MessageKind } from '../../chat/types.ts';
+import { parseReplyTo } from '../../chat/parseReplyTo.ts';
 import { peerMessageId } from '../../chat/peerMessageId.ts';
 import type { AppThunk } from '../../store.ts';
 import { countUnread } from '../chat/countUnread.ts';
@@ -53,10 +54,20 @@ export const receiveLocation = (key: string, signal: Partial<LocationSignal>): A
 
   // Longest wait we believe, as for texts (see receivePeerText).
   const at = now - time(signal.waited, RESEND_MS);
+  const replyTo = parseReplyTo(signal.replyTo);
 
   dispatch(peerLocationReceived({
     key,
-    message: { kind: MessageKind.Location, id: ours, from: MessageAuthor.Peer, ...point, at, ...live, rev },
+    message: {
+      kind: MessageKind.Location,
+      id: ours,
+      from: MessageAuthor.Peer,
+      ...point,
+      at,
+      ...live,
+      rev,
+      ...(replyTo === undefined ? {} : { replyTo }),
+    },
   }));
   dispatch(countUnread(key));
 };

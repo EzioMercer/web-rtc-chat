@@ -245,6 +245,9 @@ const sendPendingIn = page => page.evaluate(async () => {
   appStore.dispatch(sendPending('manual'));
 });
 
+// The bubble of a text (it also shows the time, so its text is more than the message's).
+const textBubble = (page, text) => page.locator('[data-id]').filter({ hasText: new RegExp(`^${text}`) });
+
 // The mark next to one of our texts: its label.
 const markOf = (page, text) => page.getByText(text).locator('span[aria-label], span:text("Not sent")').first()
   .evaluate(el => el.getAttribute('aria-label') ?? el.textContent);
@@ -267,15 +270,16 @@ const run = async (typeB, nameB) => {
   const first = await find(b.page, m => m.text === 'first text');
 
   check(
-    (await menuItems(b.page, b.page.getByText('first text', { exact: true }))).join() === 'Copy text,Delete for me',
-    'their text\'s menu: Copy text, Delete for me',
+    (await menuItems(b.page, textBubble(b.page, 'first text'))).join()
+    === 'Reply,Copy text,Delete for me',
+    'their text\'s menu: Reply, Copy text, Delete for me',
   );
 
-  const question = await pick(b.page, b.page.getByText('first text', { exact: true }), 'right');
+  const question = await pick(b.page, textBubble(b.page, 'first text'), 'right');
 
   check(question?.includes('Delete for me?') && question.includes('It is deleted only on this device.')
     && !question.includes('still has'), 'Delete for me asks, in short');
-  check(await b.page.getByText('first text', { exact: true }).count() === 0, 'the text is gone from the screen');
+  check(await textBubble(b.page, 'first text').count() === 0, 'the text is gone from the screen');
 
   const stub = await find(b.page, m => m.id === first.id);
 
@@ -292,7 +296,7 @@ const run = async (typeB, nameB) => {
     sendControl('manual', { t: ControlType.Text, text: 'first text', id });
   }, first.id.slice(2));
   await pause(1000);
-  check(await b.page.getByText('first text', { exact: true }).count() === 0, 'a copy sent again doesn\'t come back');
+  check(await textBubble(b.page, 'first text').count() === 0, 'a copy sent again doesn\'t come back');
   check(Boolean(await find(a.page, m => m.text === 'first text')), 'A still has it');
   check(await markOf(a.page, 'second text') === 'Delivered', 'a confirmed text shows ✓✓');
 
@@ -311,8 +315,8 @@ const run = async (typeB, nameB) => {
   await dispatchIn(b.page, slice, 'messageQueued', { key: KEY, id: 'waiting1', text: 'never sent' });
   check(await markOf(b.page, 'never sent') === 'Not sent yet', 'a text not sent yet shows ◷');
   check(
-    (await menuItems(b.page, b.page.getByText('never sent'))).join() === 'Copy text,Don\'t send',
-    'its menu: Copy text, Don\'t send',
+    (await menuItems(b.page, b.page.getByText('never sent'))).join() === 'Reply,Copy text,Don\'t send',
+    'its menu: Reply, Copy text, Don\'t send',
   );
   check(
     await pick(b.page, b.page.getByText('never sent'), 'right', 'Don\'t send') === null,
@@ -328,8 +332,8 @@ const run = async (typeB, nameB) => {
   await dispatchIn(b.page, slice, 'messagesSent', { key: KEY, ids: ['onway1'] });
   check(await markOf(b.page, 'on its way') === 'Sent', 'a text the connection took shows ✓');
   check(
-    (await menuItems(b.page, b.page.getByText('on its way'))).join() === 'Copy text,Delete for me',
-    'its menu: Copy text, Delete for me',
+    (await menuItems(b.page, b.page.getByText('on its way'))).join() === 'Reply,Copy text,Delete for me',
+    'its menu: Reply, Copy text, Delete for me',
   );
   await dispatchIn(b.page, slice, 'connectionLost', KEY);
   check(
@@ -337,7 +341,7 @@ const run = async (typeB, nameB) => {
     'when the connection breaks it shows ↻ (it went out once)',
   );
   check(
-    (await menuItems(b.page, b.page.getByText('on its way'))).join() === 'Copy text,Delete for me',
+    (await menuItems(b.page, b.page.getByText('on its way'))).join() === 'Reply,Copy text,Delete for me',
     'so it can\'t be held back: Delete for me',
   );
 
@@ -600,13 +604,13 @@ const run = async (typeB, nameB) => {
   }
 
   await waitFor('fillers', 10, async () => Boolean(await find(b.page, m => m.text === 'filler 39')));
-  await b.page.getByText('second text', { exact: true }).scrollIntoViewIfNeeded();
+  await textBubble(b.page, 'second text').scrollIntoViewIfNeeded();
 
   const listTop = () => b.page.evaluate(() => document.querySelector('[class*="list"]')?.scrollTop ?? -1);
 
   const before = await listTop();
 
-  await pick(b.page, b.page.getByText('second text', { exact: true }), 'right');
+  await pick(b.page, textBubble(b.page, 'second text'), 'right');
   check(Math.abs(await listTop() - before) < 200, 'deleting an older message doesn\'t jump to the end');
 
   // After a reload: still deleted, nothing comes back, and pieces left by no message are removed.

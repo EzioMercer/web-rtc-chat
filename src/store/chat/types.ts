@@ -29,7 +29,16 @@ export enum FileStatus {
   Waiting = 3,
 }
 
-export type TextMessage = {
+// How messages answer each other, kept on both ends: a reply has the id of the message it answers, and that message
+// has the ids of its replies. Both are ids in this chat (see toTheirId for the other side's). When either one is
+// deleted, the other forgets it: a reply whose message is gone is a normal message again. The quote is never a copy:
+// it is drawn from the answered message as it is now.
+export type ReplyLinks = {
+  replyTo?: string;
+  replies?: string[];
+};
+
+export type TextMessage = ReplyLinks & {
   kind: MessageKind.Text;
   id: string;
   from: MessageAuthor;
@@ -54,7 +63,7 @@ export type MediaNote = {
   wave?: number[];
 };
 
-export type FileMessage = {
+export type FileMessage = ReplyLinks & {
   kind: MessageKind.File;
   id: string;
   from: MessageAuthor;
@@ -84,7 +93,7 @@ export type GeoPoint = {
 };
 
 // A place shared in the chat: once, or live (it moves with the sender until `liveUntil`).
-export type LocationMessage = GeoPoint & {
+export type LocationMessage = GeoPoint & ReplyLinks & {
   kind: MessageKind.Location;
   id: string;
   from: MessageAuthor;

@@ -6,10 +6,12 @@ import type { AppThunk } from '../../store.ts';
 import { connectContact } from '../contact/connectContact.ts';
 import { ManualStatus } from '../../manual/types.ts';
 import { ControlType } from '../../../core/webrtc/types.ts';
+import { replyField } from '../../chat/replyField.ts';
+import { takeReply } from './takeReply.ts';
 
 // Adds `text` to the conversation and sends it over the direct connection. It stays "pending" until the other
 // side confirms it; without a connection it goes out as soon as one opens (see sendPending). Returns whether it
-// was taken.
+// was taken. It answers the message chosen for a reply, if any (see takeReply).
 export const sendMessage = (key: string, text: string): AppThunk<boolean> => (dispatch, getState) => {
   const trimmed = text.trim();
   const id = nanoid();
@@ -19,9 +21,11 @@ export const sendMessage = (key: string, text: string): AppThunk<boolean> => (di
     return false;
   }
 
-  dispatch(messageQueued({ key, id, text: trimmed }));
+  const replyTo = dispatch(takeReply(key));
 
-  if (sendControl(key, { t: ControlType.Text, text: trimmed, id })) {
+  dispatch(messageQueued({ key, id, text: trimmed, replyTo }));
+
+  if (sendControl(key, { t: ControlType.Text, text: trimmed, id, ...replyField({ replyTo }) })) {
     dispatch(messagesSent({ key, ids: [id] }));
   } else if (key !== MANUAL_KEY) {
     void dispatch(connectContact(key));

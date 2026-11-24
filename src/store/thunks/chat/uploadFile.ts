@@ -8,6 +8,7 @@ import { sessions } from '../../../core/webrtc/state.ts';
 import { fileCompleted, fileFailed, fileProgress, fileRestarted, fileWaiting } from '../../chat/chatSlice.ts';
 import { type FileMessage, FileStatus, MessageAuthor, MessageKind } from '../../chat/types.ts';
 import type { AppThunk } from '../../store.ts';
+import { replyField } from '../../chat/replyField.ts';
 import { checkRoute } from '../session/checkRoute.ts';
 
 // Progress is reported to the store at most this often (as a fraction of the file).
@@ -108,6 +109,8 @@ export const uploadFile = (key: string, id: string, prepared?: Prepared): AppThu
       onProgress,
       shouldStop,
       waited: Math.max(0, Date.now() - (message.at ?? Date.now())),
+      // As it is now: the message it answers may have been deleted meanwhile.
+      ...replyField(find() ?? message),
     });
     dispatch(fileCompleted({ key, id, url: find()?.url ?? null }));
   } catch (err) {
