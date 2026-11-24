@@ -7,10 +7,14 @@ Only open items. Everything done is described in the README.
   than 1.5 hours and more than 50 back. Old waiting ones and markers are handled once, when the chat is loaded.
 - [ ] Going to a date in a chat's history.
 - [ ] Captions on files (text sent with the file).
+- [ ] Forwarding a message (text, file, voice or video message, location) to another contact, with a "forwarded"
+  mark.
 - [ ] Feedback: links that open a GitHub Issue (bugs) or Discussion (ideas), filled in; logs are attached by hand,
   the app sends nothing by itself.
 - [ ] GIFs: they already play when sent as files. Decide whether a GIF search is worth a third-party server.
 - [ ] Deleting a message on both sides (the other side could still keep a copy).
+- [ ] Selecting several messages, then: Delete for me, Delete for everyone (needs the item above), or Copy as plain
+  text that shows who wrote each one, to whom and when, so it reads clearly when pasted into Notepad or similar.
 - [ ] Editing sent messages, with an "edited" mark.
 - [ ] Read receipts (a double check).
 - [ ] Not telling a contact that we read their messages, one way only: they can still tell us.
