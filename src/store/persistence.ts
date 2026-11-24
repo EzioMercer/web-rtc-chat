@@ -18,12 +18,17 @@ import {
   locationAdded,
   locationChanged,
   messageDelivered,
+  messageDeleted,
+  messageMovedToEnd,
   messageQueued,
+  messagesExpired,
+  fileRestarted,
+  fileWaiting,
   peerLocationReceived,
   peerTextReceived,
   unreadAdded,
 } from './chat/chatSlice.ts';
-import type { ChatState } from './chat/types.ts';
+import { type ChatState, MessageAuthor, MessageKind } from './chat/types.ts';
 import {
   contactAdded,
   contactDeleted,
@@ -104,6 +109,10 @@ persistence.startListening({
     locationAdded,
     peerLocationReceived,
     locationChanged,
+    messageDeleted,
+    messageMovedToEnd,
+    fileRestarted,
+    fileWaiting,
   ),
   effect: (action, api) => {
     const { key } = (action as unknown as { payload: { key: string } }).payload;
@@ -114,15 +123,41 @@ persistence.startListening({
   },
 });
 
-// A file that arrived or went out completely is saved too.
+// Waiting too long or wiped markers can change any chat; unchanged ones aren't written (see historySaver).
+persistence.startListening({
+  actionCreator: messagesExpired,
+  effect: (_action, api) => {
+    (api.getState() as State).contacts.list.forEach(({ id }) => {
+      historySaver.schedule(id, () => (api.getState() as State).chat.conversations[id]);
+    });
+  },
+});
+
+// A file's content is saved on the device, unless it was deleted meanwhile (or isn't a contact's).
+const saveFile = (chat: string, id: string, from: MessageAuthor, state: State) => {
+  const blob = memoryFiles.get(memoryFileKey(chat, id));
+  const file = state.chat.conversations[chat]?.find(m => m.kind === MessageKind.File && m.id === id);
+
+  if (!blob || file?.from !== from || !state.contacts.list.some(contact => contact.id === chat)) {
+    return Promise.resolve();
+  }
+
+  return saveFileBytes(chat, id, blob).catch((err: unknown) => console.error('File not saved', err));
+};
+
+// Ours as soon as it is chosen, so it can be sent again after a reload.
+persistence.startListening({
+  actionCreator: fileAdded,
+  effect: async ({ payload }, api) => {
+    await saveFile(payload.key, payload.file.id, MessageAuthor.Me, api.getState() as State);
+  },
+});
+
+// Theirs once it arrived completely.
 persistence.startListening({
   actionCreator: fileCompleted,
   effect: async ({ payload }, api) => {
-    const blob = memoryFiles.get(memoryFileKey(payload.key, payload.id));
-
-    if (blob && (api.getState() as State).contacts.list.some(contact => contact.id === payload.key)) {
-      await saveFileBytes(payload.key, payload.id, blob).catch((err: unknown) => console.error('File not saved', err));
-    }
+    await saveFile(payload.key, payload.id, MessageAuthor.Peer, api.getState() as State);
   },
 });
 

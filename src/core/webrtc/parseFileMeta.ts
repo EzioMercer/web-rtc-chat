@@ -47,9 +47,18 @@ export const parseFileMeta = (data: unknown): FileMeta | null => {
     }
 
     const note = parseNote(meta.note);
-    const { id, name, size, mime, packed } = meta as FileMeta;
+    const { id, name, size, mime, packed, waited } = meta as FileMeta;
+    const delay = typeof waited === 'number' && Number.isFinite(waited) && waited > 0 ? waited : 0;
 
-    return { id, name, size, mime, ...(note ? { note } : {}), ...(packed ? { packed } : {}) };
+    return {
+      id,
+      name,
+      size,
+      mime,
+      ...(note ? { note } : {}),
+      ...(packed ? { packed } : {}),
+      ...(delay ? { waited: delay } : {}),
+    };
   } catch {
     return null;
   }

@@ -17,4 +17,6 @@ export const historyKeys = {
   filesOf: (slot: string) => `file:${slot}:`,
   // The slot a page or file key belongs to.
   slotOf: (key: string) => key.split(':')[1] ?? '',
+  // The file id a file piece's key belongs to.
+  fileOf: (key: string) => key.split(':')[2] ?? '',
 };

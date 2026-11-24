@@ -124,6 +124,8 @@ export type FileMeta = {
   note?: MediaNote;
   // Sent zipped: this many bytes come, which unzip into `size` (see packFile).
   packed?: number;
+  // How long it waited on their side since it was written (ms): sent again after the connection broke.
+  waited?: number;
 };
 
 // One direct connection, to a contact (key = contact id) or the manual one (key = MANUAL_KEY).

@@ -1,4 +1,5 @@
 import { LIVE_MAX_MS } from '../../../core/location/config.ts';
+import { RESEND_MS } from '../../../core/webrtc/config.ts';
 import { validPoint } from '../../../core/location/validPoint.ts';
 import { sendControl } from '../../../core/webrtc/sendControl.ts';
 import { ControlType, type LocationSignal } from '../../../core/webrtc/types.ts';
@@ -7,9 +8,6 @@ import { MessageAuthor, MessageKind } from '../../chat/types.ts';
 import { peerMessageId } from '../../chat/peerMessageId.ts';
 import type { AppThunk } from '../../store.ts';
 import { countUnread } from '../chat/countUnread.ts';
-
-// Longest wait we believe, as for texts (see receivePeerText).
-const MAX_WAITED_MS = 7 * 24 * 3600 * 1000;
 
 const time = (value: unknown, max: number) => (
   typeof value === 'number' && Number.isFinite(value) && value > 0 ? Math.min(value, max) : 0
@@ -47,7 +45,14 @@ export const receiveLocation = (key: string, signal: Partial<LocationSignal>): A
     return;
   }
 
-  const at = now - time(signal.waited, MAX_WAITED_MS);
+  // A live location that already ended when we first hear of it (its stop, after we never got the start) isn't
+  // worth showing.
+  if (live && live.liveUntil <= now) {
+    return;
+  }
+
+  // Longest wait we believe, as for texts (see receivePeerText).
+  const at = now - time(signal.waited, RESEND_MS);
 
   dispatch(peerLocationReceived({
     key,

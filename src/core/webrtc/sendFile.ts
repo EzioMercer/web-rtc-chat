@@ -11,6 +11,8 @@ type Options = {
   onProgress: (sent: number) => void;
   // Checked before every chunk: a reason to stop sending (in words for the user), or null to go on.
   shouldStop: () => string | null;
+  // How long it waited on our side since it was written (ms), so they place it among the messages by time.
+  waited?: number;
 };
 
 // Streams `file` (or its zipped form) over its own data channel. Resolves once the peer confirms it received
@@ -19,7 +21,7 @@ export const sendFile = (
   peer: RTCPeerConnection,
   id: string,
   file: File,
-  { note, zipped, onProgress, shouldStop }: Options,
+  { note, zipped, onProgress, shouldStop, waited }: Options,
 ): Promise<void> => new Promise((resolve, reject) => {
   const channel = peer.createDataChannel(FILE_LABEL, { ordered: true });
 
@@ -33,6 +35,7 @@ export const sendFile = (
     mime: file.type,
     ...(note ? { note } : {}),
     ...(zipped ? { packed: zipped.size } : {}),
+    ...(waited ? { waited } : {}),
   };
   let confirmed = false;
   let stopped: string | null = null;

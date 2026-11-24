@@ -61,6 +61,7 @@ export const FileBubble = ({ chat, file: message }: Props) => {
           <span className={styles.name} title={name}>{name}</span>
           <span className={styles.meta}>
             {status === FileStatus.Transferring && `${verb}… ${percent}% · `}
+            {status === FileStatus.Waiting && (file.tried ? '↻ Will be sent again · ' : '◷ Waiting to send · ')}
             {status === FileStatus.Failed && (
               <span className={styles.failed}>
                 {error ?? 'Failed'}
@@ -70,7 +71,7 @@ export const FileBubble = ({ chat, file: message }: Props) => {
               </span>
             )}
             {formatBytes(size)}
-            {packed !== undefined && ` · sent zipped, ${formatBytes(packed)}`}
+            {packed !== undefined && status !== FileStatus.Waiting && ` · sent zipped, ${formatBytes(packed)}`}
           </span>
         </div>
         {status === FileStatus.Done && url && (

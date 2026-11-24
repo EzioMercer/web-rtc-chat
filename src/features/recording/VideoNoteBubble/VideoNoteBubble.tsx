@@ -105,6 +105,10 @@ export const VideoNoteBubble = ({ file }: Props) => {
       return <span className={styles.failed}>{error ?? 'Failed'}</span>;
     }
 
+    if (status === FileStatus.Waiting) {
+      return file.tried ? '↻ Will be sent again' : '◷ Waiting to send';
+    }
+
     return formatDuration((active ? position : duration) * 1000);
   };
 

@@ -23,12 +23,6 @@
 
 .tick {
   margin-left: 8px;
-  font-size: 11px;
-  opacity: 0.8;
-}
-
-.pending {
-  opacity: 0.6;
 }
 
 .peer {
@@ -57,4 +51,11 @@
 /* A map fills the bubble almost to its edge. */
 .card {
   padding: 4px;
+}
+
+/* Files and locations open their menu with a long press: the phone must not select or offer to save instead. */
+.holdable {
+  position: relative;
+  -webkit-touch-callout: none;
+  user-select: none;
 }

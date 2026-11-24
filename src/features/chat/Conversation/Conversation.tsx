@@ -1,4 +1,5 @@
 import { useState, type DragEvent, type ReactNode } from 'react';
+import { MANUAL_KEY } from '../../../core/webrtc/config.ts';
 import { sendFiles } from '../../../store/thunks/chat/sendFiles.ts';
 import { useAppDispatch } from '../../../store/useAppDispatch.ts';
 import { useAppSelector } from '../../../store/useAppSelector.ts';
@@ -25,7 +26,8 @@ export const Conversation = ({ convKey, connected, header, children }: Props) =>
   const [dragging, setDragging] = useState(false);
 
   const dragOver = (e: DragEvent) => {
-    if (connected && hasFiles(e)) {
+    // A contact's files wait while offline (see sendFiles); the manual connection can't come back.
+    if ((connected || convKey !== MANUAL_KEY) && hasFiles(e)) {
       e.preventDefault();
       setDragging(true);
     }

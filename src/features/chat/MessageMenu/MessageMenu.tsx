@@ -1,16 +1,28 @@
 import { useEffect, useRef } from 'react';
 import { cx } from '../../../utils/cx.ts';
+import { MessageAction } from './MessageAction.ts';
 import styles from './MessageMenu.module.css';
 
 type Props = {
-  text: string;
+  // What it offers, in order; Copy copies `text`.
+  actions: MessageAction[];
+  text: string | null;
   // Opens on the right for our messages, on the left for theirs.
   mine: boolean;
   onClose: () => void;
+  // Any action but Copy, which the menu does itself.
+  onAction: (action: MessageAction) => void;
 };
 
-// Actions for one message, opened by tapping it.
-export const MessageMenu = ({ text, mine, onClose }: Props) => {
+const LABELS: Record<MessageAction, string> = {
+  [MessageAction.Copy]: 'Copy text',
+  [MessageAction.DontSend]: 'Don\'t send',
+  [MessageAction.SendAgain]: 'Send again',
+  [MessageAction.DeleteForMe]: 'Delete for me',
+};
+
+// Actions for one message, opened by tapping it (holding it, for files and locations).
+export const MessageMenu = ({ actions, text, mine, onClose, onAction }: Props) => {
   const ref = useRef<HTMLDivElement>(null);
 
   // Keep it in view when the message is at the bottom of the list.
@@ -41,9 +53,14 @@ export const MessageMenu = ({ text, mine, onClose }: Props) => {
     };
   }, [onClose]);
 
-  const copy = async () => {
+  const choose = async (action: MessageAction) => {
     onClose();
-    await navigator.clipboard.writeText(text).catch(() => undefined);
+
+    if (action === MessageAction.Copy) {
+      await navigator.clipboard.writeText(text ?? '').catch(() => undefined);
+    } else {
+      onAction(action);
+    }
   };
 
   return (
@@ -53,9 +70,18 @@ export const MessageMenu = ({ text, mine, onClose }: Props) => {
       role="menu"
       onClick={e => e.stopPropagation()}
     >
-      <button className={styles.item} type="button" role="menuitem" autoFocus onClick={() => void copy()}>
-        Copy text
-      </button>
+      {actions.map((action, index) => (
+        <button
+          key={action}
+          className={cx(styles.item, action === MessageAction.DeleteForMe && styles.danger)}
+          type="button"
+          role="menuitem"
+          autoFocus={index === 0}
+          onClick={() => void choose(action)}
+        >
+          {LABELS[action]}
+        </button>
+      ))}
     </div>
   );
 };

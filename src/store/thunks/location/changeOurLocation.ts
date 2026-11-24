@@ -1,5 +1,5 @@
 import { sendControl } from '../../../core/webrtc/sendControl.ts';
-import { locationChanged } from '../../chat/chatSlice.ts';
+import { locationChanged, messagesSent } from '../../chat/chatSlice.ts';
 import type { GeoPoint } from '../../chat/types.ts';
 import type { AppThunk } from '../../store.ts';
 import { findOurLocation } from './findOurLocation.ts';
@@ -24,7 +24,7 @@ export const changeOurLocation = (
 
   const after = dispatch(findOurLocation(key, id));
 
-  if (after) {
-    sendControl(key, locationSignal(after));
+  if (after && sendControl(key, locationSignal(after))) {
+    dispatch(messagesSent({ key, ids: [id] }));
   }
 };

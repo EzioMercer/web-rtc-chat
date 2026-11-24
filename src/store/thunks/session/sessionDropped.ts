@@ -2,7 +2,7 @@ import { MANUAL_KEY } from '../../../core/webrtc/config.ts';
 import { closeSession } from '../../../core/webrtc/closeSession.ts';
 import { sessions } from '../../../core/webrtc/state.ts';
 import type { Session } from '../../../core/webrtc/types.ts';
-import { addMessage } from '../../chat/chatSlice.ts';
+import { addMessage, connectionLost } from '../../chat/chatSlice.ts';
 import { connectionFailed, disconnected } from '../../manual/manualSlice.ts';
 import { failureDetail } from '../../../core/webrtc/failureDetail.ts';
 import { sessionDetail, sessionLogged, sessionStatusChanged } from '../../sessions/sessionsSlice.ts';
@@ -30,6 +30,7 @@ export const sessionDropped = (session: Session): AppThunk => (dispatch, getStat
   const detail = session.opened ? 'The direct connection closed.' : failureDetail(session);
 
   closeSession(session);
+  dispatch(connectionLost(key));
 
   if (getState().call.key === key) {
     dispatch(endCall('Call ended.'));

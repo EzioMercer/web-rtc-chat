@@ -1,4 +1,4 @@
-import type { Message } from '../../store/chat/types.ts';
+import { type Message, MessageKind } from '../../store/chat/types.ts';
 import { kv } from '../storage/kv.ts';
 import { fromStored } from './fromStored.ts';
 import { historyKeys } from './historyKeys.ts';
@@ -11,15 +11,27 @@ type History = {
   unread: Record<string, number>;
 };
 
-// Deletes what belongs to no chat: left over when the tab closed while a chat was deleted or replaced.
-const removeLeftovers = async () => {
+// Deletes what belongs to no chat (left over when the tab closed while a chat was deleted or replaced), and the
+// pieces of files that belong to no message (a message deleted, or a file not yet in a saved page, when it closed).
+const removeLeftovers = async (conversations: Record<string, Message[]>) => {
   const known = new Set(slots.map.values());
-  const keys = [...await kv.keys(historyKeys.pages), ...await kv.keys(historyKeys.files)];
-  const orphans = new Set(keys.map(historyKeys.slotOf).filter(slot => !known.has(slot)));
+  const pageKeys = await kv.keys(historyKeys.pages);
+  const fileKeys = await kv.keys(historyKeys.files);
+  const orphans = new Set([...pageKeys, ...fileKeys].map(historyKeys.slotOf).filter(slot => !known.has(slot)));
 
   for (const slot of orphans) {
     await kv.deletePrefix(historyKeys.pagesOf(slot));
     await kv.deletePrefix(historyKeys.filesOf(slot));
+  }
+
+  for (const [chat, slot] of slots.map) {
+    const files = new Set((conversations[chat] ?? []).filter(m => m.kind === MessageKind.File).map(m => m.id));
+    const gone = new Set(fileKeys.filter(key => historyKeys.slotOf(key) === slot).map(historyKeys.fileOf)
+      .filter(id => !files.has(id)));
+
+    for (const id of gone) {
+      await kv.deletePrefix(historyKeys.chunksOf(slot, id));
+    }
   }
 };
 
@@ -59,7 +71,7 @@ export const loadHistory = async (contacts: string[]): Promise<History> => {
     ? await openJsonRecord<Record<string, number>>(historyKeys.unread, sealedUnread).catch(() => null) ?? {}
     : {};
 
-  await removeLeftovers();
+  await removeLeftovers(conversations);
 
   return {
     conversations,

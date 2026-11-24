@@ -133,11 +133,6 @@
   color: var(--warn);
 }
 
-.tick {
-  font-size: 11px;
-  opacity: 0.8;
-}
-
 /* Our one-time place has no line under the map, so its tick sits on the map's corner. */
 .onMap {
   position: absolute;
@@ -148,10 +143,6 @@
   background: rgb(10 14 30 / 0.7);
   color: #ffffff;
   line-height: 18px;
-}
-
-.pending {
-  opacity: 0.6;
 }
 
 .stop {

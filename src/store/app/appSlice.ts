@@ -9,6 +9,7 @@ const initialState: AppState = {
   busy: false,
   error: null,
   paused: false,
+  online: navigator.onLine,
 };
 
 const appSlice = createSlice({
@@ -47,6 +48,9 @@ const appSlice = createSlice({
     pausedChanged: (state, { payload }: PayloadAction<boolean>) => {
       state.paused = payload;
     },
+    onlineChanged: (state, { payload }: PayloadAction<boolean>) => {
+      state.online = payload;
+    },
   },
 });
 
@@ -59,6 +63,7 @@ export const {
   failed,
   errorCleared,
   pausedChanged,
+  onlineChanged,
 } = appSlice.actions;
 
 export const appReducer = appSlice.reducer;

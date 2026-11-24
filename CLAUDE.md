@@ -105,6 +105,15 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
   a higher `rev` and the time left (`live`, ms, so clocks needn't agree); the ack carries the `rev`. Ours follows
   `watchPosition` (`startLiveLocation`) while the app is open; after a reload it ends (`fromStored`).
 - **Voice/video messages** are files with a `note` (type, duration, waveform) in their first message.
+- **Sending and deleting** (`store/thunks/chat`): ours is `pending` until acked, `sent` while the open connection
+  took it (cleared by `connectionLost`), `tried` once one did: ◷ / ↻ / ✓ / ✓✓ (`ui/DeliveryMark`); only ◷ offers
+  "Don't send". `app.online` follows the browser: offline, `connectContact` doesn't try; back online and after
+  unlock, `connectWaiting` connects every contact with something waiting. `sendPending` resends texts, one-time
+  locations and `FileStatus.Waiting` files (`uploadFile`, from the start, bytes saved when chosen) for `RESEND_MS`
+  (1 hour, `waited` places them by time); then `messagesExpired` marks them not sent (Send again: `sendAgain`, to the
+  end). `deleteMessage` is "Delete for me" / "Don't send": theirs leaves a `MessageKind.Deleted` marker until
+  their retries are over (`until`), so copies are dropped (a file copy is just confirmed); our live location keeps
+  its unconfirmed stop in one.
 - **Echo guard:** the side that hears its own voice back (`useEchoDetector`) sends `echo`; the other side is asked
   (`EchoPrompt`) and its `useEchoGuard` turns the microphone off while they talk. Both only read
   `getStats()` levels: no Web Audio during calls (it breaks phones' echo filters).
@@ -168,6 +177,8 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
 - `scripts/e2e-offline.mjs` (builds two versions itself, serves them like GitHub Pages and logs every request):
   the worker's copy in Chromium, Firefox and WebKit: first visit, reload, offline, a new version in one reload with
   only changed files downloaded, and in Chromium a full reload and DevTools' "Disable cache".
+- `scripts/e2e-delete.mjs` (same dev server): Delete for me / Don't send / Send again, the delivery marks, resending
+  for an hour and placing by time, file retries, markers, in Chromium with Chromium and with WebKit.
 - `scripts/check-turn.mjs`, `scripts/check-relays.mjs`.
 - Scripts import `playwright`. In the cloud container it is preinstalled outside the project: link it with
   `ln -sfn /opt/node-tools/node_modules/playwright node_modules/playwright` (never run `playwright install`).

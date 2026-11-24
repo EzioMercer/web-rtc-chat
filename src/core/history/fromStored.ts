@@ -10,7 +10,18 @@ export const fromStored = (message: StoredMessage): Message => {
   // when the connection opens (see sendPending).
   if (message.kind === MessageKind.Location && message.from === MessageAuthor.Me
     && message.liveUntil !== undefined && message.liveUntil > Date.now()) {
-    return { ...message, liveUntil: Date.now(), rev: (message.rev ?? 0) + 1, pending: true };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { sent, ...rest } = message;
+
+    return { ...rest, liveUntil: Date.now(), rev: (message.rev ?? 0) + 1, pending: true };
+  }
+
+  // What the connection took then is waiting again: that connection is gone.
+  if (message.kind === MessageKind.Text || message.kind === MessageKind.Location) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { sent, ...rest } = message;
+
+    return rest;
   }
 
   if (message.kind !== MessageKind.File) {
@@ -18,11 +29,15 @@ export const fromStored = (message: StoredMessage): Message => {
   }
 
   const done = message.status === FileStatus.Done;
+  // Ours goes again from the start when the connection opens; theirs comes again if they send it again.
+  const broken = message.from === MessageAuthor.Me
+    ? { status: FileStatus.Waiting, tried: true }
+    : { status: FileStatus.Failed, error: INTERRUPTED };
 
   return {
     ...message,
     url: null,
     transferred: done ? message.size : 0,
-    ...(message.status === FileStatus.Transferring ? { status: FileStatus.Failed, error: INTERRUPTED } : {}),
+    ...(message.status === FileStatus.Transferring ? broken : {}),
   };
 };

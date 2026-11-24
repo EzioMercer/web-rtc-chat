@@ -1,7 +1,7 @@
 import { nanoid } from '@reduxjs/toolkit';
 import { MANUAL_KEY } from '../../../core/webrtc/config.ts';
 import { sendControl } from '../../../core/webrtc/sendControl.ts';
-import { messageQueued } from '../../chat/chatSlice.ts';
+import { messageQueued, messagesSent } from '../../chat/chatSlice.ts';
 import type { AppThunk } from '../../store.ts';
 import { connectContact } from '../contact/connectContact.ts';
 import { ManualStatus } from '../../manual/types.ts';
@@ -21,7 +21,9 @@ export const sendMessage = (key: string, text: string): AppThunk<boolean> => (di
 
   dispatch(messageQueued({ key, id, text: trimmed }));
 
-  if (!sendControl(key, { t: ControlType.Text, text: trimmed, id }) && key !== MANUAL_KEY) {
+  if (sendControl(key, { t: ControlType.Text, text: trimmed, id })) {
+    dispatch(messagesSent({ key, ids: [id] }));
+  } else if (key !== MANUAL_KEY) {
     void dispatch(connectContact(key));
   }
 

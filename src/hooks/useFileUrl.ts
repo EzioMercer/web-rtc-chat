@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { loadFileBlob } from '../core/history/loadFileBlob.ts';
-import { type FileMessage, FileStatus } from '../store/chat/types.ts';
+import { type FileMessage, FileStatus, MessageAuthor } from '../store/chat/types.ts';
 
 // Start opening a saved file this far before it scrolls into view.
 const AHEAD = '600px';
@@ -11,7 +11,8 @@ const AHEAD = '600px';
 export const useFileUrl = (chat: string, file: FileMessage) => {
   const ref = useRef<HTMLDivElement>(null);
   const [opened, setOpened] = useState<{ url: string | null; error: string | null }>({ url: null, error: null });
-  const saved = !file.url && file.status === FileStatus.Done;
+  // Ours is saved as soon as it is chosen (see persistence), so one still to be sent shows too.
+  const saved = !file.url && (file.status === FileStatus.Done || file.from === MessageAuthor.Me);
   const { id, size, mime } = file;
 
   useEffect(() => {

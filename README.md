@@ -15,6 +15,9 @@ Live: https://eziomercer.github.io/web-rtc-chat/
 - 🎙️ **Voice and round video messages**: hold to record, let go to send
 - 📎 **Files of any size**: photos, videos, documents
 - 📍 **Share your location**, once or live
+- 📬 **Delivery marks**: ◷ waiting, ↻ sent again, ✓ sent, ✓✓ delivered; what waits goes by itself when you're
+  both online
+- 🗑️ **Delete for me**: a message, file or location goes from your device only
 - 🖼️ **Profile**: picture, phone number and description, seen only by your contacts
 - 🔒 **End-to-end encrypted**: no server ever sees your messages
 - 👤 **No account**: no phone number needed, no email, no sign-up
@@ -71,6 +74,13 @@ Live: https://eziomercer.github.io/web-rtc-chat/
 6. **Chats stay on your device.** Messages and files are saved in the browser (IndexedDB), encrypted, and come back
    after a reload. With a temporary identity they live only in the tab's memory, and so does the manual connection's
    chat. The app runs in one tab at a time: a second tab waits until the first is closed.
+   - **Sending while they're offline:** a message, location, file or recording waits (◷) and goes by itself when
+     you are both online (✓ sent, ✓✓ they got it). If the connection breaks before ✓✓, it shows ↻ and goes again;
+     a file starts over. When the device is back online, the app connects to everyone it has something waiting
+     for. After an hour without ✓✓ it shows "Not sent", with **Send again**, which puts it at the end of the chat.
+   - **Delete for me** removes a message from your device only: the other person keeps theirs. One that never left
+     your device (◷) can be held back with **Don't send**. Deleting your live location stops sharing it. Their deleted message
+     leaves only its id, hidden, for about an hour, so a copy they send again doesn't bring it back.
 
 Some networks block direct connections. Then the browsers send their (still end-to-end encrypted) traffic through
 a **TURN relay** on Cloudflare instead. It can't read anything and stores nothing. The status then says "through TURN

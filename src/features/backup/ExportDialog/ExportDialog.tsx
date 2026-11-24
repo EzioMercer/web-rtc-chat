@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { measureBackup } from '../../../core/backup/measureBackup.ts';
 import { ProtectionMode } from '../../../core/identity/types.ts';
+import { MessageKind } from '../../../store/chat/types.ts';
 import { MANUAL_KEY } from '../../../core/webrtc/config.ts';
 import { exportBackup } from '../../../store/thunks/backup/exportBackup.ts';
 import { useAppDispatch } from '../../../store/useAppDispatch.ts';
@@ -101,7 +102,9 @@ export const ExportDialog = ({ onClose, onBack }: Props) => {
       return '—';
     }
 
-    return conversations[id]?.length ? formatBytes(sizeOf(id, choice.media)) : 'no messages';
+    const shown = conversations[id]?.some(message => message.kind !== MessageKind.Deleted);
+
+    return shown ? formatBytes(sizeOf(id, choice.media)) : 'no messages';
   };
 
   // Changing the main choice applies it to every chat again.

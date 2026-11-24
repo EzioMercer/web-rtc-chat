@@ -30,7 +30,8 @@ export const Composer = ({ convKey, connected }: Props) => {
   const inCall = useAppSelector(state => state.call.status !== CallStatus.Idle);
   const recording = useRecording(convKey);
   const { phase, recorder } = recording;
-  // A contact's messages wait while offline and go out when the connection opens; files need the connection.
+  // A contact's messages, files and recordings wait while offline and go out when the connection opens (see
+  // sendPending); the manual connection can't come back, so there nothing waits.
   const canType = connected || convKey !== MANUAL_KEY;
   const offlineText = canType ? 'Offline: sent when they\'re online' : 'Not connected';
   // Like chat apps: the Send button while there's text, the record button otherwise.
@@ -66,12 +67,7 @@ export const Composer = ({ convKey, connected }: Props) => {
         <AttachMenu
           disabled={!canType}
           items={[
-            {
-              icon: 'file',
-              label: connected ? 'Photo or file' : 'Photo or file (needs the connection)',
-              disabled: !connected,
-              onPick: () => fileInputRef.current?.click(),
-            },
+            { icon: 'file', label: 'Photo or file', onPick: () => fileInputRef.current?.click() },
             { icon: 'pin', label: 'Location', onPick: () => setLocating('once') },
             { icon: 'live', label: 'Live location', onPick: () => setLocating('live') },
           ]}
@@ -110,7 +106,7 @@ export const Composer = ({ convKey, connected }: Props) => {
               recorder={recorder}
               slide={recording.slide}
               hint={recording.hint}
-              disabled={phase === RecordPhase.Idle && (!connected || inCall)}
+              disabled={phase === RecordPhase.Idle && (!canType || inCall)}
               handlers={recording.buttonProps}
             />
           )}

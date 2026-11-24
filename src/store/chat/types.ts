@@ -10,6 +10,8 @@ export enum MessageKind {
   Text = 0,
   File = 1,
   Location = 2,
+  // Their message that we deleted (see DeletedMessage).
+  Deleted = 3,
 }
 
 // Saved or sent as numbers: never change a value; add new ones at the end.
@@ -23,6 +25,8 @@ export enum FileStatus {
   Transferring = 0,
   Done = 1,
   Failed = 2,
+  // Ours: not sent yet, it goes when the connection opens (see RESEND_MS).
+  Waiting = 3,
 }
 
 export type TextMessage = {
@@ -34,6 +38,12 @@ export type TextMessage = {
   at?: number;
   // Our messages: waiting for the other side to confirm it arrived (sent again when the connection reopens).
   pending?: boolean;
+  // Ours, pending: the open connection took it (it may be on its way). Cleared when the connection closes.
+  sent?: boolean;
+  // Ours: a connection took it at least once, so it may have arrived (it can't be held back with "Don't send").
+  tried?: boolean;
+  // Ours: not confirmed within RESEND_MS, so it is no longer sent by itself (Send again sends it).
+  unsent?: boolean;
 };
 
 // A voice or video message recorded in the app. `duration` is in ms (recorded WebM files don't say how long they are);
@@ -62,6 +72,8 @@ export type FileMessage = {
   // Sent zipped: this many bytes travel (and count toward the TURN limit) instead of `size`.
   packed?: number;
   at?: number;
+  // Ours: a transfer of it broke, so it may have arrived (as for texts, see TextMessage).
+  tried?: boolean;
 };
 
 // A place on Earth, in degrees; `accuracy` is in metres (how far off it may be).
@@ -87,9 +99,26 @@ export type LocationMessage = GeoPoint & {
   rev?: number;
   // Ours: waiting for the other side to confirm its latest change (sent again when the connection reopens).
   pending?: boolean;
+  // As for texts (see TextMessage).
+  sent?: boolean;
+  tried?: boolean;
+  unsent?: boolean;
 };
 
-export type Message = TextMessage | FileMessage | LocationMessage;
+// A message we deleted on our side, never shown. Theirs leaves only its id and time until `until` (on our clock), so
+// a copy they send again (when our confirmation was lost) or a live location's next move is known and dropped. Ours
+// leaves one only for a live location whose stop they haven't confirmed yet (`stop`, sent when the connection
+// opens); other messages of ours are simply removed.
+export type DeletedMessage = {
+  kind: MessageKind.Deleted;
+  id: string;
+  from: MessageAuthor;
+  at?: number;
+  until: number;
+  stop?: LocationMessage;
+};
+
+export type Message = TextMessage | FileMessage | LocationMessage | DeletedMessage;
 
 // Saved on the device, encrypted (see core/history), except for temporary identities and the manual connection.
 export type ChatState = {

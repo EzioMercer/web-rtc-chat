@@ -1,7 +1,7 @@
 import { nanoid } from '@reduxjs/toolkit';
 import { MANUAL_KEY } from '../../../core/webrtc/config.ts';
 import { sendControl } from '../../../core/webrtc/sendControl.ts';
-import { locationAdded } from '../../chat/chatSlice.ts';
+import { locationAdded, messagesSent } from '../../chat/chatSlice.ts';
 import { type GeoPoint, type LocationMessage, MessageAuthor, MessageKind } from '../../chat/types.ts';
 import { ManualStatus } from '../../manual/types.ts';
 import type { AppThunk } from '../../store.ts';
@@ -31,7 +31,9 @@ export const sendLocation = (key: string, point: GeoPoint, liveFor?: number): Ap
 
   dispatch(locationAdded({ key, message }));
 
-  if (!sendControl(key, locationSignal(message)) && key !== MANUAL_KEY) {
+  if (sendControl(key, locationSignal(message))) {
+    dispatch(messagesSent({ key, ids: [message.id] }));
+  } else if (key !== MANUAL_KEY) {
     void dispatch(connectContact(key));
   }
 

@@ -9,6 +9,7 @@ import { useAppDispatch } from '../../../store/useAppDispatch.ts';
 import { useAppSelector } from '../../../store/useAppSelector.ts';
 import { isAndroid } from '../../../utils/isAndroid.ts';
 import { isAppleDevice } from '../../../utils/isAppleDevice.ts';
+import { DeliveryMark } from '../../../ui/DeliveryMark/DeliveryMark.tsx';
 import { cx } from '../../../utils/cx.ts';
 import { formatAgo } from '../formatAgo.ts';
 import { formatClock } from '../formatClock.ts';
@@ -62,13 +63,12 @@ export const LocationBubble = ({ chat, location }: Props) => {
   };
 
   const tick = mine && (
-    <span
-      className={cx(styles.tick, location.pending && styles.pending)}
-      title={location.pending ? 'Not delivered yet' : 'Delivered'}
-      aria-label={location.pending ? 'Not delivered yet' : 'Delivered'}
-    >
-      {location.pending ? '◷' : '✓'}
-    </span>
+    <DeliveryMark
+      pending={location.pending}
+      sent={location.sent}
+      tried={location.tried}
+      unsent={location.unsent}
+    />
   );
 
   return (

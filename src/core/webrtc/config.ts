@@ -92,3 +92,14 @@ export const RESCUE_TIMEOUT_MS = 15_000;
 
 // Wait this long before each automatic reconnect attempt after a connection dropped.
 export const RECONNECT_DELAYS_MS = [2000, 5000, 15_000];
+
+// Our messages (texts, one-time locations, files) not confirmed yet are sent again whenever the connection opens, for
+// this long after they were written; then they show as "Not sent", with Send again. Theirs saying they waited
+// longer are placed as written now.
+export const RESEND_MS = 60 * 60_000;
+
+// A deleted message of theirs leaves a marker (DeletedMessage) this much longer than their last try can come.
+export const MARKER_MARGIN_MS = 10 * 60_000;
+
+// How often we look for messages that waited too long and markers no longer needed.
+export const EXPIRE_CHECK_MS = 60_000;

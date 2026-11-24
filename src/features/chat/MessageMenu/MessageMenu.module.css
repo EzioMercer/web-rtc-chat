@@ -36,3 +36,7 @@
   background: var(--theirs);
   outline: none;
 }
+
+.danger {
+  color: var(--error);
+}

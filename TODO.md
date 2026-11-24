@@ -2,8 +2,9 @@
 
 Only open items. Everything done is described in the README.
 
-- [ ] Deleting a message on our side only.
 - [ ] Blocking a contact without deleting them: their relay notes and connections are ignored until unblocked.
+- [ ] Checking only recent messages for resending, giving up and markers, not the whole chat: back until one is older
+  than 1.5 hours and more than 50 back. Old waiting ones and markers are handled once, when the chat is loaded.
 - [ ] Going to a date in a chat's history.
 - [ ] Captions on files (text sent with the file).
 - [ ] Feedback: links that open a GitHub Issue (bugs) or Discussion (ideas), filled in; logs are attached by hand,
@@ -24,10 +25,11 @@ Only open items. Everything done is described in the README.
 - [ ] Temporary chats inside the other three protection modes: one chat that saves nothing.
 - [ ] A longer relay list with fallback when relays die. It must be the same, in the same order, for everyone, so peers
   still meet on the same relays. Possibly fetched from a source we control, such as a file in this repo.
+- [ ] Continuing a broken file upload from where it stopped, instead of starting over.
 - [ ] The same file, GIF or media sent or received more than once is stored only once on the device.
 - [ ] Getting a file back from a contact who still has it, when ours is lost.
-- [ ] Messages to a contact who is offline while you close the app (today they wait only while your tab is open),
-  encrypted.
+- [ ] Messages to a contact who is offline while you close the app (today they go only while your tab is open, for
+  up to an hour), encrypted.
 - [ ] Push notifications when the tab is closed, through a stateless Cloudflare Worker that forwards end-to-end
   encrypted web pushes. Look for a free way to send them.
 - [ ] Syncing chats between your own devices automatically, without a backup file (today: a backup file moved by

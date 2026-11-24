@@ -1,6 +1,7 @@
 import { kv } from '../storage/kv.ts';
 import { FILE_CHUNK } from './config.ts';
 import { ensureSlot } from './ensureSlot.ts';
+import { fileWrites } from './fileWrites.ts';
 import { historyKeys } from './historyKeys.ts';
 import { isSaving } from './isSaving.ts';
 import { sealRecord } from './sealRecord.ts';
@@ -9,8 +10,6 @@ import { slots } from './slots.ts';
 
 // Pieces written per transaction: big enough to be quick, small enough not to hold much memory.
 const CHUNKS_PER_WRITE = 4;
-
-let queue: Promise<unknown> = Promise.resolve();
 
 const write = async (chat: string, id: string, blob: Blob) => {
   const slot = ensureSlot(chat);
@@ -44,9 +43,5 @@ export const saveFileBytes = (chat: string, id: string, blob: Blob): Promise<voi
     return Promise.resolve();
   }
 
-  const next = queue.then(() => write(chat, id, blob));
-
-  queue = next.catch(() => undefined);
-
-  return next;
+  return fileWrites(() => write(chat, id, blob));
 };

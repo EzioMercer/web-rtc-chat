@@ -4,6 +4,11 @@ import type { Session } from './types.ts';
 
 // Why a connection attempt failed, in words.
 export const failureDetail = (session: Session): string => {
+  // Closed by us (going offline for a backup, say). Firefox then throws on reading its descriptions.
+  if (session.peer.signalingState === 'closed') {
+    return 'The connection attempt was stopped.';
+  }
+
   const { localDescription, remoteDescription } = session.peer;
 
   if (!remoteDescription) {
