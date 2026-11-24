@@ -14,7 +14,7 @@ const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> => Promise.
   }),
 ]);
 
-// A download named `name` that goes to disk piece by piece through the service worker (see backup-sw.js), or null
+// A download named `name` that goes to disk piece by piece through the service worker (see public/sw.js), or null
 // if this browser can't do that.
 export const openStreamDownload = async (name: string): Promise<ByteSink | null> => {
   if (!('serviceWorker' in navigator)) {

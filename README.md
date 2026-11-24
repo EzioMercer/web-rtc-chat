@@ -25,6 +25,7 @@ Live: https://eziomercer.github.io/web-rtc-chat/
 - 🔇 **Echo guard** notices echo in a call and fixes it
 - 🔁 **Reconnects by itself** after a network drop
 - 📱 **Phones and computers**, nothing to install
+- ✈️ **Opens offline**: your saved chats are there without internet
 
 ## How it works, in simple words
 
@@ -135,8 +136,8 @@ Restore (or "Restore from a backup file" on the first screen) brings them back, 
   file ends with an end mark. A changed, reordered or cut-off file is refused.
 - **Small.** Messages and text-like files are zipped before they are encrypted. Photos, videos and voice are
   compressed already, so they go in as they are.
-- **Big backups don't fill the memory.** A small service worker (it handles only this, and caches nothing) streams
-  the file to disk piece by piece. Without it, for example in some private windows, the file is built in memory.
+- **Big backups don't fill the memory.** The app's service worker streams the file to disk piece by piece. Without
+  it, for example in some private windows, the file is built in memory.
 - **Offline meanwhile.** While a backup is made or restored, the app stops the relays and closes its connections,
   so nothing changes halfway. Then it reconnects by itself.
 - **Restoring adds and replaces.** A chat from the backup replaces the same chat on the device; others are added;

@@ -11,7 +11,9 @@ explains the product and its privacy promises; read it before changing anything 
 src/
   ui/         Reusable building blocks. Look here before writing a new button, dialog or field.
                 Button, IconButton, Icon (+ paths.ts: every icon), Dialog (dismissible={false} for questions that
-                must be answered), ConfirmDialog (a yes/no question: never the browser's confirm/alert/prompt),
+                must be answered; onBack for a window that replaces another: ← returns, X closes both; a popup
+                over another window gets only X), ConfirmDialog (a yes/no question: never the browser's
+                confirm/alert/prompt),
                 TextField, CodeField, CopyButton, SegmentedControl (radio or tabs), Checkbox,
                 MediaVideo (plays a MediaStream), QrCode, QrScanner, Logo, Avatar (a picture, letter or icon)
   features/   Screens, one folder per feature, with the hooks and helpers only that feature uses.
@@ -40,8 +42,10 @@ src/
                 history/    saved chats: pages of messages and files in 1 MB pieces, under a random slot per chat
                             (historyKeys), historySaver (debounced, one queue), memoryFiles (this session's files)
                 backup/     the .p2pchat file: createBackupWriter / createRecordReader, writeBackup, restoreBackup,
-                            openStreamDownload (+ public/backup-sw.js, which streams it to disk)
+                            openStreamDownload (+ public/sw.js, which streams it to disk)
                 tab/        claimTab: one tab at a time (Web Locks)
+                worker/     registerWorker: public/sw.js keeps the app's own files (the page network-first, the rest
+                            by hashed name; vite.config.ts writes the file list into it at build) and streams backups
                 crypto/     small WebCrypto helpers
                 storage/    kv.ts: the ONLY module allowed to touch browser storage (lint enforces it), with batch
                             (all-or-nothing) writes and prefix reads/deletes
@@ -161,6 +165,9 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
   WebKit (moves, stop), then every bubble and both share windows drawn in all three engines, and what a tap opens
   as an iPhone, an Android phone, a Mac and other computers; pass a folder to get screenshots. (Firefox can't
   connect to another browser in the cloud container.)
+- `scripts/e2e-offline.mjs` (builds two versions itself, serves them like GitHub Pages and logs every request):
+  the worker's copy in Chromium, Firefox and WebKit: first visit, reload, offline, a new version in one reload with
+  only changed files downloaded, and in Chromium a full reload and DevTools' "Disable cache".
 - `scripts/check-turn.mjs`, `scripts/check-relays.mjs`.
 - Scripts import `playwright`. In the cloud container it is preinstalled outside the project: link it with
   `ln -sfn /opt/node-tools/node_modules/playwright node_modules/playwright` (never run `playwright install`).

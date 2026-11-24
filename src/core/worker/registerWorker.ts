@@ -1,7 +1,8 @@
-// The service worker that streams backup downloads to disk (public/backup-sw.js). Registered at start, so it is
-// ready when a backup is made. Without it (e.g. a private window in some browsers) backups are built in memory.
-export const registerDownloadWorker = () => {
+// The app's service worker (public/sw.js): keeps the app's files, so it opens offline, and streams backup downloads
+// to disk. Registered at start. Without it (e.g. a private window in some browsers) the app needs the network to
+// open and backups are built in memory.
+export const registerWorker = () => {
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}backup-sw.js`).catch(() => undefined);
+    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => undefined);
   }
 };

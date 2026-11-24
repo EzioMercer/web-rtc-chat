@@ -120,9 +120,14 @@ export default tseslint.config(
     },
   },
   {
-    // The service worker that streams backup downloads to disk.
-    files: ['public/backup-sw.js'],
+    // The service worker: keeps the app's own files (fetched from the site that serves the app, kept in the Cache
+    // API) and streams backup downloads to disk.
+    files: ['public/sw.js'],
     languageOptions: { globals: globals.serviceworker },
+    rules: {
+      'no-restricted-globals': banGlobals(['fetch', 'caches']),
+      'no-restricted-properties': banProperties(['fetch', 'caches']),
+    },
   },
   {
     // The Cloudflare Worker runs on Cloudflare, not in the app.
