@@ -1,4 +1,5 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import type { ProfileInfo } from '../../core/profile/types.ts';
 import type { Contact, ContactsState } from './types.ts';
 
 const initialState: ContactsState = {
@@ -63,6 +64,20 @@ const contactsSlice = createSlice({
         }
       }
     },
+    // They sent their phone number and description; empty ones are removed.
+    infoReceived: (state, { payload }: PayloadAction<{ id: string; info: ProfileInfo }>) => {
+      const contact = find(state, payload.id);
+
+      if (contact) {
+        for (const field of ['phone', 'about'] as const) {
+          if (payload.info[field]) {
+            contact[field] = payload.info[field];
+          } else {
+            delete contact[field];
+          }
+        }
+      }
+    },
     // Moves `id` to where `beforeId` is (or to the end of its group when null).
     contactMoved: (state, { payload }: PayloadAction<{ id: string; beforeId: string | null }>) => {
       const from = state.list.findIndex(contact => contact.id === payload.id);
@@ -118,6 +133,7 @@ export const {
   favouriteToggled,
   verifiedSet,
   pictureReceived,
+  infoReceived,
   contactMoved,
   secretProposed,
   secretAdopted,

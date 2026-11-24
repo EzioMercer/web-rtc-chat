@@ -60,6 +60,8 @@ export const ICON_PATHS = {
   send: 'M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z',
   chevronLeft: 'M15 18l-6-6 6-6',
   chevronUp: 'M18 15l-6-6-6 6',
+  chevronRight: 'M9 18l6-6-6-6',
+  chevronDown: 'M6 9l6 6 6-6',
   volumeOff: 'M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6',
   echo: 'M11 5L6 9H2v6h4l5 4V5zM15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14',
 };

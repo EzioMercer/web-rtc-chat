@@ -15,9 +15,9 @@ Live: https://eziomercer.github.io/web-rtc-chat/
 - 🎙️ **Voice and round video messages**: hold to record, let go to send
 - 📎 **Files of any size**: photos, videos, documents
 - 📍 **Share your location**, once or live
-- 🖼️ **Profile pictures**, seen only by your contacts
+- 🖼️ **Profile**: picture, phone number and description, seen only by your contacts
 - 🔒 **End-to-end encrypted**: no server ever sees your messages
-- 👤 **No account**: no phone number, no email, no sign-up
+- 👤 **No account**: no phone number needed, no email, no sign-up
 - 💾 **Your chats stay with you**, encrypted on your device
 - 📦 **Password-locked backups** to move to a new device
 - ➕ **Add a friend in seconds** with a QR code or a link
@@ -31,8 +31,8 @@ Live: https://eziomercer.github.io/web-rtc-chat/
 1. **The website is just files.** GitHub Pages serves the HTML, JS and CSS once. It has no backend, database or
    accounts.
 2. **Your identity is keys, not an account.** For each contact the app creates a new key pair on your device, so no
-   two contacts see the same key and they can't tell they know the same person (unless you set a profile picture:
-   everyone gets the same one). There is no sign-up, email, phone
+   two contacts see the same key and they can't tell they know the same person (unless you add a picture, phone
+   number or description: everyone gets the same ones). There is no sign-up, email, phone
    number or password. You choose how the keys and chats are protected on this device:
    - **passkey:** fingerprint, face or device PIN (recommended);
    - **passphrase;**
@@ -61,10 +61,12 @@ Live: https://eziomercer.github.io/web-rtc-chat/
 
    After that, relays aren't involved in that conversation. Every time you connect, the two apps also swap a new
    mailbox secret over the direct link, so an old invite or secret stops working.
-7. **Profile pictures go the same way.** Settings → Your picture makes a small square picture (256 px) from any
-   photo. Each time a contact connects, your app sends its fingerprint (a hash); only if theirs differs do they ask
-   for the picture itself, over the direct link. A new or removed picture reaches connected contacts right away,
-   the others when they connect next.
+7. **Your profile goes the same way.** Settings → Profile info: a picture (a small 256 px square made from any
+   photo), a mobile number (checked for its country) and a description of up to 150 characters, all optional. The
+   number's country is guessed on the device from its time zone, nothing is asked of a server. Each time a contact
+   connects, your app sends two fingerprints (hashes): one of the picture, one of the phone and description. Only
+   for a part that differs do they ask, over the direct link. A change reaches connected contacts right away, the
+   others when they connect next.
 6. **Chats stay on your device.** Messages and files are saved in the browser (IndexedDB), encrypted, and come back
    after a reload. With a temporary identity they live only in the tab's memory, and so does the manual connection's
    chat. The app runs in one tab at a time: a second tab waits until the first is closed.
@@ -100,8 +102,9 @@ hand, without contacts or relays.
   that change daily. They don't see who talks to whom, or any content, and they don't store the notes.
 - **Messages never touch a server.** No server or relay ever stores (or sees) them. Only your own device keeps
   them, and only encrypted.
-  - Saved in IndexedDB: your contact list (names, pictures, both public keys, mailbox secrets), your private key for
-    each contact, your settings, your picture, and your chats (messages, files, voice and video messages).
+  - Saved in IndexedDB: your contact list (names, their profiles, both public keys, mailbox secrets), your private
+    key for each contact, your settings, your profile (picture, phone number, description), and your chats
+    (messages, files, voice and video messages).
   - All of it is encrypted (AES-GCM) with a random data key. The data key is encrypted with your passkey or
     passphrase key; changing the protection only encrypts the data key again. With "no protection" the key that
     opens it is saved right next to it, so anyone with a copy of the browser's files can read everything.
@@ -118,8 +121,8 @@ hand, without contacts or relays.
 
 ## Backups
 
-Settings → Back up writes a `.p2pchat` file with your contacts (and their pictures), your keys for them, your own
-picture and your chats. Settings →
+Settings → Back up writes a `.p2pchat` file with your contacts (and their profiles), your keys for them, your own
+profile and your chats. Settings →
 Restore (or "Restore from a backup file" on the first screen) brings them back, on this device or another one.
 
 - **You choose what goes in:** text only or with media, for all chats or each chat on its own, and chats to leave
@@ -137,7 +140,8 @@ Restore (or "Restore from a backup file" on the first screen) brings them back, 
 - **Offline meanwhile.** While a backup is made or restored, the app stops the relays and closes its connections,
   so nothing changes halfway. Then it reconnects by itself.
 - **Restoring adds and replaces.** A chat from the backup replaces the same chat on the device; others are added;
-  chats only on the device stay. Your picture comes back from the backup only if the device has none. If a
+  chats only on the device stay. Your picture, and your phone number and description, come back from the backup only
+  if the device has none. If a
   different contact here has the same name, you choose: keep this device's, the backup's, or both. A restore is all or nothing: the whole file is checked and written first, and only then
   switched in at once.
 - **One device at a time.** A restored device has the same keys as the one the backup came from. There is no

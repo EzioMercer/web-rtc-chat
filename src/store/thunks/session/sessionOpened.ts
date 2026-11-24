@@ -8,7 +8,7 @@ import { sessionDetail, sessionStatusChanged } from '../../sessions/sessionsSlic
 import type { AppThunk } from '../../store.ts';
 import { reconnectAttempts } from '../contact/reconnectAttempts.ts';
 import { startRotation } from '../contact/startRotation.ts';
-import { offerPicture } from '../profile/offerPicture.ts';
+import { offerProfile } from '../profile/offerProfile.ts';
 import { sendPending } from '../chat/sendPending.ts';
 import { checkRoute } from './checkRoute.ts';
 import { watchPaths } from './watchPaths.ts';
@@ -44,5 +44,5 @@ export const sessionOpened = (session: Session): AppThunk<Promise<void>> => asyn
   dispatch(sessionStatusChanged({ key: session.key, status: SessionStatus.Connected }));
   dispatch(sessionDetail({ key: session.key, detail: '' }));
   dispatch(startRotation(session.key));
-  void dispatch(offerPicture(session.key));
+  void dispatch(offerProfile(session.key));
 };

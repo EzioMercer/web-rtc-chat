@@ -35,8 +35,8 @@ export const LEGAL: LegalSection[] = [
       + 'between the two browsers, encrypted end to end. Your keys, contacts, settings, pictures and chats (messages '
       + 'and files) are saved only on your device, encrypted (or nowhere, in Temporary mode). Your browser may delete '
       + 'them on its own, for example when the device runs low on space.',
-      'If you set a picture, it goes the same way, directly to each of your contacts, who keep it on their device. '
-      + 'Every contact gets the same picture.',
+      'If you add a picture, phone number or description, they go the same way, directly to each of your contacts, '
+      + 'who keep them on their device. Every contact gets the same ones.',
       'A location you share goes the same way, only to that person. The map in the chat is drawn by the app, so no '
       + 'map service sees the place, unless someone opens it in a maps or taxi app or shares it: then that app\'s '
       + 'maker gets it, under its own privacy policy. A live location is sent while the app is open, until it ends or '

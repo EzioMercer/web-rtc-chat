@@ -43,7 +43,7 @@ export const PictureSection = () => {
 
   return (
     <section className={settingsStyles.section}>
-      <h3>Your picture</h3>
+      <h3>Picture</h3>
       <div className={styles.row}>
         <Avatar picture={picture} size={64} />
         <div className={settingsStyles.buttons}>
@@ -58,10 +58,6 @@ export const PictureSection = () => {
         </div>
       </div>
       {error && <p className={settingsStyles.warn}>{error}</p>}
-      <p>
-        Your contacts see it. It goes straight to them over the encrypted connection, never through relays or
-        servers. Every contact gets the same picture, so contacts who know each other can tell it is you.
-      </p>
       <input ref={inputRef} type="file" accept="image/*" hidden onChange={pick} />
     </section>
   );

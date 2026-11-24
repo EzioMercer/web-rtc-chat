@@ -5,7 +5,7 @@ import { receivePeerText } from '../../store/thunks/chat/receivePeerText.ts';
 import { receiveLocation } from '../../store/thunks/location/receiveLocation.ts';
 import { receiveRotate } from '../../store/thunks/contact/receiveRotate.ts';
 import { receiveMove } from '../../store/thunks/move/receiveMove.ts';
-import { receivePicture } from '../../store/thunks/profile/receivePicture.ts';
+import { receiveProfile } from '../../store/thunks/profile/receiveProfile.ts';
 import { receiveRoute } from '../../store/thunks/session/receiveRoute.ts';
 import { handleCandidate } from './handleCandidate.ts';
 import { handleDescription } from './handleDescription.ts';
@@ -58,9 +58,9 @@ export const handleControlMessage = (key: string, data: unknown, dispatch: AppDi
     case ControlType.Route:
       void dispatch(receiveRoute(key, message.relay === true));
       break;
-    case ControlType.Picture:
-    case ControlType.PictureAsk:
-      void dispatch(receivePicture(key, message));
+    case ControlType.Profile:
+    case ControlType.ProfileAsk:
+      void dispatch(receiveProfile(key, message));
       break;
     case ControlType.Location:
       dispatch(receiveLocation(key, message));

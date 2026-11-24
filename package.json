@@ -15,8 +15,10 @@
   "dependencies": {
     "@reduxjs/toolkit": "^2.15.0",
     "@scure/bip39": "^2.4.0",
+    "country-flag-icons": "^1.6.20",
     "hash-wasm": "^4.13.0",
     "jsqr": "^1.4.0",
+    "libphonenumber-js": "^1.13.17",
     "nostr-tools": "^2.26.1",
     "qrcode": "^1.5.4",
     "react": "^19.3.1",

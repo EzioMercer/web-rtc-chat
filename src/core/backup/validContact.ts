@@ -1,3 +1,5 @@
+import { isAbout } from '../profile/isAbout.ts';
+import { isPhone } from '../profile/isPhone.ts';
 import { isPicture } from '../profile/isPicture.ts';
 import type { Contact } from '../../store/contacts/types.ts';
 
@@ -12,5 +14,7 @@ export const validContact = (contact: unknown): contact is Contact => {
     && isText(c.name) && isText(c.safety) && isText(c.identity) && isText(c.myKey) && isText(c.sendSecret)
     && typeof c.favourite === 'boolean' && typeof c.verified === 'boolean'
     && Array.isArray(c.secrets) && c.secrets.every(isText)
-    && (c.picture === undefined || isPicture(c.picture));
+    && (c.picture === undefined || isPicture(c.picture))
+    && (c.phone === undefined || isPhone(c.phone))
+    && (c.about === undefined || isAbout(c.about));
 };

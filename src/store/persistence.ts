@@ -31,6 +31,7 @@ import {
   contactRenamed,
   contactReplaced,
   favouriteToggled,
+  infoReceived,
   pictureReceived,
   secretAdopted,
   secretConfirmed,
@@ -38,7 +39,7 @@ import {
   verifiedSet,
 } from './contacts/contactsSlice.ts';
 import type { Contact } from './contacts/types.ts';
-import { pictureChosen } from './profile/profileSlice.ts';
+import { infoChosen, pictureChosen } from './profile/profileSlice.ts';
 import type { ProfileState } from './profile/types.ts';
 import { echoGuardChosen } from './settings/settingsSlice.ts';
 import type { SettingsState } from './settings/types.ts';
@@ -57,6 +58,7 @@ persistence.startListening({
     contactRenamed,
     contactReplaced,
     favouriteToggled,
+    infoReceived,
     pictureReceived,
     secretAdopted,
     secretConfirmed,
@@ -82,7 +84,7 @@ persistence.startListening({
 
 // Saves what our contacts see of us (encrypted) whenever we change it.
 persistence.startListening({
-  actionCreator: pictureChosen,
+  matcher: isAnyOf(infoChosen, pictureChosen),
   effect: async (_action, api) => {
     await saveProfile((api.getState() as { profile: ProfileState }).profile);
   },

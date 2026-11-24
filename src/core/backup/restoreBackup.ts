@@ -18,9 +18,13 @@ import { importSigningKey } from '../identity/importSigningKey.ts';
 import { STORAGE_KEYS } from '../identity/storageKeys.ts';
 import type { ContactKey } from '../identity/types.ts';
 import { vault } from '../identity/vault.ts';
+import { isAbout } from '../profile/isAbout.ts';
+import { isPhone } from '../profile/isPhone.ts';
 import { isPicture } from '../profile/isPicture.ts';
 import { kv, type KvWrite } from '../storage/kv.ts';
 import type { Contact } from '../../store/contacts/types.ts';
+import { EMPTY_PROFILE } from '../../store/profile/profileSlice.ts';
+import type { ProfileState } from '../../store/profile/types.ts';
 import { type Message, FileStatus, MessageKind } from '../../store/chat/types.ts';
 import { DAMAGED, LEFT_OUT, MAX_RECORD_BYTES } from './config.ts';
 import { createRecordReader } from './createRecordReader.ts';
@@ -132,7 +136,7 @@ const pageWrites = async (slot: string, messages: StoredMessage[]): Promise<KvWr
 // Restores the chosen chats from a backup (opened with readBackupPreview's `key`) into this identity: into storage,
 // or into memory for a temporary one. The whole file is read and checked first; only then, in one write, the
 // restored chats take the place of the old ones, so a damaged file or a closed tab changes nothing. Reports how many
-// bytes of the file were read. Returns the new contact list, in memory the restored chats, and our picture from
+// bytes of the file were read. Returns the new contact list, in memory the restored chats, and our profile from
 // the backup.
 export const restoreBackup = async (
   file: Blob,
@@ -154,8 +158,8 @@ export const restoreBackup = async (
   const blobs = new Map<string, Blob>();
   let incoming: Incoming | null = null;
   let ended = false;
-  // Our picture, from the Info record.
-  let picture: string | null = null;
+  // Our profile, from the Info record.
+  let profile: ProfileState = EMPTY_PROFILE;
 
   const finishFile = async () => {
     if (!incoming) {
@@ -276,7 +280,11 @@ export const restoreBackup = async (
         case RecordType.Info: {
           const info = await records.json<BackupInfo>(plain);
 
-          picture = isPicture(info.picture) ? info.picture : null;
+          profile = {
+            picture: isPicture(info.picture) ? info.picture : null,
+            phone: isPhone(info.phone) ? info.phone : '',
+            about: isAbout(info.about) ? info.about : '',
+          };
           break;
         }
         case RecordType.Contact:
@@ -366,7 +374,7 @@ export const restoreBackup = async (
       }
     });
 
-    return { contacts: merged, conversations, picture };
+    return { contacts: merged, conversations, profile };
   }
 
   const oldSlots = [...replaced].map(id => slots.map.get(id)).filter((slot): slot is string => Boolean(slot));
@@ -407,5 +415,5 @@ export const restoreBackup = async (
     await kv.deletePrefix(historyKeys.filesOf(slot));
   }
 
-  return { contacts: merged, conversations: {}, picture };
+  return { contacts: merged, conversations: {}, profile };
 };

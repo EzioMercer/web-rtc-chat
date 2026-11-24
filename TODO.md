@@ -2,8 +2,6 @@
 
 Only open items. Everything done is described in the README.
 
-- [ ] A phone number in our profile (optional), seen only by our contacts.
-- [ ] A short description in our profile, next to the picture.
 - [ ] Deleting a message on our side only.
 - [ ] Blocking a contact without deleting them: their relay notes and connections are ignored until unblocked.
 - [ ] Going to a date in a chat's history.

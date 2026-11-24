@@ -1,5 +1,7 @@
 import type { Sealed } from '../crypto/types.ts';
 import { unsealJson } from '../crypto/unsealJson.ts';
+import { isAbout } from '../profile/isAbout.ts';
+import { isPhone } from '../profile/isPhone.ts';
 import { isPicture } from '../profile/isPicture.ts';
 import { EMPTY_PROFILE } from '../../store/profile/profileSlice.ts';
 import type { ProfileState } from '../../store/profile/types.ts';
@@ -18,7 +20,11 @@ export const loadProfile = async (): Promise<ProfileState> => {
   try {
     const saved = await unsealJson<Partial<ProfileState>>(vault.vaultKey, sealed);
 
-    return { picture: isPicture(saved.picture) ? saved.picture : null };
+    return {
+      picture: isPicture(saved.picture) ? saved.picture : null,
+      phone: isPhone(saved.phone) ? saved.phone : '',
+      about: isAbout(saved.about) ? saved.about : '',
+    };
   } catch {
     return EMPTY_PROFILE;
   }

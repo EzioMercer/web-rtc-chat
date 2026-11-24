@@ -1,4 +1,5 @@
 import type { MediaNote } from '../../store/chat/types.ts';
+import type { ProfileInfo } from '../profile/types.ts';
 import type { SessionRoute } from '../../store/sessions/types.ts';
 import type { TrackKind } from './TrackKind.ts';
 
@@ -17,9 +18,9 @@ export enum ControlType {
   Move = 8,
   // Whether our end of the path is the TURN relay (see checkRoute).
   Route = 9,
-  // Our picture's hash, or the picture itself; and asking for it (see store/thunks/profile).
-  Picture = 10,
-  PictureAsk = 11,
+  // Our profile's hashes, or its parts themselves; and asking for them (see store/thunks/profile).
+  Profile = 10,
+  ProfileAsk = 11,
   // A shared place, or a live location's latest state (see store/thunks/location).
   Location = 12,
 }
@@ -74,11 +75,12 @@ export type RotateSignal = {
   secret: string;
 };
 
-// When the connection opens or our picture changes, we send its hash ('' for none). If theirs differs, they ask for
-// it by that hash, and we send it with `picture`.
-export type PictureSignal =
-  | { t: ControlType.Picture; hash: string; picture?: string }
-  | { t: ControlType.PictureAsk; hash: string };
+// When the connection opens or our profile changes, we send the hashes of its two parts ('' for none): the picture,
+// and the phone and description together. For each part that differs from what they have, they ask by its hash, and
+// we send that part with the hashes again.
+export type ProfileSignal =
+  | { t: ControlType.Profile; pictureHash: string; infoHash: string; picture?: string; info?: ProfileInfo }
+  | { t: ControlType.ProfileAsk; pictureHash?: string; infoHash?: string };
 
 // A shared place, answered with "ack" (with its `rev`). A live location is sent again, with the same id, each time
 // it moves or changes, and now and then while it stays put; `live` is how long it still runs (ms; 0 once it
@@ -108,7 +110,7 @@ export type ControlMessage =
   | CallSignal
   | RotateSignal
   | MoveSignal
-  | PictureSignal
+  | ProfileSignal
   | LocationSignal
   | { t: ControlType.Route; relay: boolean };
 

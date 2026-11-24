@@ -17,7 +17,9 @@ src/
   features/   Screens, one folder per feature, with the hooks and helpers only that feature uses.
                 app/        Messenger (main layout), Sidebar, EmptyPane, UpdateNotice, OtherTabScreen
                 setup/      SetupScreen, UnlockScreen, ProtectionPicker
-                settings/   SettingsDialog, PictureSection, StorageSection, LegalDialog (LEGAL.ts: disclaimer and privacy text)
+                settings/   SettingsDialog, ProfileRow -> ProfileDialog (loaded when opened: PictureSection, InfoSection
+                            with PhoneField and CountryDialog), StorageSection, LegalDialog (LEGAL.ts: disclaimer and
+                            privacy text)
                 backup/     ExportDialog, ImportDialog, BackupProgress (covers the app while one runs)
                 contacts/   AddContactDialog (invite / join), ContactList, ContactRow, SafetyPanel, dialogs
                 chat/       ChatPane, Conversation, ChatHeader, MessageList, Composer, FileBubble
@@ -46,7 +48,10 @@ src/
                 turn/, update/  the only modules allowed to fetch (lint enforces it)
                 media/      recording engine (MediaRecorder, format choice, square crop, waveform)
                 compression/  zip/unzip (deflate-raw) for files, relay notes and manual codes
-                profile/    our picture: makePicture (photo -> 256 px JPEG data URL), isPicture, pictureHash
+                profile/    our profile: makePicture (photo -> 256 px JPEG data URL), isPicture, isPhone, isAbout,
+                            profileHash / infoHash; phone/ (only in ProfileDialog's chunk): libphonenumber-js/mobile
+                            checks and spacing, country-flag-icons flags, guessCountry (time zone, then language;
+                            TIMEZONE_COUNTRIES is made by scripts/make-timezones.mjs)
                 location/   finding the place (findPosition), distanceMeters, the links (googleMapsUrl, appleMapsUrl,
                             geoUrl: built when shown, never saved), config.ts (live durations, how often a live
                             location is sent), liveWatches
@@ -86,9 +91,11 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
   (`startCamera`) adds a track, which sends a new offer.
 - **Route shown** (`checkRoute`): through TURN if either end of the selected path is the relay. Their relay address
   can look ordinary to us ("prflx"), so each side tells the other about its own end (`ControlType.Route`).
-- **Profile pictures** (`store/thunks/profile`): ours is in the `profile` slice, saved like the settings but put in
-  backups (Info record). When a contact's connection opens, or we change ours, we send its hash (`ControlType.Picture`);
-  if theirs differs they ask by that hash (`PictureAsk`) and we send it. Theirs is `Contact.picture`.
+- **Profile** (`store/thunks/profile`): ours (picture, phone as "+994501234567", description) is in the `profile`
+  slice, saved like the settings but put in backups (Info record). When a contact's connection opens, or we change
+  ours, we send two hashes (`ControlType.Profile`): the picture's, and the phone and description's together. For each
+  that differs they ask by that hash (`ProfileAsk`) and we send that part. Theirs is `Contact.picture` / `phone` /
+  `about`.
 - **Locations** (`store/thunks/location`): a `Location` message, sent like a text (`ControlType.Location`, acked,
   resent by `sendPending`). A live one keeps its id: each move, stop or heartbeat sends its whole latest state with
   a higher `rev` and the time left (`live`, ms, so clocks needn't agree); the ack carries the `rev`. Ours follows
@@ -145,8 +152,9 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
   switching between two (fake) cameras; the route shown from the other side's word about its end of the path.
 - `scripts/e2e-move.mjs` (same dev server): a call moves to a new connection, goes back when it breaks, and stays when
   the test fails.
-- `scripts/e2e-picture.mjs` (same dev server): pictures made in Chromium, Firefox and WebKit; two browsers swap,
-  change and remove them, and keep them after a reload.
+- `scripts/e2e-profile.mjs` (same dev server): in Chromium, Firefox and WebKit pictures made, phone numbers checked
+  (mobile only), saved and spaced, the country guessed and searched, backups; two browsers swap, change and remove
+  profiles, and keep them after a reload.
 - `scripts/e2e-real-relays.mjs` (built app, `npx vite preview --port 4173`, real relays): Chromium adds Firefox and
   WebKit with invites, checks safety codes, one saved key per contact and a reconnect after reload.
 - `scripts/e2e-location.mjs` (same dev server): a one-time and a live location between Chromium and Chromium and

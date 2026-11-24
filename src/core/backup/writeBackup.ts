@@ -8,6 +8,7 @@ import { toStored } from '../history/toStored.ts';
 import { contactKeys } from '../identity/contactKeys.ts';
 import { vault } from '../identity/vault.ts';
 import type { Contact } from '../../store/contacts/types.ts';
+import type { ProfileState } from '../../store/profile/types.ts';
 import { type Message, FileStatus, MessageKind } from '../../store/chat/types.ts';
 import type { ByteSink } from './ByteSink.ts';
 import { savedFiles } from './savedFiles.ts';
@@ -22,8 +23,8 @@ export type BackupSource = {
   conversations: Record<string, Message[]>;
   // The chats to back up, in order, and whether with media.
   choices: ChatChoice[];
-  // Our picture, which our contacts see.
-  picture: string | null;
+  // What our contacts see of us.
+  profile: ProfileState;
 };
 
 const MISSING = 'Not in the backup (it was missing on the device it came from).';
@@ -70,7 +71,9 @@ export const writeBackup = async (
         mediaBytes: media ? savedFiles(messages).reduce((total, file) => total + file.size, 0) : 0,
       };
     }),
-    ...(source.picture ? { picture: source.picture } : {}),
+    ...(source.profile.picture ? { picture: source.profile.picture } : {}),
+    ...(source.profile.phone ? { phone: source.profile.phone } : {}),
+    ...(source.profile.about ? { about: source.profile.about } : {}),
   };
 
   await writer.json(RecordType.Info, info);

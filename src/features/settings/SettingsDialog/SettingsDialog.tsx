@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { relayStatus } from '../../../core/nostr/relayStatus.ts';
 import { updateProtection } from '../../../store/thunks/app/updateProtection.ts';
 import { resetApp } from '../../../store/thunks/app/resetApp.ts';
@@ -14,7 +14,7 @@ import { Dialog } from '../../../ui/Dialog/Dialog.tsx';
 import { ExportDialog } from '../../backup/ExportDialog/ExportDialog.tsx';
 import { ImportDialog } from '../../backup/ImportDialog/ImportDialog.tsx';
 import { LegalDialog } from '../LegalDialog/LegalDialog.tsx';
-import { PictureSection } from '../PictureSection/PictureSection.tsx';
+import { ProfileRow } from '../ProfileRow/ProfileRow.tsx';
 import { StorageSection } from '../StorageSection/StorageSection.tsx';
 import { ProtectionPicker } from '../../setup/ProtectionPicker/ProtectionPicker.tsx';
 import { SegmentedControl } from '../../../ui/SegmentedControl/SegmentedControl.tsx';
@@ -26,6 +26,11 @@ import { ButtonVariant } from '../../../ui/Button/ButtonVariant.ts';
 type Props = {
   onClose: () => void;
 };
+
+// Loaded only when opened (see ProfileDialog).
+const ProfileDialog = lazy(() => import('../ProfileDialog/ProfileDialog.tsx').then(
+  module => ({ default: module.ProfileDialog }),
+));
 
 const ECHO_GUARD_OPTIONS: { value: EchoGuardSetting; label: string }[] = [
   { value: EchoGuardSetting.Auto, label: 'Auto' },
@@ -39,6 +44,7 @@ export const SettingsDialog = ({ onClose }: Props) => {
   const echoGuard = useAppSelector(state => state.settings.echoGuard);
   const [changing, setChanging] = useState(false);
   const [legal, setLegal] = useState(false);
+  const [profile, setProfile] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [importing, setImporting] = useState(false);
   // Going temporary waits for a yes: it deletes what is saved on this device.
@@ -51,6 +57,16 @@ export const SettingsDialog = ({ onClose }: Props) => {
 
     return () => window.clearInterval(timer);
   }, []);
+
+  if (profile) {
+    const close = () => setProfile(false);
+
+    return (
+      <Suspense fallback={<Dialog title="Profile info" onClose={close}><p>Loading…</p></Dialog>}>
+        <ProfileDialog onClose={close} />
+      </Suspense>
+    );
+  }
 
   if (legal) {
     return <LegalDialog onClose={() => setLegal(false)} />;
@@ -123,7 +139,7 @@ export const SettingsDialog = ({ onClose }: Props) => {
 
   return (
     <Dialog title="Settings" onClose={onClose}>
-      <PictureSection />
+      <ProfileRow onOpen={() => setProfile(true)} />
 
       <section className={styles.section}>
         <h3>Protection</h3>

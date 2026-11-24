@@ -21,8 +21,10 @@ export type BackupChat = {
 export type BackupInfo = {
   createdAt: number;
   chats: BackupChat[];
-  // Our picture (see ProfileState), if we had one.
+  // Our picture, phone number and description (see ProfileState), those we had.
   picture?: string;
+  phone?: string;
+  about?: string;
 };
 
 export type ContactRecord = {

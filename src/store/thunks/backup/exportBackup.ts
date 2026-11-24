@@ -31,7 +31,7 @@ export const exportBackup = (choices: ChatChoice[], password: string): AppThunk<
     await dispatch(goOffline());
 
     const { contacts, chat, profile } = getState();
-    const source = { contacts: contacts.list, conversations: chat.conversations, choices, picture: profile.picture };
+    const source = { contacts: contacts.list, conversations: chat.conversations, choices, profile };
     const name = backupFileName();
 
     dispatch(backupStarted({ title: 'Making a backup', total: backupWork(source) }));

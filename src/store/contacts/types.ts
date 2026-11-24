@@ -18,6 +18,9 @@ export type Contact = {
   sendSecret: string;
   // The picture they sent us (see core/profile); none when missing.
   picture?: string;
+  // The phone number and description they sent us (see ProfileInfo); none when missing.
+  phone?: string;
+  about?: string;
 };
 
 export type ContactsState = {
