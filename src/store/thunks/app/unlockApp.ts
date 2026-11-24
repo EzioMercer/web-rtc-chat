@@ -12,7 +12,9 @@ import { errorMessage } from './errorMessage.ts';
 import { loadSavedChats } from './loadSavedChats.ts';
 import { ProtectionMode } from '../../../core/identity/types.ts';
 
-export const unlockApp = (passphrase?: string): AppThunk<Promise<void>> => async (dispatch) => {
+// `quiet`: the passkey asked for on its own when the app opens. If that fails (the browser wants a tap first, or the
+// prompt was closed) no error is shown: the unlock button is there.
+export const unlockApp = (passphrase?: string, quiet = false): AppThunk<Promise<void>> => async (dispatch) => {
   dispatch(busyStarted());
 
   try {
@@ -21,7 +23,7 @@ export const unlockApp = (passphrase?: string): AppThunk<Promise<void>> => async
     dispatch(profileLoaded(await loadProfile()));
     await dispatch(loadSavedChats());
   } catch (err) {
-    dispatch(failed(errorMessage(err)));
+    dispatch(failed(quiet ? '' : errorMessage(err)));
 
     return;
   }

@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { resetApp } from '../../../store/thunks/app/resetApp.ts';
 import { unlockApp } from '../../../store/thunks/app/unlockApp.ts';
 import { useAppDispatch } from '../../../store/useAppDispatch.ts';
@@ -18,6 +18,31 @@ export const UnlockScreen = () => {
   const { busy, error, lockedMode } = useAppSelector(state => state.app);
   const [passphrase, setPassphrase] = useState('');
   const [resetting, setResetting] = useState(false);
+  const asked = useRef(false);
+
+  // A passkey is asked for as soon as the app opens, like other apps do, once the tab is in front (a prompt can't
+  // show in a background tab). Some browsers (Safari) only allow it after a tap: then the button does it.
+  useEffect(() => {
+    if (lockedMode !== ProtectionMode.Passkey) {
+      return;
+    }
+
+    const ask = () => {
+      if (!asked.current && document.visibilityState === 'visible' && document.hasFocus()) {
+        asked.current = true;
+        void dispatch(unlockApp(undefined, true));
+      }
+    };
+
+    ask();
+    document.addEventListener('visibilitychange', ask);
+    window.addEventListener('focus', ask);
+
+    return () => {
+      document.removeEventListener('visibilitychange', ask);
+      window.removeEventListener('focus', ask);
+    };
+  }, [dispatch, lockedMode]);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
