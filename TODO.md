@@ -9,6 +9,8 @@ Only open items. Everything done is described in the README.
 - [ ] Captions on files (text sent with the file).
 - [ ] Forwarding a message (text, file, voice or video message, location) to another contact, with a "forwarded"
   mark.
+- [ ] Replying to a message, or to a chosen part of its text: the quoted part is shown above the reply, and a tap on
+  it goes to the original message.
 - [ ] Feedback: links that open a GitHub Issue (bugs) or Discussion (ideas), filled in; logs are attached by hand,
   the app sends nothing by itself.
 - [ ] GIFs: they already play when sent as files. Decide whether a GIF search is worth a third-party server.
