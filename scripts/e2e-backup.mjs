@@ -575,6 +575,14 @@ const device2 = async (engine) => {
     await a.page.getByRole('button', { name: 'Change protection' }).click();
     await choose(a.page, protection, passphrase);
     await a.page.getByRole('button', { name: 'Switch' }).click();
+
+    // Going temporary asks first, in the app's own window: it deletes the saved copy.
+    if (protection === 'Temporary') {
+      await a.page.getByRole('alertdialog', { name: 'Switch to temporary?' })
+        .getByRole('button', { name: 'Switch' })
+        .click();
+    }
+
     await a.page.getByRole('heading', { name: 'Chats and backup' }).waitFor();
     await closeDialogs(a.page);
   };
@@ -586,8 +594,6 @@ const device2 = async (engine) => {
   await a.page.getByRole('button', { name: 'Settings' }).waitFor();
   check(same((await snapshot(a.page)).chats, before.chats), `[${engine}] no protection → passphrase keeps everything`);
 
-  // It warns that the saved copy is deleted.
-  a.page.once('dialog', dialog => void dialog.accept());
   await change('Temporary');
   check(same((await snapshot(a.page)).chats, before.chats), `[${engine}] → temporary keeps everything in memory`);
   await change('No protection');

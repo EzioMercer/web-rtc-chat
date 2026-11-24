@@ -30,10 +30,15 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npm install --no-save playwright@1.63.0 && npx playwright install --with-deps chromium
+      # The real-relay test opens Chromium, Firefox and WebKit.
+      - run: npm install --no-save playwright@1.63.0 && npx playwright install --with-deps chromium firefox webkit
       - run: node scripts/check-turn.mjs
       - run: npm run build
+      # On 127.0.0.1, where the test opens the app: "localhost" can be IPv6 only on the runner. The test starts once
+      # the server answers.
       - run: |
-          nohup npx vite preview --port 4173 --strictPort > preview.log 2>&1 &
-          sleep 3
+          nohup npx vite preview --host 127.0.0.1 --port 4173 --strictPort > preview.log 2>&1 &
+          for i in $(seq 30); do curl -sf http://127.0.0.1:4173/web-rtc-chat/ > /dev/null && break; sleep 1; done
           node scripts/e2e-real-relays.mjs
+      - if: failure()
+        run: cat preview.log
