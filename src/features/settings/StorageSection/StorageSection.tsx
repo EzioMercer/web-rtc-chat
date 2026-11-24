@@ -30,11 +30,12 @@ export const StorageSection = ({ onExport, onImport }: Props) => {
       return 'Temporary: chats are kept only in this tab and disappear when it closes.';
     }
 
-    const size = used === null ? '' : ` (${formatBytes(used)})`;
+    // The browser counts everything the app keeps (keys, contacts, settings, its own overhead), not only chats.
+    const size = used === null ? '' : ` This app uses ${formatBytes(used)} here.`;
 
     return persistent
-      ? `Chats are saved on this device, encrypted${size}. The browser won't delete them on its own.`
-      : `Chats are saved on this device, encrypted${size}. The browser may delete them when space runs low: `
+      ? `Chats are saved on this device, encrypted.${size} The browser won't delete them on its own.`
+      : `Chats are saved on this device, encrypted.${size} The browser may delete them when space runs low: `
         + 'installing the app makes that less likely. Keep a backup.';
   };
 
