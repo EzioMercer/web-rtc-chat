@@ -3,10 +3,20 @@
   min-height: 200px;
   overflow-x: hidden;
   overflow-y: auto;
-  padding: 16px;
+  padding: 13px 16px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+}
+
+/* A message's line, from edge to edge of the chat (over the list's side padding) and over the gaps between
+   messages, so a swipe to reply can start anywhere on it. Sideways is that swipe (see useSwipeReply); up and down
+   still scrolls. */
+.row {
+  display: flex;
+  flex-direction: column;
+  margin: 0 -16px;
+  padding: 3px 16px;
+  touch-action: pan-y;
 }
 
 .msg {
@@ -15,8 +25,6 @@
   padding: 8px 12px;
   border-radius: 14px;
   overflow-wrap: anywhere;
-  /* Sideways is a swipe to reply (see useSwipeReply); up and down still scrolls. */
-  touch-action: pan-y;
 }
 
 /* While the finger moves it the bubble follows at once; let go, it slides back. */

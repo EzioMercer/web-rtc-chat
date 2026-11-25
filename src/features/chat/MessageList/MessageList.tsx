@@ -289,104 +289,105 @@ export const MessageList = ({ convKey }: Props) => {
               <div className={styles.day}><span>{formatDay(message.at, today)}</span></div>
             )}
             {marks.lineBefore === message.id && <div className={styles.unreadLine}>Unread messages</div>}
+            {/* The whole width of the chat: a swipe can start anywhere on the message's line, also beside it, so the
+                thumb needn't reach the bubble. */}
             <div
-              data-id={message.id}
-              className={cx(
-                styles.msg,
-                styles[message.from],
-                tappable(message) ? styles.tappable : styles.holdable,
-                bare(message) && styles.bare,
-                message.kind === MessageKind.Location && styles.card,
-                flash === message.id && styles.flash,
-                swiped && styles.swiping,
-              )}
-              style={swiped ? { transform: `translateX(${swiped.offset}px)` } : undefined}
-              onPointerDown={(e) => {
-                press.current = { at: e.timeStamp, touch: e.pointerType !== 'mouse' };
-                swipe.down(e, message.id, answerable);
-
-                if (!tappable(message)) {
-                  startHold(e, message.id);
-                }
-              }}
+              className={styles.row}
+              onPointerDown={e => swipe.down(e, message.id, answerable)}
               onPointerMove={(e) => {
                 if (swipe.move(e)) {
                   endHold();
-                } else if (!tappable(message)) {
-                  moveHold(e);
                 }
               }}
-              onPointerUp={() => {
-                endHold();
-                swipe.up();
-              }}
-              onPointerCancel={() => {
-                endHold();
-                swipe.cancel();
-              }}
-              onClickCapture={tappable(message) ? undefined : swallowClick}
-              onClick={tappable(message) ? e => tap(e, message.id) : undefined}
-              onContextMenu={e => (tappable(message) ? contextMenu(e, message.id) : holdMenu(e, message.id))}
+              onPointerUp={swipe.up}
+              onPointerCancel={swipe.cancel}
             >
-              {original && (
-                <ReplyQuote
-                  message={original}
-                  peerName={peerName}
-                  onMine={mine && !bare(message)}
-                  onOpen={() => showOriginal(original.id)}
-                />
-              )}
-              {content(convKey, message)}
-              {metaPlace(message) === 'corner' && (
-                <>
-                  {message.kind === MessageKind.Text && (
-                    <span className={styles.room} aria-hidden="true">
-                      <MessageMeta {...metaFor(message)} />
+              <div
+                data-id={message.id}
+                className={cx(
+                  styles.msg,
+                  styles[message.from],
+                  tappable(message) ? styles.tappable : styles.holdable,
+                  bare(message) && styles.bare,
+                  message.kind === MessageKind.Location && styles.card,
+                  flash === message.id && styles.flash,
+                  swiped && styles.swiping,
+                )}
+                style={swiped ? { transform: `translateX(${swiped.offset}px)` } : undefined}
+                onPointerDown={(e) => {
+                  press.current = { at: e.timeStamp, touch: e.pointerType !== 'mouse' };
+
+                  if (!tappable(message)) {
+                    startHold(e, message.id);
+                  }
+                }}
+                onPointerMove={tappable(message) ? undefined : moveHold}
+                onPointerUp={endHold}
+                onPointerCancel={endHold}
+                onClickCapture={tappable(message) ? undefined : swallowClick}
+                onClick={tappable(message) ? e => tap(e, message.id) : undefined}
+                onContextMenu={e => (tappable(message) ? contextMenu(e, message.id) : holdMenu(e, message.id))}
+              >
+                {original && (
+                  <ReplyQuote
+                    message={original}
+                    peerName={peerName}
+                    onMine={mine && !bare(message)}
+                    onOpen={() => showOriginal(original.id)}
+                  />
+                )}
+                {content(convKey, message)}
+                {metaPlace(message) === 'corner' && (
+                  <>
+                    {message.kind === MessageKind.Text && (
+                      <span className={styles.room} aria-hidden="true">
+                        <MessageMeta {...metaFor(message)} />
+                      </span>
+                    )}
+                    <MessageMeta {...metaFor(message)} className={styles.corner} />
+                  </>
+                )}
+                {metaPlace(message) === 'line' && (
+                  <div className={styles.metaLine}>
+                    <MessageMeta {...metaFor(message)} overlay={bare(message)} />
+                  </div>
+                )}
+                {answerable && (
+                // With a mouse: shows beside the bubble while the pointer is over it.
+                  <button
+                    className={styles.replyButton}
+                    type="button"
+                    title="Reply"
+                    aria-label="Reply"
+                    onPointerDown={e => e.stopPropagation()}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      startReply(message.id);
+                    }}
+                  >
+                    <span className={styles.replyCircle}>
+                      <Icon name="reply" size={16} />
                     </span>
-                  )}
-                  <MessageMeta {...metaFor(message)} className={styles.corner} />
-                </>
-              )}
-              {metaPlace(message) === 'line' && (
-                <div className={styles.metaLine}>
-                  <MessageMeta {...metaFor(message)} overlay={bare(message)} />
-                </div>
-              )}
-              {answerable && (
-              // With a mouse: shows beside the bubble while the pointer is over it.
-                <button
-                  className={styles.replyButton}
-                  type="button"
-                  title="Reply"
-                  aria-label="Reply"
-                  onPointerDown={e => e.stopPropagation()}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    startReply(message.id);
-                  }}
-                >
-                  <span className={styles.replyCircle}>
-                    <Icon name="reply" size={16} />
+                  </button>
+                )}
+                {swiped && (
+                  <span
+                    className={cx(styles.swipeArrow, swiped.ready && styles.ready)}
+                    style={{ opacity: swiped.progress }}
+                  >
+                    <Icon name="reply" size={18} />
                   </span>
-                </button>
-              )}
-              {swiped && (
-                <span
-                  className={cx(styles.swipeArrow, swiped.ready && styles.ready)}
-                  style={{ opacity: swiped.progress }}
-                >
-                  <Icon name="reply" size={18} />
-                </span>
-              )}
-              {menu?.id === message.id && (
-                <MessageMenu
-                  actions={menu.actions}
-                  text={message.kind === MessageKind.Text ? message.text : null}
-                  mine={mine}
-                  onClose={() => setMenu(null)}
-                  onAction={action => act(message.id, action)}
-                />
-              )}
+                )}
+                {menu?.id === message.id && (
+                  <MessageMenu
+                    actions={menu.actions}
+                    text={message.kind === MessageKind.Text ? message.text : null}
+                    mine={mine}
+                    onClose={() => setMenu(null)}
+                    onAction={action => act(message.id, action)}
+                  />
+                )}
+              </div>
             </div>
           </Fragment>
         );

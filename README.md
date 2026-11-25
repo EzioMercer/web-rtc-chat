@@ -17,8 +17,9 @@ Live: https://eziomercer.github.io/web-rtc-chat/
 - 📍 **Share your location**, once or live
 - 📬 **Time and delivery marks** on every message: ◷ waiting, ↻ sent again, ✓ sent, ✓✓ delivered; what waits
   goes by itself when you're both online
-- ↩️ **Replies**: answer any message, file, voice message or location; swipe left on a phone, the arrow beside
-  the bubble on a computer, or the menu. A tap on the quote shows the message answered
+- ↩️ **Replies**: answer any message, file, voice message or location; on a phone swipe left anywhere on its
+  line (no need to reach the bubble), on a computer the arrow beside the bubble, or the menu. A tap on the quote
+  shows the message answered
 - 🗑️ **Delete for me**: a message, file or location goes from your device only
 - 🔵 **Unread chats**: a count on each chat and an "Unread messages" line where you stopped; mark a chat as read,
   or as unread with a dot, or every chat as read at once

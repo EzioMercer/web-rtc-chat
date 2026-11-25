@@ -560,12 +560,27 @@ const SAMPLES = `${MODULES}
 `;
 
 // A finger on the screen (Chromium's own touch events, so the browser decides about scrolling as for a real one).
-const fingerSwipe = async (page, element, dx, dy, lift = true) => {
+// Where a finger starts on a message's line: on the bubble, or beside it on the empty side (left of ours, right of
+// theirs), where a thumb reaches without stretching.
+const startX = async (page, element, beside) => {
+  const box = await element.boundingBox();
+  const width = page.viewportSize().width;
+
+  if (!beside) {
+    return box.x + box.width / 2;
+  }
+
+  // Ours reach the right side.
+  return box.x + box.width > width - 30 ? 24 : width - 24;
+};
+
+// `beside`: the finger starts beside the bubble, not on it.
+const fingerSwipe = async (page, element, dx, dy, lift = true, beside = false) => {
   await element.scrollIntoViewIfNeeded();
 
   const box = await element.boundingBox();
   const cdp = await page.context().newCDPSession(page);
-  const x = box.x + box.width / 2;
+  const x = await startX(page, element, beside);
   const y = box.y + box.height / 2;
 
   const touch = (type, px, py) => cdp.send('Input.dispatchTouchEvent', {
@@ -587,23 +602,35 @@ const fingerSwipe = async (page, element, dx, dy, lift = true) => {
   return () => touch('touchEnd');
 };
 
-// The same with pointer events sent from the page, for WebKit.
-const pointerSwipe = (element, dx, lift = true) => element.evaluate(async (el, { d, l }) => {
-  const box = el.getBoundingClientRect();
-  const base = { bubbles: true, pointerType: 'touch', pointerId: 7, isPrimary: true, clientY: box.y + box.height / 2 };
-  const x = box.x + box.width / 2;
+// The same with pointer events sent from the page, for WebKit: on the bubble, or on its line beside it.
+const pointerSwipe = async (page, element, dx, lift = true, beside = false) => {
+  const x = await startX(page, element, beside);
 
-  el.dispatchEvent(new PointerEvent('pointerdown', { ...base, clientX: x }));
+  await element.evaluate(async (bubbleElement, { d, l, b, startAt }) => {
+    // Beside the bubble the finger is on its line (the bubble's parent).
+    const el = b ? bubbleElement.parentElement : bubbleElement;
+    const box = bubbleElement.getBoundingClientRect();
+    const y = box.y + box.height / 2;
+    const base = { bubbles: true, pointerType: 'touch', pointerId: 7, isPrimary: true, clientY: y };
 
-  for (let i = 1; i <= 8; i += 1) {
-    el.dispatchEvent(new PointerEvent('pointermove', { ...base, clientX: x + (d * i) / 8 }));
-    await new Promise(resolve => setTimeout(resolve, 16));
-  }
+    el.dispatchEvent(new PointerEvent('pointerdown', { ...base, clientX: startAt }));
 
-  if (l) {
-    el.dispatchEvent(new PointerEvent('pointerup', { ...base, clientX: x + d }));
-  }
-}, { d: dx, l: lift });
+    for (let i = 1; i <= 8; i += 1) {
+      el.dispatchEvent(new PointerEvent('pointermove', { ...base, clientX: startAt + (d * i) / 8 }));
+      await new Promise(resolve => setTimeout(resolve, 16));
+    }
+
+    if (l) {
+      el.dispatchEvent(new PointerEvent('pointerup', { ...base, clientX: startAt + d }));
+    }
+  }, { d: dx, l: lift, b: beside, startAt: x });
+};
+
+// The id of the message the reply bar answers.
+const replyingTo = page => run(page, `
+  const { store } = await import('/web-rtc-chat/src/store/store.ts');
+  return store.getState().ui.replying.manual ?? null;
+`);
 
 const drawn = async (label, engine, device) => {
   log(`--- ${label}`);
@@ -660,6 +687,41 @@ const drawn = async (label, engine, device) => {
       check(await replyBar(page).isVisible(), `${label}: Reply from the menu`);
       await replyBar(page).click();
 
+      // A long swipe to the left answers, on the bubble or beside it on its line (theirs from the right side of the
+      // screen, ours from the left), so the thumb needn't reach the bubble.
+      const swipeOnce = async (id, beside) => {
+        if (realFinger) {
+          await fingerSwipe(page, bubble(page, id), -90, 0, true, beside);
+        } else {
+          await pointerSwipe(page, bubble(page, id), -90, true, beside);
+        }
+
+        await waitFor('bar', 3, () => replyBar(page).isVisible());
+
+        const answered = await replyingTo(page);
+
+        if (await replyBar(page).isVisible()) {
+          await replyBar(page).click();
+        }
+
+        await pause(300);
+
+        return answered;
+      };
+
+      check(await swipeOnce('p.a2', false) === 'p.a2', `${label}: a swipe on their bubble answers it`);
+      check(await swipeOnce('p.a2', true) === 'p.a2', `${label}: a swipe beside their bubble answers it`);
+      check(await swipeOnce('a3', true) === 'a3', `${label}: a swipe beside our bubble answers it`);
+
+      // A tap beside a bubble does nothing.
+      const line = await bubble(page, 'p.a2').boundingBox();
+
+      await page.touchscreen.tap(page.viewportSize().width - 24, line.y + line.height / 2);
+      check(
+        await page.getByRole('menu').count() === 0 && !await replyBar(page).isVisible(),
+        `${label}: a tap beside a bubble opens nothing`,
+      );
+
       // A short swipe, or up and down, doesn't answer; a long one to the left does.
       const target = bubble(page, 'p.a2');
 
@@ -673,7 +735,7 @@ const drawn = async (label, engine, device) => {
         await fingerSwipe(page, target, 80, 0);
         check(!await replyBar(page).isVisible(), `${label}: a swipe to the right doesn't answer`);
 
-        const lift = await fingerSwipe(page, target, -90, 0, false);
+        const lift = await fingerSwipe(page, target, -90, 0, false, true);
 
         check(
           /translateX\(-/.test(await target.getAttribute('style') ?? ''),
@@ -682,15 +744,15 @@ const drawn = async (label, engine, device) => {
         await shot(page, `${label}-swiping`);
         await lift();
       } else {
-        await pointerSwipe(target, -30);
+        await pointerSwipe(page, target, -30);
         check(!await replyBar(page).isVisible(), `${label}: a short swipe doesn't answer`);
-        await pointerSwipe(target, -90, false);
+        await pointerSwipe(page, target, -90, false, true);
         check(
           /translateX\(-/.test(await target.getAttribute('style') ?? ''),
           `${label}: the bubble follows the finger`,
         );
         await shot(page, `${label}-swiping`);
-        await target.evaluate(el => el.dispatchEvent(new PointerEvent('pointerup', {
+        await target.evaluate(el => el.parentElement.dispatchEvent(new PointerEvent('pointerup', {
           bubbles: true,
           pointerType: 'touch',
           pointerId: 7,
