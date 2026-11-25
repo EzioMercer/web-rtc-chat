@@ -99,9 +99,9 @@ export const ChatPane = ({ id }: Props) => {
           Not verified yet. Tap to compare the safety code.
         </button>
       )}
-      {status === SessionStatus.Connecting && detail && (
+      {status === SessionStatus.Connecting && (
         <div className={styles.offline}>
-          <span>{detail}</span>
+          <span>{detail || 'Connecting…'}</span>
           <button className={styles.retry} type="button" onClick={() => setShowLog(!showLog)}>Details</button>
         </div>
       )}

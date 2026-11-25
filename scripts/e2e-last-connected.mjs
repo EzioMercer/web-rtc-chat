@@ -160,6 +160,19 @@ const shot = async (page, name) => {
   }
 };
 
+// The header and the bar under it.
+const shotWithBar = async (page, name) => {
+  if (SHOTS) {
+    const top = await header(page).boundingBox();
+    const bar = await page.locator('[class*="offline"]').boundingBox();
+
+    await page.screenshot({
+      path: `${SHOTS}/${name}.png`,
+      clip: { x: top.x, y: top.y, width: top.width, height: bar.y + bar.height - top.y },
+    });
+  }
+};
+
 // The words for each distance, in Berlin's time zone (a clock change on 29 March 2026).
 const words = async () => {
   log('--- words');
@@ -298,6 +311,17 @@ const flow = async (type, name) => {
 
   check(await plain.count() === 1, 'not connected: the log button names no route');
   await shot(a.page, `${name}-today`);
+
+  // While connecting, the header keeps the time and the bar below says what is happening.
+  await setStatus(a.page, 'Connecting');
+
+  const connecting = await subtitle(a.page);
+
+  check(connecting === text, `connecting: the header keeps "${text}" (got "${connecting}")`);
+  check(await a.page.locator('[class*="offline"]').count() === 1, 'connecting: the bar below says so');
+  await shotWithBar(a.page, `${name}-connecting`);
+  await setStatus(a.page, 'Offline');
+  await shotWithBar(a.page, `${name}-offline`);
 
   // Saved: after a reload it is still there.
   await new Promise(resolve => setTimeout(resolve, 1000));
