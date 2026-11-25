@@ -29,6 +29,7 @@ import {
   unreadArrived,
   unreadSeen,
   markedUnread,
+  chatsRead,
 } from './chat/chatSlice.ts';
 import { type ChatState, MessageAuthor, MessageKind } from './chat/types.ts';
 import {
@@ -164,7 +165,15 @@ persistence.startListening({
 });
 
 persistence.startListening({
-  matcher: isAnyOf(unreadArrived, unreadSeen, markedUnread, conversationRead, messageDeleted, conversationCleared),
+  matcher: isAnyOf(
+    unreadArrived,
+    unreadSeen,
+    markedUnread,
+    conversationRead,
+    chatsRead,
+    messageDeleted,
+    conversationCleared,
+  ),
   effect: async (_action, api) => {
     await saveUnread((api.getState() as State).chat.unread).catch(() => undefined);
   },

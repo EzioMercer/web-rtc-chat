@@ -21,7 +21,7 @@ Live: https://eziomercer.github.io/web-rtc-chat/
   the bubble on a computer, or the menu. A tap on the quote shows the message answered
 - 🗑️ **Delete for me**: a message, file or location goes from your device only
 - 🔵 **Unread chats**: a count on each chat and an "Unread messages" line where you stopped; mark a chat as read,
-  or as unread with a dot
+  or as unread with a dot, or every chat as read at once
 - 📅 **Days**: messages are grouped by day (Today, Yesterday, a weekday, a date), in your own time zone
 - 🖼️ **Profile**: picture, phone number and description, seen only by your contacts
 - 🔒 **End-to-end encrypted**: no server ever sees your messages
@@ -88,8 +88,8 @@ Live: https://eziomercer.github.io/web-rtc-chat/
      leaves only its id, hidden, for about an hour, so a copy they send again doesn't bring it back.
    - **Unread:** the app keeps, on your device only, which of their messages was the first you haven't seen. The
      count is their messages from there on, and opening the chat starts at an "Unread messages" line above it. A chat's
-     menu marks it as read without opening it, or as unread (a dot, until you open it). Nothing about reading is sent
-     to the other person. Times are saved as one moment for the whole world (UTC) and shown in your own time zone.
+     menu marks it as read without opening it, or as unread (a dot, until you open it); the button beside Settings
+     marks every chat as read. Nothing about reading is sent to the other person. Times are saved as one moment for the whole world (UTC) and shown in your own time zone.
 
 Some networks block direct connections. Then the browsers send their (still end-to-end encrypted) traffic through
 a **TURN relay** on Cloudflare instead. It can't read anything and stores nothing. The status then says "through TURN

@@ -3,10 +3,10 @@
 // unread one lowers the count, a message that waited is put before ones already read and becomes the first unread
 // one, a hidden tab counts and coming back shows the line, the count stays after a reload, opening the chat shows the
 // "Unread messages" line above the first unread one (it stays while the chat is open), Mark as unread (a dot, no
-// number), Mark as read. Then, in a page of its own with a set clock and time zone: the day labels (Today,
-// Yesterday, a weekday, a date, a date with its year), the device's own time zone deciding the day, and Today turning
-// into Yesterday at midnight. Chromium with Chromium, then Chromium with WebKit. It reaches into the app's modules,
-// which only the dev server serves, so run it against that:
+// number), Mark as read, Mark all as read. Then, in a page of its own with a set clock and time zone: the day labels
+// (Today, Yesterday, a weekday, a date, a date with its year), the device's own time zone deciding the day, and Today
+// turning into Yesterday at midnight. Chromium with Chromium, then Chromium with WebKit. It reaches into the app's
+// modules, which only the dev server serves, so run it against that:
 //   VITE_TURN_URL= npx vite --port 5173 --strictPort &   then   node scripts/e2e-unread.mjs [screenshot folder]
 import { chromium, webkit } from 'playwright';
 
@@ -338,6 +338,43 @@ const unread = async (type, name) => {
   await a.page.getByRole('button', { name: 'Settings' }).waitFor();
   await waitFor('the chat loaded', 10, async () => (await state(a.page)).messages.length > 0);
   check((await state(a.page)).unread?.dot === true, 'a dot stays after a reload');
+
+  // Mark all as read: a second chat with a count, beside this one's dot; the button clears both, then hides.
+  const markAll = a.page.getByRole('button', { name: 'Mark all as read' });
+
+  await pretendContact(a.page, 'friend');
+  await a.page.evaluate(async () => {
+    const { store } = await import('/web-rtc-chat/src/store/store.ts');
+    const { peerTextReceived, unreadArrived } = await import('/web-rtc-chat/src/store/chat/chatSlice.ts');
+
+    store.dispatch(peerTextReceived({ key: 'friend', id: 'p.f1', text: 'from a friend', at: Date.now() }));
+    store.dispatch(unreadArrived({ key: 'friend', id: 'p.f1' }));
+  });
+  check(await markAll.count() === 1, 'with unread chats, Mark all as read shows');
+
+  if (SHOTS) {
+    await a.page.locator('aside').screenshot({ path: `${SHOTS}/mark-all-${name}.png` });
+  }
+
+  await markAll.click();
+
+  const allUnread = () => a.page.evaluate(async () => {
+    const { store } = await import('/web-rtc-chat/src/store/store.ts');
+
+    return store.getState().chat.unread;
+  });
+
+  check(Object.keys(await allUnread()).length === 0, 'Mark all as read clears the count and the dot');
+  check(await markAll.count() === 0, 'and then it hides');
+  await a.page.evaluate(async () => {
+    const { historySaver } = await import('/web-rtc-chat/src/core/history/historySaver.ts');
+
+    await historySaver.flush();
+  });
+  await a.page.reload();
+  await a.page.getByRole('button', { name: 'Settings' }).waitFor();
+  await waitFor('the chat loaded', 10, async () => (await state(a.page)).messages.length > 0);
+  check(Object.keys(await allUnread()).length === 0, 'all still read after a reload');
 
   await a.browser.close();
   await b.browser.close();

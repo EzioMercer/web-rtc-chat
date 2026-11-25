@@ -388,9 +388,16 @@ const chatSlice = createSlice({
         unread.from = payload.id;
       }
     },
-    // Opened, or marked as read: no count and no dot.
+    // Opened: no count and no dot.
     conversationRead: (state, { payload }: PayloadAction<string>) => {
       delete state.unread[payload];
+    },
+    // Marked as read without opening: these chats lose their count and dot. One chat from its menu, or every unread
+    // one at once.
+    chatsRead: (state, { payload }: PayloadAction<string[]>) => {
+      for (const key of payload) {
+        delete state.unread[key];
+      }
     },
     // The open chat came into view again (the tab was hidden): what came meanwhile is seen. A dot stays: only
     // opening the chat or marking it as read takes it away.
@@ -435,6 +442,7 @@ export const {
   messageDeleted,
   unreadArrived,
   conversationRead,
+  chatsRead,
   unreadSeen,
   markedUnread,
   historyLoaded,

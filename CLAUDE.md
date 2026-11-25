@@ -126,8 +126,10 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
   as unread by hand). The count is worked out from the chat (`unreadCount`), never saved. `noteUnread` sets `from`
   when theirs comes while the chat isn't in view (or moves it back to one that waited); deleting it moves `from` to
   the next. Opening (`selectConversation`) puts the "Unread messages" line (`ui.unreadLine`, not saved) there and
-  clears both; coming back to the tab (`seeConversation`) clears only `from`. A message's `at` is ms since 1970 (UTC),
-  shown in the device's time zone; the list draws a label where the day changes (`formatDay`, `useToday`).
+  clears both; coming back to the tab (`seeConversation`) clears only `from`. Mark as read takes a list
+  (`chatsRead`): one chat from its menu, every unread one from the sidebar (`markAllChatsRead`). A message's `at` is
+  ms since 1970 (UTC), shown in the device's time zone; the list draws a label where the day changes (`formatDay`,
+  `useToday`).
 - **Echo guard:** the side that hears its own voice back (`useEchoDetector`) sends `echo`; the other side is asked
   (`EchoPrompt`) and its `useEchoGuard` turns the microphone off while they talk. Both only read
   `getStats()` levels: no Web Audio during calls (it breaks phones' echo filters).

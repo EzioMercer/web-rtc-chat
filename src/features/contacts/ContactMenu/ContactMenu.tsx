@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { conversationRead, markedUnread } from '../../../store/chat/chatSlice.ts';
+import { chatsRead, markedUnread } from '../../../store/chat/chatSlice.ts';
 import { favouriteToggled } from '../../../store/contacts/contactsSlice.ts';
 import type { Contact } from '../../../store/contacts/types.ts';
 import { clearConversation } from '../../../store/thunks/chat/clearConversation.ts';
@@ -84,7 +84,7 @@ export const ContactMenu = ({ contact, onClose }: Props) => {
         type="button"
         role="menuitem"
         onClick={() => {
-          dispatch(unread ? conversationRead(contact.id) : markedUnread(contact.id));
+          dispatch(unread ? chatsRead([contact.id]) : markedUnread(contact.id));
           onClose();
         }}
       >

@@ -23,6 +23,11 @@
   font-size: 19px;
 }
 
+.actions {
+  display: flex;
+  gap: 4px;
+}
+
 .add {
   padding: 12px 8px 4px;
 }
