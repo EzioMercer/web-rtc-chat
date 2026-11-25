@@ -101,6 +101,7 @@ const pretendContact = (page, id = 'manual') => page.evaluate(async (contactId) 
     myKey: key.publicKey,
     secrets: ['s'.repeat(43)],
     sendSecret: 's'.repeat(43),
+    lastConnected: null,
   }));
   store.dispatch(sessionStatusChanged({ key: contactId, status: SessionStatus.Connected }));
 }, id);

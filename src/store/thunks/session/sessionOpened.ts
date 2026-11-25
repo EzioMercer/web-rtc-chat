@@ -6,6 +6,7 @@ import { addMessage } from '../../chat/chatSlice.ts';
 import { connected } from '../../manual/manualSlice.ts';
 import { sessionDetail, sessionStatusChanged } from '../../sessions/sessionsSlice.ts';
 import type { AppThunk } from '../../store.ts';
+import { noteConnected } from '../contact/noteConnected.ts';
 import { reconnectAttempts } from '../contact/reconnectAttempts.ts';
 import { startRotation } from '../contact/startRotation.ts';
 import { offerProfile } from '../profile/offerProfile.ts';
@@ -28,6 +29,7 @@ export const sessionOpened = (session: Session): AppThunk<Promise<void>> => asyn
   dispatch(watchPaths());
 
   dispatch(sendPending(session.key));
+  dispatch(noteConnected(session.key));
 
   if (session.key === MANUAL_KEY) {
     // No identities here, so the safety code comes from the two certificate fingerprints.

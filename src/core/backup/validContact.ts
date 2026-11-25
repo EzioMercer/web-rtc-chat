@@ -16,5 +16,6 @@ export const validContact = (contact: unknown): contact is Contact => {
     && Array.isArray(c.secrets) && c.secrets.every(isText)
     && (c.picture === undefined || isPicture(c.picture))
     && (c.phone === undefined || isPhone(c.phone))
-    && (c.about === undefined || isAbout(c.about));
+    && (c.about === undefined || isAbout(c.about))
+    && (c.lastConnected === null || (Number.isSafeInteger(c.lastConnected) && Number(c.lastConnected) >= 0));
 };

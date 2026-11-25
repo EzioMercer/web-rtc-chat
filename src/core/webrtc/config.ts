@@ -38,6 +38,10 @@ export const MOVE_SWITCH_MS = 5000;
 export const MOVE_HOLD_MS = 30_000;
 export const MOVE_FILES_CHECK_MS = 5000;
 
+// While a contact's connection stays open, its "last connected" time is renewed this often (checked with the paths,
+// see watchPaths), so it stays about right when the tab closes without the connection closing first.
+export const LAST_CONNECTED_EVERY_MS = 5 * 60_000;
+
 // The camera's picture size in calls (the browser picks the nearest the camera can do).
 export const CAMERA_VIDEO: MediaTrackConstraints = { width: { ideal: 1280 }, height: { ideal: 720 } };
 

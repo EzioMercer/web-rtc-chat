@@ -8,6 +8,7 @@ import { failureDetail } from '../../../core/webrtc/failureDetail.ts';
 import { sessionDetail, sessionLogged, sessionStatusChanged } from '../../sessions/sessionsSlice.ts';
 import type { AppThunk } from '../../store.ts';
 import { endCall } from '../call/endCall.ts';
+import { noteConnected } from '../contact/noteConnected.ts';
 import { scheduleReconnect } from '../contact/scheduleReconnect.ts';
 import { SessionStatus } from '../../sessions/types.ts';
 import { MessageAuthor } from '../../chat/types.ts';
@@ -31,6 +32,10 @@ export const sessionDropped = (session: Session): AppThunk => (dispatch, getStat
 
   closeSession(session);
   dispatch(connectionLost(key));
+
+  if (session.opened) {
+    dispatch(noteConnected(key));
+  }
 
   if (getState().call.key === key) {
     dispatch(endCall('Call ended.'));

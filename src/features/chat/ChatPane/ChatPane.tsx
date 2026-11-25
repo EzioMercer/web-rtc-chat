@@ -11,7 +11,8 @@ import { IconButton } from '../../../ui/IconButton/IconButton.tsx';
 import { SafetyPanel } from '../../contacts/SafetyPanel/SafetyPanel.tsx';
 import styles from './ChatPane.module.css';
 import { getStatusText } from './getStatusText.ts';
-import { SessionStatus } from '../../../store/sessions/types.ts';
+import { SessionRoute, SessionStatus } from '../../../store/sessions/types.ts';
+import { useToday } from '../../../hooks/useToday.ts';
 import { IconButtonVariant } from '../../../ui/IconButton/IconButtonVariant.ts';
 
 // While a contact's chat is open and they are offline, check again this often.
@@ -33,6 +34,9 @@ export const ChatPane = ({ id }: Props) => {
   // Open until the contact is verified, so a new contact shows the code right away.
   const [showSafety, setShowSafety] = useState(() => !contact?.verified);
   const connected = status === SessionStatus.Connected;
+  // "yesterday" and "3 days ago" move on at midnight.
+  const today = useToday();
+  const relay = connected && route === SessionRoute.Relay;
 
   useEffect(() => {
     if (status !== SessionStatus.Offline) {
@@ -52,14 +56,17 @@ export const ChatPane = ({ id }: Props) => {
     <ChatHeader
       convKey={id}
       title={contact.name}
-      subtitle={`${getStatusText(status, route)}${contact.verified ? ' · verified' : ''}`}
+      subtitle={getStatusText(status, contact.lastConnected, today)}
       connected={connected}
       avatar={<Avatar picture={contact.picture} name={contact.name} size={36} />}
       actions={(
         <>
+          {/* Its icon shows how the open connection travels: straight between the devices, or through the relay. */}
           <IconButton
-            icon="link"
-            label="Connection log"
+            icon={relay ? 'cloud' : 'link'}
+            label={connected
+              ? `Connection log (${relay ? 'through TURN relay' : 'direct connection'})`
+              : 'Connection log'}
             variant={showLog ? IconButtonVariant.Neutral : IconButtonVariant.Plain}
             onClick={() => setShowLog(!showLog)}
           />

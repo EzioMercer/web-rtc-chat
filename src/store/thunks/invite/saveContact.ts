@@ -42,6 +42,7 @@ export const saveContact = ({ id, name, identity, secret, safety, replaceId }: N
     safety,
     secrets: [secret],
     sendSecret: secret,
+    lastConnected: old?.lastConnected ?? null,
   };
 
   // Saved with the contact list (see persistence), so it must be in place first.

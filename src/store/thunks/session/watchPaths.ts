@@ -4,6 +4,7 @@ import { sessions } from '../../../core/webrtc/state.ts';
 import { ensureTurnServers, turnServers } from '../../../core/webrtc/turnServers.ts';
 import type { Session } from '../../../core/webrtc/types.ts';
 import type { AppThunk } from '../../store.ts';
+import { noteConnected } from '../contact/noteConnected.ts';
 import { startMove } from '../move/startMove.ts';
 import { checkRoute } from './checkRoute.ts';
 import { refreshIceServers } from './rescuePath.ts';
@@ -50,6 +51,10 @@ const check = (): AppThunk<Promise<void>> => async (dispatch) => {
   await ensureTurnServers();
 
   for (const session of open) {
+    if (session.peer.connectionState === 'connected') {
+      dispatch(noteConnected(session.key, true));
+    }
+
     // Before they expire, give the connection new TURN credentials, so the next path search (ours or the other
     // side's) uses them.
     await refreshIceServers(session);
@@ -58,7 +63,8 @@ const check = (): AppThunk<Promise<void>> => async (dispatch) => {
   }
 };
 
-// Keeps an eye on every open connection, once a minute (started when the first one opens).
+// Keeps an eye on every open connection, and keeps its contact's "last connected" time fresh, once a minute (started
+// when the first one opens).
 export const watchPaths = (): AppThunk => (dispatch) => {
   timer ??= window.setInterval(() => void dispatch(check()), PATH_CHECK_MS);
 };

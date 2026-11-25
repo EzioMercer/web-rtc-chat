@@ -1,14 +1,14 @@
-import { SessionStatus, SessionRoute } from '../../../store/sessions/types.ts';
+import { formatLastConnected } from '../../../utils/formatLastConnected.ts';
+import { SessionStatus } from '../../../store/sessions/types.ts';
 
-export const getStatusText = (status: SessionStatus, route: SessionRoute | undefined): string => {
+// Under the contact's name, as other messengers show it: online, or when we were last connected to them.
+export const getStatusText = (status: SessionStatus, lastConnected: number | null, today: number): string => {
   switch (status) {
     case SessionStatus.Connected:
-      return route === SessionRoute.Relay ? 'Online · through TURN relay' : 'Online · direct connection';
+      return 'online';
     case SessionStatus.Connecting:
-      return 'Connecting…';
-    case SessionStatus.Offline:
-      return 'Offline';
+      return 'connecting…';
     default:
-      return 'Not connected';
+      return lastConnected === null ? 'not connected' : formatLastConnected(lastConnected, today);
   }
 };

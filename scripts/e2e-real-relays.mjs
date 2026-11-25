@@ -61,8 +61,8 @@ const add = async ([a, aName], [b, bName]) => {
   await a.getByRole('button', { name: 'Accept' }).click();
 
   try {
-    await a.getByText('Online · direct connection').waitFor({ timeout: 60000 });
-    await b.getByText('Online · direct connection').waitFor({ timeout: 30000 });
+    await a.getByText('online', { exact: true }).waitFor({ timeout: 60000 });
+    await b.getByText('online', { exact: true }).waitFor({ timeout: 30000 });
   } catch {
     await showLogs([[a, aName], [b, bName]]);
     fail(`${aName} and ${bName} did not connect`);
@@ -112,7 +112,7 @@ log('a text arrived');
 
 await a.reload();
 await a.getByRole('button', { name: /Carol/ }).first().click();
-await a.getByText('Online · direct connection').waitFor({ timeout: 60000 });
+await a.getByText('online', { exact: true }).waitFor({ timeout: 60000 });
 await a.getByPlaceholder('Type a message…').fill('after reload');
 await a.keyboard.press('Enter');
 await c.getByText('after reload').waitFor({ timeout: 15000 });

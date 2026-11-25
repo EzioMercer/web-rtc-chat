@@ -110,6 +110,7 @@ const pretendContact = (page, name = 'Peer') => page.evaluate(async (contactName
     myKey: key.publicKey,
     secrets: ['s'.repeat(43)],
     sendSecret: 's'.repeat(43),
+    lastConnected: null,
   }));
 }, name);
 

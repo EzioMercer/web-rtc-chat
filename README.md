@@ -22,6 +22,8 @@ Live: https://eziomercer.github.io/web-rtc-chat/
 - 🗑️ **Delete for me**: a message, file or location goes from your device only
 - 🔵 **Unread chats**: a count on each chat and an "Unread messages" line where you stopped; mark a chat as read,
   or as unread with a dot, or every chat as read at once
+- 🟢 **Online and last connected**: "online" while you're connected, then "last connected at 20:13", "yesterday",
+  "3 days ago" and so on; an icon shows whether you're connected directly or through the relay
 - 📅 **Days**: messages are grouped by day (Today, Yesterday, a weekday, a date), in your own time zone
 - 🖼️ **Profile**: picture, phone number and description, seen only by your contacts
 - 🔒 **End-to-end encrypted**: no server ever sees your messages
@@ -90,10 +92,15 @@ Live: https://eziomercer.github.io/web-rtc-chat/
      count is their messages from there on, and opening the chat starts at an "Unread messages" line above it. A chat's
      menu marks it as read without opening it, or as unread (a dot, until you open it); the button beside Settings
      marks every chat as read. Nothing about reading is sent to the other person. Times are saved as one moment for the whole world (UTC) and shown in your own time zone.
+   - **Last connected:** under a contact's name the chat shows "online" while you're connected, otherwise when you
+     were last connected to them: the time today, "yesterday", the number of days within a week, then weeks, months
+     and years, counted by the calendar. It is what your device saw, saved only there (renewed every 5 minutes while
+     connected), not when they were last online: nothing is sent for it, and the app connects to a contact only when
+     there is something to send or their chat is open.
 
 Some networks block direct connections. Then the browsers send their (still end-to-end encrypted) traffic through
-a **TURN relay** on Cloudflare instead. It can't read anything and stores nothing. The status then says "through TURN
-relay". While on the relay, video quality is lowered and files (also voice and video messages) can be up to 10 MB,
+a **TURN relay** on Cloudflare instead. It can't read anything and stores nothing. The connection log button in the chat
+then shows a cloud instead of a link. While on the relay, video quality is lowered and files (also voice and video messages) can be up to 10 MB,
 to save traffic. Every 5 minutes the app looks for a
 direct path again and moves to it when it works. During a call this is done with care, because a direct path can
 work for a moment only and take the call down with it: the app opens a second, direct-only connection next to the

@@ -96,7 +96,12 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
   the track on the senders (`replaceCamera`, no new offer); turning the camera on after an audio-only answer
   (`startCamera`) adds a track, which sends a new offer.
 - **Route shown** (`checkRoute`): through TURN if either end of the selected path is the relay. Their relay address
-  can look ordinary to us ("prflx"), so each side tells the other about its own end (`ControlType.Route`).
+  can look ordinary to us ("prflx"), so each side tells the other about its own end (`ControlType.Route`). The chat
+  header shows it as the Connection log button's icon (link or cloud).
+- **Last connected** (`Contact.lastConnected`, `noteConnected`): set when a contact's connection opens, when it
+  closes, and every `LAST_CONNECTED_EVERY_MS` while open (from `watchPaths`' minute check), saved with the contacts.
+  The header shows "online" or `formatLastConnected` (calendar days, weeks, months, years). Only what this device
+  saw: nothing is sent for it.
 - **Profile** (`store/thunks/profile`): ours (picture, phone as "+994501234567", description) is in the `profile`
   slice, saved like the settings but put in backups (Info record). When a contact's connection opens, or we change
   ours, we send two hashes (`ControlType.Profile`): the picture's, and the phone and description's together. For each
@@ -201,6 +206,9 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
 - `scripts/e2e-unread.mjs` (same dev server): unread counts, the line, a hidden tab, a message that waited, Mark as
   read / unread, a reload, Chromium with Chromium and with WebKit; then the day labels with a set clock and time zone,
   and midnight passing; pass a folder to get screenshots.
+- `scripts/e2e-last-connected.mjs` (same dev server): the words for every distance (calendar months, a clock change),
+  the backup check, then "online", the route icon, the time renewed, set on close and kept after a reload, Chromium
+  with Chromium and with WebKit; pass a folder to get screenshots.
 - `scripts/check-turn.mjs`, `scripts/check-relays.mjs`.
 - Scripts import `playwright`. In the cloud container it is preinstalled outside the project: link it with
   `ln -sfn /opt/node-tools/node_modules/playwright node_modules/playwright` (never run `playwright install`).

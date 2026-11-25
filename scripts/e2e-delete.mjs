@@ -99,6 +99,7 @@ const pretendContact = page => page.evaluate(async () => {
     myKey: key.publicKey,
     secrets: ['s'.repeat(43)],
     sendSecret: 's'.repeat(43),
+    lastConnected: null,
   }));
 });
 
@@ -673,6 +674,7 @@ const run = async (typeB, nameB) => {
       myKey: 'k',
       secrets: ['t'.repeat(43)],
       sendSecret: 't'.repeat(43),
+      lastConnected: null,
     }));
     appStore.dispatch(sendMessage('other', 'while offline'));
     await appStore.dispatch(sendFiles('other', [new File(['hello'], 'offline.txt', { type: 'text/plain' })]));

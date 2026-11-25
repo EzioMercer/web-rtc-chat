@@ -78,6 +78,14 @@ const contactsSlice = createSlice({
         }
       }
     },
+    // We are connected to them, or just were, at `at`.
+    contactSeen: (state, { payload }: PayloadAction<{ id: string; at: number }>) => {
+      const contact = find(state, payload.id);
+
+      if (contact) {
+        contact.lastConnected = payload.at;
+      }
+    },
     // Moves `id` to where `beforeId` is (or to the end of its group when null).
     contactMoved: (state, { payload }: PayloadAction<{ id: string; beforeId: string | null }>) => {
       const from = state.list.findIndex(contact => contact.id === payload.id);
@@ -135,6 +143,7 @@ export const {
   pictureReceived,
   infoReceived,
   contactMoved,
+  contactSeen,
   secretProposed,
   secretAdopted,
   secretConfirmed,

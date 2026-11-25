@@ -100,6 +100,7 @@ const seed = (page, chats) => page.evaluate(async (chats) => {
       myKey: key.publicKey,
       secrets: [random(32)],
       sendSecret: random(32),
+      lastConnected: null,
     }));
     texts.forEach((text, i) => {
       if (i % 2) {

@@ -38,6 +38,7 @@ import {
   contactMoved,
   contactRenamed,
   contactReplaced,
+  contactSeen,
   favouriteToggled,
   infoReceived,
   pictureReceived,
@@ -55,7 +56,8 @@ import { refreshMailboxes } from './thunks/signal/refreshMailboxes.ts';
 
 type State = { contacts: { list: Contact[] }; chat: ChatState };
 
-// Saves the (encrypted) contact list and updates the mailboxes we listen on whenever contacts change.
+// Saves the (encrypted) contact list and updates the mailboxes we listen on whenever contacts change (a new "last
+// connected" time changes no mailbox).
 export const persistence = createListenerMiddleware();
 
 persistence.startListening({
@@ -65,6 +67,7 @@ persistence.startListening({
     contactMoved,
     contactRenamed,
     contactReplaced,
+    contactSeen,
     favouriteToggled,
     infoReceived,
     pictureReceived,
@@ -73,10 +76,15 @@ persistence.startListening({
     secretProposed,
     verifiedSet,
   ),
-  effect: async (_action, api) => {
+  effect: async (action, api) => {
     const { list } = (api.getState() as State).contacts;
 
     await saveContacts(list);
+
+    if (contactSeen.match(action)) {
+      return;
+    }
+
     // Typed loosely here to avoid a circular type between the store and its listeners.
     api.dispatch(refreshMailboxes() as never);
   },
