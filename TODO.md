@@ -2,8 +2,6 @@
 
 Only open items. Everything done is described in the README.
 
-- [ ] Pinning and unpinning a contact.
-- [ ] Last connected: when a contact was last connected to us.
 - [ ] Birthday in the profile.
 - [ ] Mood in the profile: a short status shown under the name.
 - [ ] Blocking a contact without deleting them: their relay notes and connections are ignored until unblocked.
