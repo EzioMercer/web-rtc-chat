@@ -100,7 +100,7 @@ const content = (convKey: string, message: Message) => {
     case MessageKind.File:
       return <FileBubble chat={convKey} file={message} />;
     case MessageKind.Text:
-      return message.text;
+      return <span className={styles.text}>{message.text}</span>;
     case MessageKind.Location:
       return <LocationBubble chat={convKey} location={message} />;
     default:

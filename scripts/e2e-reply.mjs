@@ -179,7 +179,7 @@ const rawControl = (page, message) => run(page, `
 
 const bubble = (page, id) => page.locator(`[data-id="${id}"]`);
 
-const field = page => page.locator('form input[type="text"]');
+const field = page => page.locator('form textarea');
 
 const replyBar = page => page.getByRole('button', { name: 'Cancel reply' });
 

@@ -3,7 +3,7 @@
 }
 
 .row {
-  align-items: center;
+  align-items: flex-end;
   display: flex;
   gap: 8px;
   padding: 12px;
@@ -14,7 +14,7 @@
   z-index: 2;
   display: flex;
   flex: 1;
-  align-items: center;
+  align-items: flex-end;
   gap: 8px;
   min-width: 0;
 }
@@ -27,6 +27,10 @@
   border-radius: var(--radius);
   padding: 10px 12px;
   outline: none;
+  /* One line to start; the component sets the height as the text grows, up to about six lines. */
+  max-height: calc(6lh + 22px);
+  overflow-y: auto;
+  resize: none;
   transition: border-color 0.15s;
 }
 

@@ -27,6 +27,11 @@
   overflow-wrap: anywhere;
 }
 
+/* A message's own line breaks are kept. */
+.text {
+  white-space: pre-wrap;
+}
+
 /* While the finger moves it the bubble follows at once; let go, it slides back. */
 .msg:not(.swiping) {
   transition: transform 0.2s;

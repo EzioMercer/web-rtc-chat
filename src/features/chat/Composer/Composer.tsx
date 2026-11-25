@@ -4,6 +4,7 @@ import {
   type FormEvent,
   type KeyboardEvent,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
 } from 'react';
@@ -38,7 +39,7 @@ export const Composer = ({ convKey, connected }: Props) => {
   // Which location window is open: a one-time place, or a live one.
   const [locating, setLocating] = useState<'once' | 'live' | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   // The message our next one answers, while it can still be answered (it may be deleted meanwhile).
   const replyId = useAppSelector(state => state.ui.replying[convKey]);
   const answering = useAppSelector(state => (replyId === undefined
@@ -65,21 +66,41 @@ export const Composer = ({ convKey, connected }: Props) => {
     }
   }, [replyId]);
 
+  // The box grows with the text, up to its max-height (then it scrolls).
+  useLayoutEffect(() => {
+    const box = inputRef.current;
+
+    if (box) {
+      box.style.height = 'auto';
+      box.style.height = `${box.scrollHeight + box.offsetHeight - box.clientHeight}px`;
+    }
+  }, [text]);
+
   const cancelReply = () => dispatch(replyEnded(convKey));
+
+  const send = () => {
+    if (dispatch(sendMessage(convKey, text))) {
+      setText('');
+    }
+  };
 
   const keyDown = (e: KeyboardEvent) => {
     if (e.key === 'Escape' && replyTo) {
       e.preventDefault();
       cancelReply();
     }
+
+    // With a real keyboard Enter sends and Shift+Enter starts a new line; on a phone's keyboard Enter is a new line
+    // and the Send button sends, like other messengers. Not while a word is being composed (Chinese, Japanese…).
+    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing && hasKeyboard()) {
+      e.preventDefault();
+      send();
+    }
   };
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-
-    if (dispatch(sendMessage(convKey, text))) {
-      setText('');
-    }
+    send();
   };
 
   const pickFiles = (e: ChangeEvent<HTMLInputElement>) => {
@@ -111,13 +132,16 @@ export const Composer = ({ convKey, connected }: Props) => {
               { icon: 'live', label: 'Live location', onPick: () => setLocating('live') },
             ]}
           />
-          <input
+          {/* A textarea, not an input: it takes several lines, and Chrome on Android doesn't put its password, card
+              and address bar over the keyboard for it. */}
+          <textarea
             ref={inputRef}
             className={styles.input}
-            type="text"
+            rows={1}
             value={text}
             placeholder={connected ? 'Type a message…' : offlineText}
             autoComplete="off"
+            enterKeyHint={hasKeyboard() ? 'send' : 'enter'}
             autoFocus={hasKeyboard()}
             disabled={!canType}
             onChange={e => setText(e.target.value)}
