@@ -26,7 +26,9 @@ import {
   fileWaiting,
   peerLocationReceived,
   peerTextReceived,
-  unreadAdded,
+  unreadArrived,
+  unreadSeen,
+  markedUnread,
 } from './chat/chatSlice.ts';
 import { type ChatState, MessageAuthor, MessageKind } from './chat/types.ts';
 import {
@@ -162,7 +164,7 @@ persistence.startListening({
 });
 
 persistence.startListening({
-  matcher: isAnyOf(unreadAdded, conversationRead, conversationCleared),
+  matcher: isAnyOf(unreadArrived, unreadSeen, markedUnread, conversationRead, messageDeleted, conversationCleared),
   effect: async (_action, api) => {
     await saveUnread((api.getState() as State).chat.unread).catch(() => undefined);
   },

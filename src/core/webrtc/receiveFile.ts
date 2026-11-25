@@ -4,7 +4,7 @@ import { memoryFiles } from '../history/memoryFiles.ts';
 import { fileAdded, fileCompleted, fileFailed, fileProgress, fileRestarted } from '../../store/chat/chatSlice.ts';
 import { peerMessageId } from '../../store/chat/peerMessageId.ts';
 import type { AppDispatch } from '../../store/store.ts';
-import { countUnread } from '../../store/thunks/chat/countUnread.ts';
+import { noteUnread } from '../../store/thunks/chat/noteUnread.ts';
 import { findMessage } from '../../store/thunks/chat/findMessage.ts';
 import { FILE_DONE, RESEND_MS } from './config.ts';
 import { fileTransfers } from './fileTransfers.ts';
@@ -148,10 +148,10 @@ export const receiveFile = (key: string, channel: RTCDataChannel, dispatch: AppD
         ...(packed ? { packed } : {}),
         ...(replyTo === undefined ? {} : { replyTo }),
         // They stop sending it again after RESEND_MS: a longer wait counts as sent now (see receivePeerText).
-        ...(waited && waited <= RESEND_MS ? { at: Date.now() - waited } : {}),
+        at: Date.now() - (typeof waited === 'number' && waited > 0 && waited <= RESEND_MS ? waited : 0),
       },
     }));
-    dispatch(countUnread(key));
+    dispatch(noteUnread(key, id));
 
     return true;
   };

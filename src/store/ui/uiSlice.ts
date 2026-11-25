@@ -4,6 +4,7 @@ import type { UiState } from './types.ts';
 const initialState: UiState = {
   selected: null,
   replying: {},
+  unreadLine: null,
 };
 
 const uiSlice = createSlice({
@@ -19,9 +20,12 @@ const uiSlice = createSlice({
     replyEnded: (state, { payload }: PayloadAction<string>) => {
       delete state.replying[payload];
     },
+    unreadLineSet: (state, { payload }: PayloadAction<UiState['unreadLine']>) => {
+      state.unreadLine = payload;
+    },
   },
 });
 
-export const { conversationSelected, replyStarted, replyEnded } = uiSlice.actions;
+export const { conversationSelected, replyStarted, replyEnded, unreadLineSet } = uiSlice.actions;
 
 export const uiReducer = uiSlice.reducer;

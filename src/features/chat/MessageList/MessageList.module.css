@@ -164,3 +164,38 @@
   -webkit-touch-callout: none;
   user-select: none;
 }
+
+/* The day above its messages. It stays at the top while that day's messages scroll under it; the next day's label
+   then covers it. */
+.day {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  align-self: center;
+  margin: 6px 0;
+  pointer-events: none;
+}
+
+.day span {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Above the first message that was unread when the chat was opened. Scrolled to with room for the day label. */
+.unreadLine {
+  align-self: stretch;
+  margin: 6px -16px;
+  padding: 4px 0;
+  background: var(--theirs);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  scroll-margin-top: 44px;
+}

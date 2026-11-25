@@ -3,7 +3,7 @@ import { useBackToList } from '../useBackToList.ts';
 import { historySaver } from '../../../core/history/historySaver.ts';
 import { reconnectRelays } from '../../../core/nostr/listen.ts';
 import { useCallSounds } from '../../calls/useCallSounds.ts';
-import { conversationRead } from '../../../store/chat/chatSlice.ts';
+import { seeConversation } from '../../../store/thunks/chat/seeConversation.ts';
 import { connectContact } from '../../../store/thunks/contact/connectContact.ts';
 import { openInvite } from '../../../store/thunks/invite/openInvite.ts';
 import { revokeFiles } from '../../../store/thunks/chat/revokeFiles.ts';
@@ -53,8 +53,8 @@ export const Messenger = () => {
 
     let hiddenAt = 0;
 
-    // Coming back to the tab marks the open conversation as read. After a while in the background (phones pause
-    // apps there), the relay connections are renewed and the open conversation reconnects.
+    // Coming back to the tab, what came to the open conversation meanwhile is seen. After a while in the background
+    // (phones pause apps there), the relay connections are renewed and the open conversation reconnects.
     const onVisible = () => {
       const key = store.getState().ui.selected;
 
@@ -65,7 +65,7 @@ export const Messenger = () => {
       }
 
       if (key) {
-        dispatch(conversationRead(key));
+        dispatch(seeConversation(key));
       }
 
       if (hiddenAt && Date.now() - hiddenAt > BACKGROUND_RENEW_MS) {

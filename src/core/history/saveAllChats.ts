@@ -1,4 +1,4 @@
-import { type Message, FileStatus, MessageAuthor, MessageKind } from '../../store/chat/types.ts';
+import { type Message, FileStatus, MessageAuthor, MessageKind, type Unread } from '../../store/chat/types.ts';
 import { historySaver } from './historySaver.ts';
 import { memoryFileKey } from './memoryFileKey.ts';
 import { memoryFiles } from './memoryFiles.ts';
@@ -7,7 +7,7 @@ import { saveUnread } from './saveUnread.ts';
 import { writePages } from './writePages.ts';
 
 // Saves these chats and their files from scratch (a temporary identity starts saving).
-export const saveAllChats = async (chats: Record<string, Message[]>, unread: Record<string, number>) => {
+export const saveAllChats = async (chats: Record<string, Message[]>, unread: Record<string, Unread>) => {
   historySaver.reset();
 
   for (const [chat, messages] of Object.entries(chats)) {

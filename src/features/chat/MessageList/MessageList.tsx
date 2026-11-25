@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState, type MouseEvent, type PointerEvent } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState, type MouseEvent, type PointerEvent } from 'react';
+import { useToday } from '../../../hooks/useToday.ts';
 import { canReply } from '../../../store/chat/canReply.ts';
 import { type Message, MessageAuthor, MessageKind, NoteType } from '../../../store/chat/types.ts';
 import { deleteMessage } from '../../../store/thunks/chat/deleteMessage.ts';
@@ -11,6 +12,8 @@ import { Icon } from '../../../ui/Icon/Icon.tsx';
 import { ConfirmDialog } from '../../../ui/ConfirmDialog/ConfirmDialog.tsx';
 import { MessageMeta } from '../../../ui/MessageMeta/MessageMeta.tsx';
 import { cx } from '../../../utils/cx.ts';
+import { formatDay } from '../../../utils/formatDay.ts';
+import { startOfDay } from '../../../utils/startOfDay.ts';
 import { LocationBubble } from '../../location/LocationBubble/LocationBubble.tsx';
 import { FileBubble } from '../FileBubble/FileBubble.tsx';
 import { MessageAction } from '../MessageMenu/MessageAction.ts';
@@ -28,6 +31,35 @@ type Props = {
 };
 
 const NONE: Message[] = [];
+
+// Where the day labels and the "Unread messages" line go: before the first shown message of each day, and before the
+// first shown one from `line` (the message that was the first unread one) on. Messages are almost always in time
+// order; one slightly out of it (it waited) never brings a day back, so no day shows twice.
+const listMarks = (messages: Message[], line: string | null) => {
+  const days = new Set<string>();
+  const lineAt = line === null ? -1 : messages.findIndex(message => message.id === line);
+  let lineBefore: string | null = null;
+  let lastDay = -Infinity;
+
+  messages.forEach((message, index) => {
+    if (message.kind === MessageKind.Deleted) {
+      return;
+    }
+
+    const day = startOfDay(message.at);
+
+    if (day > lastDay) {
+      days.add(message.id);
+      lastDay = day;
+    }
+
+    if (lineAt >= 0 && lineBefore === null && index >= lineAt) {
+      lineBefore = message.id;
+    }
+  });
+
+  return { days, lineBefore };
+};
 
 // A touch held longer than this is the phone's text selection, not a tap.
 const TAP_MS = 400;
@@ -96,6 +128,9 @@ export const MessageList = ({ convKey }: Props) => {
   // The message just shown from a quote.
   const [flash, setFlash] = useState<string | null>(null);
   const flashTimer = useRef(0);
+  const today = useToday();
+  const line = useAppSelector(state => (state.ui.unreadLine?.key === convKey ? state.ui.unreadLine.id : null));
+  const marks = useMemo(() => listMarks(messages, line), [messages, line]);
 
   const startReply = (id: string) => {
     setMenu(null);
@@ -229,6 +264,13 @@ export const MessageList = ({ convKey }: Props) => {
     }
   }, [last]);
 
+  // Opening a chat with unread messages starts at the first of them (after the newest was put in view above).
+  useEffect(() => {
+    if (line !== null) {
+      listRef.current?.querySelector(`.${styles.unreadLine}`)?.scrollIntoView({ block: 'start' });
+    }
+  }, [line]);
+
   return (
     <div ref={listRef} className={styles.list}>
       {messages.map((message) => {
@@ -242,106 +284,111 @@ export const MessageList = ({ convKey }: Props) => {
         const swiped = swipe.swipe?.id === message.id ? swipe.swipe : null;
 
         return (
-          <div
-            key={message.id}
-            data-id={message.id}
-            className={cx(
-              styles.msg,
-              styles[message.from],
-              tappable(message) ? styles.tappable : styles.holdable,
-              bare(message) && styles.bare,
-              message.kind === MessageKind.Location && styles.card,
-              flash === message.id && styles.flash,
-              swiped && styles.swiping,
+          <Fragment key={message.id}>
+            {marks.days.has(message.id) && (
+              <div className={styles.day}><span>{formatDay(message.at, today)}</span></div>
             )}
-            style={swiped ? { transform: `translateX(${swiped.offset}px)` } : undefined}
-            onPointerDown={(e) => {
-              press.current = { at: e.timeStamp, touch: e.pointerType !== 'mouse' };
-              swipe.down(e, message.id, answerable);
+            {marks.lineBefore === message.id && <div className={styles.unreadLine}>Unread messages</div>}
+            <div
+              data-id={message.id}
+              className={cx(
+                styles.msg,
+                styles[message.from],
+                tappable(message) ? styles.tappable : styles.holdable,
+                bare(message) && styles.bare,
+                message.kind === MessageKind.Location && styles.card,
+                flash === message.id && styles.flash,
+                swiped && styles.swiping,
+              )}
+              style={swiped ? { transform: `translateX(${swiped.offset}px)` } : undefined}
+              onPointerDown={(e) => {
+                press.current = { at: e.timeStamp, touch: e.pointerType !== 'mouse' };
+                swipe.down(e, message.id, answerable);
 
-              if (!tappable(message)) {
-                startHold(e, message.id);
-              }
-            }}
-            onPointerMove={(e) => {
-              if (swipe.move(e)) {
+                if (!tappable(message)) {
+                  startHold(e, message.id);
+                }
+              }}
+              onPointerMove={(e) => {
+                if (swipe.move(e)) {
+                  endHold();
+                } else if (!tappable(message)) {
+                  moveHold(e);
+                }
+              }}
+              onPointerUp={() => {
                 endHold();
-              } else if (!tappable(message)) {
-                moveHold(e);
-              }
-            }}
-            onPointerUp={() => {
-              endHold();
-              swipe.up();
-            }}
-            onPointerCancel={() => {
-              endHold();
-              swipe.cancel();
-            }}
-            onClickCapture={tappable(message) ? undefined : swallowClick}
-            onClick={tappable(message) ? e => tap(e, message.id) : undefined}
-            onContextMenu={e => (tappable(message) ? contextMenu(e, message.id) : holdMenu(e, message.id))}
-          >
-            {original && (
-              <ReplyQuote
-                message={original}
-                peerName={peerName}
-                onMine={mine && !bare(message)}
-                onOpen={() => showOriginal(original.id)}
-              />
-            )}
-            {content(convKey, message)}
-            {metaPlace(message) === 'corner' && (
-              <>
-                {message.kind === MessageKind.Text && (
-                  <span className={styles.room} aria-hidden="true">
-                    <MessageMeta {...metaFor(message)} />
-                  </span>
-                )}
-                <MessageMeta {...metaFor(message)} className={styles.corner} />
-              </>
-            )}
-            {metaPlace(message) === 'line' && (
-              <div className={styles.metaLine}>
-                <MessageMeta {...metaFor(message)} overlay={bare(message)} />
-              </div>
-            )}
-            {answerable && (
+                swipe.up();
+              }}
+              onPointerCancel={() => {
+                endHold();
+                swipe.cancel();
+              }}
+              onClickCapture={tappable(message) ? undefined : swallowClick}
+              onClick={tappable(message) ? e => tap(e, message.id) : undefined}
+              onContextMenu={e => (tappable(message) ? contextMenu(e, message.id) : holdMenu(e, message.id))}
+            >
+              {original && (
+                <ReplyQuote
+                  message={original}
+                  peerName={peerName}
+                  onMine={mine && !bare(message)}
+                  onOpen={() => showOriginal(original.id)}
+                />
+              )}
+              {content(convKey, message)}
+              {metaPlace(message) === 'corner' && (
+                <>
+                  {message.kind === MessageKind.Text && (
+                    <span className={styles.room} aria-hidden="true">
+                      <MessageMeta {...metaFor(message)} />
+                    </span>
+                  )}
+                  <MessageMeta {...metaFor(message)} className={styles.corner} />
+                </>
+              )}
+              {metaPlace(message) === 'line' && (
+                <div className={styles.metaLine}>
+                  <MessageMeta {...metaFor(message)} overlay={bare(message)} />
+                </div>
+              )}
+              {answerable && (
               // With a mouse: shows beside the bubble while the pointer is over it.
-              <button
-                className={styles.replyButton}
-                type="button"
-                title="Reply"
-                aria-label="Reply"
-                onPointerDown={e => e.stopPropagation()}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  startReply(message.id);
-                }}
-              >
-                <span className={styles.replyCircle}>
-                  <Icon name="reply" size={16} />
+                <button
+                  className={styles.replyButton}
+                  type="button"
+                  title="Reply"
+                  aria-label="Reply"
+                  onPointerDown={e => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    startReply(message.id);
+                  }}
+                >
+                  <span className={styles.replyCircle}>
+                    <Icon name="reply" size={16} />
+                  </span>
+                </button>
+              )}
+              {swiped && (
+                <span
+                  className={cx(styles.swipeArrow, swiped.ready && styles.ready)}
+                  style={{ opacity: swiped.progress }}
+                >
+                  <Icon name="reply" size={18} />
                 </span>
-              </button>
-            )}
-            {swiped && (
-              <span
-                className={cx(styles.swipeArrow, swiped.ready && styles.ready)}
-                style={{ opacity: swiped.progress }}
-              >
-                <Icon name="reply" size={18} />
-              </span>
-            )}
-            {menu?.id === message.id && (
-              <MessageMenu
-                actions={menu.actions}
-                text={message.kind === MessageKind.Text ? message.text : null}
-                mine={mine}
-                onClose={() => setMenu(null)}
-                onAction={action => act(message.id, action)}
-              />
-            )}
-          </div>
+              )}
+              {menu?.id === message.id && (
+                <MessageMenu
+                  actions={menu.actions}
+                  text={message.kind === MessageKind.Text ? message.text : null}
+                  mine={mine}
+                  onClose={() => setMenu(null)}
+                  onAction={action => act(message.id, action)}
+                />
+              )}
+            </div>
+          </Fragment>
         );
       })}
       {asked && (

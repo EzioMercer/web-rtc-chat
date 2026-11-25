@@ -38,9 +38,9 @@ export const LocationBubble = ({ chat, location }: Props) => {
   const now = Math.max(useNow(5_000, live), location.updatedAt ?? 0);
   const until = location.liveUntil ?? now;
   const running = live && until > now;
-  const updated = location.updatedAt ?? location.at ?? now;
+  const updated = location.updatedAt ?? location.at;
   const stale = running && now - updated > LIVE_STALE_MS;
-  const progress = running ? (until - now) / Math.max(1, until - (location.at ?? now)) : 0;
+  const progress = running ? (until - now) / Math.max(1, until - location.at) : 0;
 
   // Only a live one has a line under the map: when it last moved (or, once ended, when it stopped).
   const status = () => {

@@ -4,7 +4,7 @@ import { peerTextReceived } from '../../chat/chatSlice.ts';
 import { parseReplyTo } from '../../chat/parseReplyTo.ts';
 import { peerMessageId } from '../../chat/peerMessageId.ts';
 import type { AppThunk } from '../../store.ts';
-import { countUnread } from './countUnread.ts';
+import { noteUnread } from './noteUnread.ts';
 import { ControlType } from '../../../core/webrtc/types.ts';
 
 // `waited`: how long it waited on their side before being sent. It is shown where it was written, among ours.
@@ -38,5 +38,5 @@ export const receivePeerText = (
   const delay = typeof waited === 'number' && waited > 0 && waited <= RESEND_MS ? waited : 0;
 
   dispatch(peerTextReceived({ key, id: ours, text, at: Date.now() - delay, replyTo: parseReplyTo(replyTo) }));
-  dispatch(countUnread(key));
+  dispatch(noteUnread(key, ours));
 };

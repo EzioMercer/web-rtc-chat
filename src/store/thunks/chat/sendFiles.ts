@@ -72,6 +72,7 @@ export const sendFiles = (key: string, files: File[], note?: MediaNote): AppThun
         url: URL.createObjectURL(file),
         transferred: 0,
         status: FileStatus.Waiting,
+        at: Date.now(),
         ...(note ? { note } : {}),
         ...(answers === undefined ? {} : { replyTo: answers }),
       },

@@ -531,7 +531,8 @@ const SAMPLES = `${MODULES}
     : store.dispatch(chat.peerTextReceived({ key: k, id, text: t, at, replyTo }));
   const done = id => store.dispatch(chat.messageDelivered({ key: k, id }));
   const file = (id, from, name, mime, b, extra) => store.dispatch(chat.fileAdded({ key: k, file: {
-    id, from, name, size: b.size, mime, url: URL.createObjectURL(b), transferred: b.size, status: 1, ...extra,
+    id, from, name, size: b.size, mime, url: URL.createObjectURL(b), transferred: b.size, status: 1, at: Date.now(),
+    ...extra,
   } }));
 
   store.dispatch(manual.connected([]));

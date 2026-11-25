@@ -63,9 +63,10 @@ src/
                 sound/      ringtone (Web Audio, paused when nothing rings: see the comment there)
   store/      Redux: one folder per slice (app, contacts, sessions, chat, call, invites, manual, ui, settings,
               profile, backup), thunks/<area>/ for everything with side effects, persistence.ts saves contacts, settings,
-              chats, files and unread counts as they change.
-  hooks/      Generic hooks (useElapsed, useFullScreen, useDragSort). Feature hooks live in their feature.
-  utils/      Generic helpers (cx, formatBytes, formatClock, formatDuration, hasKeyboard, trackWindowHeight).
+              chats, files and what is unread as they change.
+  hooks/      Generic hooks (useElapsed, useFullScreen, useDragSort, useToday). Feature hooks live in their feature.
+  utils/      Generic helpers (cx, formatBytes, formatClock, formatDay, startOfDay, formatDuration, hasKeyboard,
+              trackWindowHeight).
 ```
 
 Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
@@ -121,12 +122,18 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
   end). `deleteMessage` is "Delete for me" / "Don't send": theirs leaves a `MessageKind.Deleted` marker until
   their retries are over (`until`), so copies are dropped (a file copy is just confirmed); our live location keeps
   its unconfirmed stop in one.
+- **Unread** (`Unread` in `store/chat/types.ts`): per chat, `from` (their first message not seen) and `dot` (marked
+  as unread by hand). The count is worked out from the chat (`unreadCount`), never saved. `noteUnread` sets `from`
+  when theirs comes while the chat isn't in view (or moves it back to one that waited); deleting it moves `from` to
+  the next. Opening (`selectConversation`) puts the "Unread messages" line (`ui.unreadLine`, not saved) there and
+  clears both; coming back to the tab (`seeConversation`) clears only `from`. A message's `at` is ms since 1970 (UTC),
+  shown in the device's time zone; the list draws a label where the day changes (`formatDay`, `useToday`).
 - **Echo guard:** the side that hears its own voice back (`useEchoDetector`) sends `echo`; the other side is asked
   (`EchoPrompt`) and its `useEchoGuard` turns the microphone off while they talk. Both only read
   `getStats()` levels: no Web Audio during calls (it breaks phones' echo filters).
 - **Nothing a user writes is ever stored on a server or relay.** The device may store anything the app needs,
   encrypted with the vault key (`core/identity`, through `core/storage/kv.ts`): the contacts, our key for each
-  contact, device settings, and the chats (`core/history`: messages, files, unread counts). Temporary identities
+  contact, device settings, and the chats (`core/history`: messages, files, what is unread). Temporary identities
   and the manual connection save nothing. Settings are per device: never synced, never in backups.
 - **Vault key:** `vault.vaultKey` is a random data key; `StoredMeta.dataKey` keeps it encrypted with the passkey,
   passphrase or device key. Changing protection only re-encrypts that (`changeProtection`).
@@ -189,6 +196,9 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
 - `scripts/e2e-reply.mjs` (same dev server): replies between Chromium and Chromium and WebKit (menu, button, links,
   deleting either end, odd ids, resending, reload, backups), then the bubbles and the bar on an iPhone, an Android
   phone (a real finger swipe) and three computers; pass a folder to get screenshots.
+- `scripts/e2e-unread.mjs` (same dev server): unread counts, the line, a hidden tab, a message that waited, Mark as
+  read / unread, a reload, Chromium with Chromium and with WebKit; then the day labels with a set clock and time zone,
+  and midnight passing; pass a folder to get screenshots.
 - `scripts/check-turn.mjs`, `scripts/check-relays.mjs`.
 - Scripts import `playwright`. In the cloud container it is preinstalled outside the project: link it with
   `ln -sfn /opt/node-tools/node_modules/playwright node_modules/playwright` (never run `playwright install`).

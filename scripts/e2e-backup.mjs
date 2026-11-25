@@ -138,6 +138,7 @@ const seed = (page, chats) => page.evaluate(async (chats) => {
           url: URL.createObjectURL(blob),
           transferred: 0,
           status: 0,
+          at: Date.now(),
           ...(file.note ? { note: file.note } : {}),
         },
       }));
@@ -618,7 +619,16 @@ const device2 = async (engine) => {
     const { historySaver } = await import('/web-rtc-chat/src/core/history/historySaver.ts');
     const key = store.getState().contacts.list[0].id;
 
-    const file = { id: 'p.half', from: 'peer', name: 'half.bin', size: 5e6, mime: '', url: null, transferred: 1 };
+    const file = {
+      id: 'p.half',
+      from: 'peer',
+      name: 'half.bin',
+      size: 5e6,
+      mime: '',
+      url: null,
+      transferred: 1,
+      at: Date.now(),
+    };
 
     file.status = 0;
 

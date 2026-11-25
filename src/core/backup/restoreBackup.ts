@@ -25,7 +25,7 @@ import { kv, type KvWrite } from '../storage/kv.ts';
 import type { Contact } from '../../store/contacts/types.ts';
 import { EMPTY_PROFILE } from '../../store/profile/profileSlice.ts';
 import type { ProfileState } from '../../store/profile/types.ts';
-import { type Message, FileStatus, MessageKind } from '../../store/chat/types.ts';
+import { type Message, FileStatus, MessageKind, type Unread } from '../../store/chat/types.ts';
 import { DAMAGED, LEFT_OUT, MAX_RECORD_BYTES } from './config.ts';
 import { createRecordReader } from './createRecordReader.ts';
 import { openBackup } from './openBackup.ts';
@@ -142,7 +142,7 @@ export const restoreBackup = async (
   file: Blob,
   key: CryptoKey,
   plan: RestorePlan,
-  current: { contacts: Contact[]; unread: Record<string, number> },
+  current: { contacts: Contact[]; unread: Record<string, Unread> },
   onProgress: (read: number) => void,
   signal: AbortSignal,
 ) => {

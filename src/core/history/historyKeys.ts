@@ -6,7 +6,7 @@ const pad = (n: number) => String(n).padStart(6, '0');
 export const historyKeys = {
   // Contact id -> slot.
   slots: 'slots',
-  // Unread count per contact.
+  // What is unread in each chat (see Unread).
   unread: 'unread',
   pages: 'page:',
   files: 'file:',

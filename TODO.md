@@ -2,7 +2,6 @@
 
 Only open items. Everything done is described in the README.
 
-- [ ] Marking a chat as read.
 - [ ] Marking all chats as read.
 - [ ] Pinning and unpinning a contact.
 - [ ] Last connected: when a contact was last connected to us.

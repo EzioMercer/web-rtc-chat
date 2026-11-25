@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { conversationRead, markedUnread } from '../../../store/chat/chatSlice.ts';
 import { favouriteToggled } from '../../../store/contacts/contactsSlice.ts';
 import type { Contact } from '../../../store/contacts/types.ts';
 import { clearConversation } from '../../../store/thunks/chat/clearConversation.ts';
@@ -7,6 +8,7 @@ import { useAppDispatch } from '../../../store/useAppDispatch.ts';
 import { Button } from '../../../ui/Button/Button.tsx';
 import { Dialog } from '../../../ui/Dialog/Dialog.tsx';
 import { RenameDialog } from '../RenameDialog/RenameDialog.tsx';
+import { useUnread } from '../useUnread.ts';
 import styles from './ContactMenu.module.css';
 import { ButtonVariant } from '../../../ui/Button/ButtonVariant.ts';
 
@@ -15,7 +17,7 @@ type Props = {
   onClose: () => void;
 };
 
-// Rename, favourite and delete, for one contact.
+// Mark as read or unread, rename, favourite, clear and delete, for one contact.
 enum MenuDialog {
   Rename,
   Delete,
@@ -25,6 +27,8 @@ export const ContactMenu = ({ contact, onClose }: Props) => {
   const dispatch = useAppDispatch();
   const [dialog, setDialog] = useState<MenuDialog | null>(null);
   const ref = useRef<HTMLDivElement>(null);
+  const { count, dot } = useUnread(contact.id);
+  const unread = count > 0 || dot;
 
   // Clicking anywhere else closes the menu (unless a dialog from it is open).
   useEffect(() => {
@@ -75,6 +79,17 @@ export const ContactMenu = ({ contact, onClose }: Props) => {
       onClick={e => e.stopPropagation()}
       onPointerDown={e => e.stopPropagation()}
     >
+      <button
+        className={styles.item}
+        type="button"
+        role="menuitem"
+        onClick={() => {
+          dispatch(unread ? conversationRead(contact.id) : markedUnread(contact.id));
+          onClose();
+        }}
+      >
+        {unread ? 'Mark as read' : 'Mark as unread'}
+      </button>
       <button className={styles.item} type="button" role="menuitem" onClick={() => setDialog(MenuDialog.Rename)}>
         Rename
       </button>

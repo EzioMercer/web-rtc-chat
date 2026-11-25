@@ -43,8 +43,9 @@ export type TextMessage = ReplyLinks & {
   id: string;
   from: MessageAuthor;
   text: string;
-  // When it was written, on this device's clock (see receivePeerText for theirs).
-  at?: number;
+  // When it was written: ms since 1970 in UTC (so it means the same in every time zone), on this device's clock
+  // (see receivePeerText for theirs). Shown in the device's own time zone.
+  at: number;
   // Our messages: waiting for the other side to confirm it arrived (sent again when the connection reopens).
   pending?: boolean;
   // Ours, pending: the open connection took it (it may be on its way). Cleared when the connection closes.
@@ -80,7 +81,7 @@ export type FileMessage = ReplyLinks & {
   note?: MediaNote;
   // Sent zipped: this many bytes travel (and count toward the TURN limit) instead of `size`.
   packed?: number;
-  at?: number;
+  at: number;
   // Ours: a transfer of it broke, so it may have arrived (as for texts, see TextMessage).
   tried?: boolean;
 };
@@ -97,7 +98,7 @@ export type LocationMessage = GeoPoint & ReplyLinks & {
   kind: MessageKind.Location;
   id: string;
   from: MessageAuthor;
-  at?: number;
+  at: number;
   // Live location: when it stops, on this device's clock (an early stop sets it to the time of the stop). Missing
   // for a one-time location.
   liveUntil?: number;
@@ -122,16 +123,25 @@ export type DeletedMessage = {
   kind: MessageKind.Deleted;
   id: string;
   from: MessageAuthor;
-  at?: number;
+  at: number;
   until: number;
   stop?: LocationMessage;
 };
 
 export type Message = TextMessage | FileMessage | LocationMessage | DeletedMessage;
 
+// What of a chat is unread. `from`: the first of their messages not seen yet; the count is worked out from the chat
+// (their messages from there on), so it stays right when one is deleted. It is the first unread one, not the last
+// read one, because a message that waited is put where its time belongs, which can be before ones already read.
+// `dot`: marked as unread by hand, without a count. Missing means read.
+export type Unread = {
+  from?: string;
+  dot?: boolean;
+};
+
 // Saved on the device, encrypted (see core/history), except for temporary identities and the manual connection.
 export type ChatState = {
   // Conversation key (contact id, or the manual connection) -> messages.
   conversations: Record<string, Message[]>;
-  unread: Record<string, number>;
+  unread: Record<string, Unread>;
 };

@@ -1,4 +1,4 @@
-import { type Message, MessageKind } from '../../store/chat/types.ts';
+import { type Message, MessageKind, type Unread } from '../../store/chat/types.ts';
 import { kv } from '../storage/kv.ts';
 import { fromStored } from './fromStored.ts';
 import { historyKeys } from './historyKeys.ts';
@@ -8,7 +8,26 @@ import type { StoredPage } from './types.ts';
 
 type History = {
   conversations: Record<string, Message[]>;
-  unread: Record<string, number>;
+  unread: Record<string, Unread>;
+};
+
+// What is unread in each of these chats, as saved: a first unread message that isn't in its chat any more (or
+// anything this version can't read) is dropped.
+const keepUnread = (saved: Record<string, Unread>, conversations: Record<string, Message[]>, wanted: Set<string>) => {
+  const unread: Record<string, Unread> = {};
+
+  Object.entries(saved).forEach(([chat, value]) => {
+    const from = typeof value?.from === 'string' && conversations[chat]?.some(m => m.id === value.from)
+      ? value.from
+      : undefined;
+    const dot = value?.dot === true;
+
+    if (wanted.has(chat) && (from !== undefined || dot)) {
+      unread[chat] = { ...(from === undefined ? {} : { from }), ...(dot ? { dot } : {}) };
+    }
+  });
+
+  return unread;
 };
 
 // Deletes what belongs to no chat (left over when the tab closed while a chat was deleted or replaced), and the
@@ -68,13 +87,13 @@ export const loadHistory = async (contacts: string[]): Promise<History> => {
   }
 
   const unread = sealedUnread
-    ? await openJsonRecord<Record<string, number>>(historyKeys.unread, sealedUnread).catch(() => null) ?? {}
+    ? await openJsonRecord<Record<string, Unread>>(historyKeys.unread, sealedUnread).catch(() => null) ?? {}
     : {};
 
   await removeLeftovers(conversations);
 
   return {
     conversations,
-    unread: Object.fromEntries(Object.entries(unread).filter(([chat]) => wanted.has(chat) && conversations[chat])),
+    unread: keepUnread(unread, conversations, wanted),
   };
 };

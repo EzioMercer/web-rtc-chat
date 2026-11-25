@@ -108,7 +108,7 @@ export const uploadFile = (key: string, id: string, prepared?: Prepared): AppThu
       zipped,
       onProgress,
       shouldStop,
-      waited: Math.max(0, Date.now() - (message.at ?? Date.now())),
+      waited: Math.max(0, Date.now() - message.at),
       // As it is now: the message it answers may have been deleted meanwhile.
       ...replyField(find() ?? message),
     });

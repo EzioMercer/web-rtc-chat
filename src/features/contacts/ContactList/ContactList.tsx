@@ -6,6 +6,7 @@ import { MANUAL_KEY } from '../../../core/webrtc/config.ts';
 import { Icon } from '../../../ui/Icon/Icon.tsx';
 import { ContactGroup } from './ContactGroup.tsx';
 import styles from './ContactList.module.css';
+import { useUnread } from '../useUnread.ts';
 import { ManualStatus } from '../../../store/manual/types.ts';
 
 export const ContactList = () => {
@@ -13,7 +14,7 @@ export const ContactList = () => {
   const list = useAppSelector(state => state.contacts.list);
   const selected = useAppSelector(state => state.ui.selected);
   const manualActive = useAppSelector(state => state.manual.status !== ManualStatus.Idle);
-  const manualUnread = useAppSelector(state => state.chat.unread[MANUAL_KEY] ?? 0);
+  const { count: manualUnread } = useUnread(MANUAL_KEY);
   const favourites = list.filter(contact => contact.favourite);
   const others = list.filter(contact => !contact.favourite);
 

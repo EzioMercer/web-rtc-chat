@@ -1,5 +1,6 @@
 import { createSlice, nanoid, type PayloadAction } from '@reduxjs/toolkit';
 import { MARKER_MARGIN_MS, RESEND_MS } from '../../core/webrtc/config.ts';
+import { countsAsUnread } from './countsAsUnread.ts';
 import {
   type ChatState,
   type FileMessage,
@@ -75,20 +76,28 @@ const unlink = (list: Message[], message: Message) => {
 const push = (state: ChatState, key: string, message: Message) => {
   const list = (state.conversations[key] ??= []);
 
-  list.push(linked(list, { ...message, at: message.at ?? Date.now() }));
+  list.push(linked(list, message));
 };
 
 // Puts a message where its time belongs. Only messages that waited (written while the connection was down) move
 // up, and only past the few newer ones, so a live chat is never re-sorted.
-const insertByTime = (state: ChatState, key: string, message: Message & { at: number }) => {
+const insertByTime = (state: ChatState, key: string, message: Message) => {
   const list = (state.conversations[key] ??= []);
   let index = list.length;
 
-  while (index > 0 && (list[index - 1].at ?? 0) > message.at) {
+  while (index > 0 && list[index - 1].at > message.at) {
     index -= 1;
   }
 
   list.splice(index, 0, linked(list, message));
+};
+
+const dropIfRead = (state: ChatState, key: string) => {
+  const unread = state.unread[key];
+
+  if (unread && unread.from === undefined && !unread.dot) {
+    delete state.unread[key];
+  }
 };
 
 const findFile = (state: ChatState, key: string, id: string) => state.conversations[key]?.find(
@@ -106,12 +115,12 @@ const NOT_SENT = 'Not sent.';
 
 // Ours, still sent again when the connection opens (a live location has its own end).
 const resending = (message: Message, now: number) => message.from === MessageAuthor.Me
-  && (message.at ?? now) + RESEND_MS > now;
+  && message.at + RESEND_MS > now;
 
 // When a marker for their deleted message can go: their last try (RESEND_MS after they wrote it, or a live
 // location's end) has passed.
 const markerEnd = (message: Message, now: number) => Math.max(
-  (message.at ?? now) + RESEND_MS,
+  message.at + RESEND_MS,
   message.kind === MessageKind.Location ? message.liveUntil ?? 0 : 0,
   now,
 ) + MARKER_MARGIN_MS;
@@ -129,7 +138,7 @@ const chatSlice = createSlice({
         push(state, payload.key, payload.message);
       },
       prepare: ({ key, from, text }: Keyed<Pick<TextMessage, 'from' | 'text'>>) => ({
-        payload: { key, message: { kind: MessageKind.Text as const, id: nanoid(), from, text } },
+        payload: { key, message: { kind: MessageKind.Text as const, id: nanoid(), from, text, at: Date.now() } },
       }),
     },
     // Their text, written `at` (already converted to our clock). `id` is theirs (see peerMessageId); `replyTo` is
@@ -157,6 +166,7 @@ const chatSlice = createSlice({
         id,
         from: MessageAuthor.Me,
         text,
+        at: Date.now(),
         pending: true,
         ...(replyTo === undefined ? {} : { replyTo }),
       });
@@ -251,7 +261,7 @@ const chatSlice = createSlice({
       push(state, payload.key, payload.message);
     },
     // Theirs, put where its time belongs like a text. `id` is theirs (see peerMessageId).
-    peerLocationReceived: (state, { payload }: PayloadAction<Keyed<{ message: LocationMessage & { at: number } }>>) => {
+    peerLocationReceived: (state, { payload }: PayloadAction<Keyed<{ message: LocationMessage }>>) => {
       insertByTime(state, payload.key, payload.message);
     },
     locationChanged: (state, { payload }: PayloadAction<Keyed<{ id: string; change: LocationChange }>>) => {
@@ -270,15 +280,9 @@ const chatSlice = createSlice({
         }
       }
     },
-    // Theirs with `at` (it waited on their side) goes where its time belongs, like a text.
+    // Where its time belongs: ours at the end, theirs maybe earlier (it may have waited on their side), like a text.
     fileAdded: (state, { payload }: PayloadAction<Keyed<{ file: Omit<FileMessage, 'kind'> }>>) => {
-      const { at } = payload.file;
-
-      if (at === undefined) {
-        push(state, payload.key, { ...payload.file, kind: MessageKind.File });
-      } else {
-        insertByTime(state, payload.key, { ...payload.file, kind: MessageKind.File, at });
-      }
+      insertByTime(state, payload.key, { ...payload.file, kind: MessageKind.File });
     },
     // It goes again from the start: ours sent again, or theirs coming again after it broke.
     fileRestarted: (state, { payload }: PayloadAction<Keyed<{ id: string; packed?: number }>>) => {
@@ -345,8 +349,21 @@ const chatSlice = createSlice({
       }
 
       const { id, from, at } = message;
+      const unread = state.unread[payload.key];
 
       unlink(list, message);
+
+      // The first unread one is going: the next of theirs is the first now.
+      if (unread?.from === id) {
+        const next = list.slice(index + 1).find(countsAsUnread);
+
+        if (next) {
+          unread.from = next.id;
+        } else {
+          delete unread.from;
+          dropIfRead(state, payload.key);
+        }
+      }
 
       if (from === MessageAuthor.Peer) {
         list[index] = { kind: MessageKind.Deleted, id, from, at, until: markerEnd(message, now) };
@@ -359,11 +376,31 @@ const chatSlice = createSlice({
         list.splice(index, 1);
       }
     },
-    unreadAdded: (state, { payload }: PayloadAction<string>) => {
-      state.unread[payload] = (state.unread[payload] ?? 0) + 1;
+    // Their message `id` came while its chat wasn't in view: unread from there on, unless an earlier one already is
+    // (a message that waited can be put before the first unread one).
+    unreadArrived: (state, { payload }: PayloadAction<Keyed<{ id: string }>>) => {
+      const list = state.conversations[payload.key] ?? [];
+      const unread = (state.unread[payload.key] ??= {});
+      const first = unread.from === undefined ? -1 : list.findIndex(m => m.id === unread.from);
+      const index = list.findIndex(m => m.id === payload.id);
+
+      if (index >= 0 && (first < 0 || index < first)) {
+        unread.from = payload.id;
+      }
     },
+    // Opened, or marked as read: no count and no dot.
     conversationRead: (state, { payload }: PayloadAction<string>) => {
       delete state.unread[payload];
+    },
+    // The open chat came into view again (the tab was hidden): what came meanwhile is seen. A dot stays: only
+    // opening the chat or marking it as read takes it away.
+    unreadSeen: (state, { payload }: PayloadAction<string>) => {
+      delete state.unread[payload]?.from;
+      dropIfRead(state, payload);
+    },
+    // Marked as unread by hand: a dot, without a count.
+    markedUnread: (state, { payload }: PayloadAction<string>) => {
+      (state.unread[payload] ??= {}).dot = true;
     },
     // The saved chats, after unlocking or restoring a backup. Replaces what was in memory.
     historyLoaded: (state, { payload }: PayloadAction<ChatState>) => {
@@ -396,8 +433,10 @@ export const {
   fileCompleted,
   fileFailed,
   messageDeleted,
-  unreadAdded,
+  unreadArrived,
   conversationRead,
+  unreadSeen,
+  markedUnread,
   historyLoaded,
   conversationCleared,
 } = chatSlice.actions;

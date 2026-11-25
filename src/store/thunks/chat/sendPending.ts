@@ -16,7 +16,7 @@ export const sendPending = (key: string): AppThunk => (dispatch, getState) => {
   const sent: string[] = [];
 
   getState().chat.conversations[key]?.forEach((message) => {
-    const waited = Date.now() - (message.at ?? Date.now());
+    const waited = Date.now() - message.at;
 
     if (message.kind === MessageKind.Text && message.pending && !message.unsent
       && sendControl(key, {

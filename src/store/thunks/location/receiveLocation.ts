@@ -8,7 +8,7 @@ import { MessageAuthor, MessageKind } from '../../chat/types.ts';
 import { parseReplyTo } from '../../chat/parseReplyTo.ts';
 import { peerMessageId } from '../../chat/peerMessageId.ts';
 import type { AppThunk } from '../../store.ts';
-import { countUnread } from '../chat/countUnread.ts';
+import { noteUnread } from '../chat/noteUnread.ts';
 
 const time = (value: unknown, max: number) => (
   typeof value === 'number' && Number.isFinite(value) && value > 0 ? Math.min(value, max) : 0
@@ -69,5 +69,5 @@ export const receiveLocation = (key: string, signal: Partial<LocationSignal>): A
       ...(replyTo === undefined ? {} : { replyTo }),
     },
   }));
-  dispatch(countUnread(key));
+  dispatch(noteUnread(key, ours));
 };

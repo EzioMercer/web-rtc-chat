@@ -35,7 +35,7 @@ export const deleteMessage = (key: string, id: string): AppThunk => (dispatch, g
 
   if (message.kind === MessageKind.Location && message.from === MessageAuthor.Me && message.liveUntil !== undefined) {
     dispatch(stopLiveLocation(key, id));
-    dispatch(messageDeleted({ key, id, stopUntil: (message.at ?? Date.now()) + LIVE_MAX_MS }));
+    dispatch(messageDeleted({ key, id, stopUntil: message.at + LIVE_MAX_MS }));
 
     return;
   }
