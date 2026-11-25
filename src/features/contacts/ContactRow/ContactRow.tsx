@@ -52,8 +52,8 @@ export const ContactRow = ({ contact, selected, dragging, onOpen, sortProps }: P
           <span className={styles.verified} title="Verified"><Icon name="shieldCheck" size={16} /></span>
         )}
         {unread && (
-          <span className={cx(styles.unread, !count && styles.unreadDot)} aria-hidden="true">
-            {count > 99 ? '99+' : count || null}
+          <span className={styles.unread} aria-hidden="true">
+            {count || null}
           </span>
         )}
       </button>

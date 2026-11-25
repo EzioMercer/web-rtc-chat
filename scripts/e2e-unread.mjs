@@ -153,6 +153,14 @@ const fromB = async (a, b, text) => {
 
 const row = page => page.locator('nav[aria-label="Contacts"] button[aria-label^="Peer"]');
 
+// The unread badge in a row: its text and size.
+const badgeOf = locator => locator.evaluate((element) => {
+  const span = [...element.querySelectorAll('span')].find(s => s.className.includes('unread'));
+  const box = span?.getBoundingClientRect();
+
+  return span && { text: span.textContent, width: Math.round(box.width), height: Math.round(box.height) };
+});
+
 const menu = async (page, item) => {
   await page.getByRole('button', { name: 'Options for Peer' }).click();
 
@@ -262,13 +270,9 @@ const unread = async (type, name) => {
   check((await state(a.page)).unread?.dot === true, 'marked as unread');
   check(await row(a.page).getAttribute('aria-label') === 'Peer, unread', 'the row says unread');
 
-  const badge = await row(a.page).evaluate((element) => {
-    const span = [...element.querySelectorAll('span')].find(s => s.className.includes('unread'));
+  const dot = await badgeOf(row(a.page));
 
-    return span && { text: span.textContent, width: span.getBoundingClientRect().width };
-  });
-
-  check(badge && badge.text === '' && badge.width < 16, 'it shows a dot without a number');
+  check(dot && dot.text === '' && dot.width === dot.height && dot.height >= 20, 'it shows a round dot, no number');
 
   if (SHOTS) {
     await a.page.locator('nav[aria-label="Contacts"]').screenshot({ path: `${SHOTS}/dot-${name}.png` });
@@ -283,6 +287,10 @@ const unread = async (type, name) => {
   await menu(a.page, 'Mark as unread');
   await fromB(a, b, 'after the dot');
   check(await row(a.page).getAttribute('aria-label') === 'Peer, 1 unread', 'a new message shows its number');
+
+  const one = await badgeOf(row(a.page));
+
+  check(one?.width === dot.width && one.height === dot.height, 'one digit is the same circle as the dot');
   await menu(a.page, 'Mark as read');
   check((await state(a.page)).unread === undefined, 'Mark as read clears the count and the dot');
   await menu(a.page, 'Mark as unread');
@@ -347,9 +355,19 @@ const unread = async (type, name) => {
     const { store } = await import('/web-rtc-chat/src/store/store.ts');
     const { peerTextReceived, unreadArrived } = await import('/web-rtc-chat/src/store/chat/chatSlice.ts');
 
-    store.dispatch(peerTextReceived({ key: 'friend', id: 'p.f1', text: 'from a friend', at: Date.now() }));
-    store.dispatch(unreadArrived({ key: 'friend', id: 'p.f1' }));
+    for (let i = 0; i < 1234; i += 1) {
+      store.dispatch(peerTextReceived({ key: 'friend', id: `p.f${i}`, text: `from a friend ${i}`, at: Date.now() }));
+    }
+
+    store.dispatch(unreadArrived({ key: 'friend', id: 'p.f0' }));
   });
+
+  const many = await badgeOf(a.page.locator('nav[aria-label="Contacts"] button[aria-label="Peer, 1234 unread"]'));
+
+  check(
+    many?.text === '1234' && many.height === dot.height && many.width > 1.5 * dot.width,
+    `a long count shows in full, the badge growing wider at the same height (${JSON.stringify(many)})`,
+  );
   check(await markAll.count() === 1, 'with unread chats, Mark all as read shows');
 
   if (SHOTS) {
