@@ -18,3 +18,6 @@ export const MAX_ABOUT_CHARS = 150;
 // The most digits the phone number field takes after the country code: the longest numbers have 15 digits in all
 // (country code included), and one more for the leading 0 some countries write.
 export const MAX_PHONE_DIGITS = 15;
+
+// The earliest birth year the birthday field takes.
+export const MIN_BIRTH_YEAR = 1900;

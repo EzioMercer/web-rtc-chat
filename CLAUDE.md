@@ -14,15 +14,16 @@ src/
                 must be answered; onBack for a window that replaces another: ← returns, X closes both; a popup
                 over another window gets only X), ConfirmDialog (a yes/no question: never the browser's
                 confirm/alert/prompt),
-                TextField, CodeField, CopyButton, SegmentedControl (radio or tabs), Checkbox,
+                TextField, Select (the browser's own list, drawn like our fields), CodeField, CopyButton,
+                SegmentedControl (radio or tabs), Checkbox,
                 MediaVideo (plays a MediaStream), QrCode, QrScanner, Logo, Avatar (a picture, letter or icon),
                 MessageMeta (a message's time and DeliveryMark, in the bubble's corner)
   features/   Screens, one folder per feature, with the hooks and helpers only that feature uses.
                 app/        Messenger (main layout), Sidebar, EmptyPane, UpdateNotice, OtherTabScreen
                 setup/      SetupScreen, UnlockScreen, ProtectionPicker
                 settings/   SettingsDialog, ProfileRow -> ProfileDialog (loaded when opened: PictureSection, InfoSection
-                            with PhoneField and CountryDialog), StorageSection, LegalDialog (LEGAL.ts: disclaimer and
-                            privacy text)
+                            with PhoneField, CountryDialog and BirthdayField), StorageSection, LegalDialog (LEGAL.ts:
+                            disclaimer and privacy text)
                 backup/     ExportDialog, ImportDialog, BackupProgress (covers the app while one runs)
                 contacts/   AddContactDialog (invite / join), ContactList, ContactRow, SafetyPanel, dialogs
                 chat/       ChatPane, Conversation, ChatHeader, MessageList, Composer, FileBubble
@@ -102,11 +103,11 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
   closes, and every `LAST_CONNECTED_EVERY_MS` while open (from `watchPaths`' minute check), saved with the contacts.
   The header shows "online" or `formatLastConnected` (calendar days, weeks, months, years). Only what this device
   saw: nothing is sent for it.
-- **Profile** (`store/thunks/profile`): ours (picture, phone as "+994501234567", description) is in the `profile`
-  slice, saved like the settings but put in backups (Info record). When a contact's connection opens, or we change
-  ours, we send two hashes (`ControlType.Profile`): the picture's, and the phone and description's together. For each
-  that differs they ask by that hash (`ProfileAsk`) and we send that part. Theirs is `Contact.picture` / `phone` /
-  `about`.
+- **Profile** (`store/thunks/profile`): ours (picture, phone as "+994501234567", description, birthday as
+  "2001-02-28" or "--02-28" without the year) is in the `profile` slice, saved like the settings but put in backups
+  (Info record). When a contact's connection opens, or we change ours, we send two hashes (`ControlType.Profile`): the
+  picture's, and the phone, description and birthday's together. For each that differs they ask by that hash
+  (`ProfileAsk`) and we send that part. Theirs is `Contact.picture` / `phone` / `about` / `birthday`.
 - **Locations** (`store/thunks/location`): a `Location` message, sent like a text (`ControlType.Location`, acked,
   resent by `sendPending`). A live one keeps its id: each move, stop or heartbeat sends its whole latest state with
   a higher `rev` and the time left (`live`, ms, so clocks needn't agree); the ack carries the `rev`. Ours follows
@@ -187,8 +188,8 @@ Imports are relative (`../../ui/Button/Button.tsx`), with the file extension.
 - `scripts/e2e-move.mjs` (same dev server): a call moves to a new connection, goes back when it breaks, and stays when
   the test fails.
 - `scripts/e2e-profile.mjs` (same dev server): in Chromium, Firefox and WebKit pictures made, phone numbers checked
-  (mobile only), saved and spaced, the country guessed and searched, backups; two browsers swap, change and remove
-  profiles, and keep them after a reload.
+  (mobile only, cut at their country's length), saved and spaced, birthdays checked (with or without the year), the
+  country guessed and searched, backups; two browsers swap, change and remove profiles, and keep them after a reload.
 - `scripts/e2e-real-relays.mjs` (built app, `npx vite preview --port 4173`, real relays): Chromium adds Firefox and
   WebKit with invites, checks safety codes, one saved key per contact and a reconnect after reload.
 - `scripts/e2e-location.mjs` (same dev server): a one-time and a live location between Chromium and Chromium and

@@ -1,0 +1,50 @@
+.wrap {
+  position: relative;
+  display: inline-flex;
+  min-width: 0;
+}
+
+/* As wide as its longest choice, so it doesn't change size as choices change, with room on the right for the
+   chevron, placed like the phone number's country button's: 8 px after the text, 10 px from the edge. */
+.select {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 34px 10px 12px;
+  /* Browsers give lists a smaller font of their own; ours match the other fields. */
+  font: inherit;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--field);
+  color: var(--text);
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+  transition: border-color 0.15s;
+}
+
+.select:hover,
+.select:focus {
+  border-color: var(--accent);
+}
+
+.empty {
+  color: var(--muted);
+}
+
+/* The list's own colours in the dark theme (some browsers draw it white otherwise). */
+.select option {
+  background: var(--field);
+  color: var(--text);
+}
+
+.chevron {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  display: flex;
+  /* 1 px below the middle: level with the middle of the small letters (measured), which the eye goes by, rather than
+     with the line's middle. */
+  transform: translateY(calc(-50% + 1px));
+  pointer-events: none;
+}

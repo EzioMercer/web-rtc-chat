@@ -1,10 +1,10 @@
 import { useId, useLayoutEffect, useRef, type ChangeEvent } from 'react';
 import type { CountryCode } from 'libphonenumber-js/mobile';
+import { fitPhone } from '../../../core/profile/phone/fitPhone.ts';
 import { flagUrl } from '../../../core/profile/phone/flagUrl.ts';
 import { formatPhone } from '../../../core/profile/phone/formatPhone.ts';
 import { splitPhone } from '../../../core/profile/phone/splitPhone.ts';
 import type { CountryOption } from '../../../core/profile/phone/types.ts';
-import { MAX_PHONE_DIGITS } from '../../../core/profile/config.ts';
 import { Icon } from '../../../ui/Icon/Icon.tsx';
 import styles from './PhoneField.module.css';
 
@@ -64,14 +64,14 @@ export const PhoneField = ({ country, digits, onDigits, onCountry, onPickCountry
 
       if (split) {
         onCountry(split.country);
-        onDigits(split.digits.slice(0, MAX_PHONE_DIGITS));
+        onDigits(fitPhone(split.country, split.digits));
 
         return;
       }
     }
 
     caret.current = text.slice(0, e.target.selectionStart ?? text.length).replace(/\D/g, '').length;
-    onDigits(text.replace(/\D/g, '').slice(0, MAX_PHONE_DIGITS));
+    onDigits(fitPhone(country?.code ?? null, text.replace(/\D/g, '')));
   };
 
   return (

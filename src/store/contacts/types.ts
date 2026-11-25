@@ -18,9 +18,10 @@ export type Contact = {
   sendSecret: string;
   // The picture they sent us (see core/profile); none when missing.
   picture?: string;
-  // The phone number and description they sent us (see ProfileInfo); none when missing.
+  // The phone number, description and birthday they sent us (see ProfileInfo); none when missing.
   phone?: string;
   about?: string;
+  birthday?: string;
   // When we were last connected to them (ms since 1970), as this device saw it: set when the connection opens,
   // every few minutes while it stays open, and when it closes. Null until the first connection.
   lastConnected: number | null;

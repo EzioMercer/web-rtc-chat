@@ -87,7 +87,7 @@ export const importBackup = (
 
     dispatch(contactsLoaded(result.contacts));
 
-    // The backup's picture, and its phone and description, come back only if we have none: what was chosen on
+    // The backup's picture, and its phone, description and birthday, come back only if we have none: what was chosen on
     // this device stays.
     const { profile } = getState();
 
@@ -95,8 +95,11 @@ export const importBackup = (
       dispatch(pictureChosen(result.profile.picture));
     }
 
-    if ((result.profile.phone || result.profile.about) && !profile.phone && !profile.about) {
-      dispatch(infoChosen({ phone: result.profile.phone, about: result.profile.about }));
+    const backupInfo = result.profile;
+
+    if ((backupInfo.phone || backupInfo.about || backupInfo.birthday)
+      && !profile.phone && !profile.about && !profile.birthday) {
+      dispatch(infoChosen({ phone: backupInfo.phone, about: backupInfo.about, birthday: backupInfo.birthday }));
     }
 
     if (isSaving()) {

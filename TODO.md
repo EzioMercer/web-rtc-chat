@@ -2,7 +2,9 @@
 
 Only open items. Everything done is described in the README.
 
-- [ ] Birthday in the profile.
+- [ ] Languages: until the app is translated, dates in English words (month and weekday names, Today, Yesterday)
+  with the device's region's order and clock ("29 February" or "February 29", 24 or 12 hours); then the app's own
+  words translated, and the browser's names (`Intl`) follow the chosen language.
 - [ ] Mood in the profile: a short status shown under the name.
 - [ ] Blocking a contact without deleting them: their relay notes and connections are ignored until unblocked.
 - [ ] Archiving and unarchiving a contact: the chat is only hidden, messages still arrive, and unread counts show on

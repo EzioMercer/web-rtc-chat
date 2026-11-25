@@ -1,8 +1,9 @@
 // Profiles: in Chromium, Firefox and WebKit a picture is made from an image file, a phone number is checked (mobile
-// only), saved and spaced, and a description saved; the phone's country is guessed from the time zone or the
-// language. Two browsers connected by hand-copied codes swap profiles by hash (the manual connection stands in for
-// a contact here: each side adds a contact with its id), see changes and removals, and keep them after a reload and a
-// backup restore. It reaches into the app's modules, which only the dev server serves, so run it against that:
+// only), saved and spaced, a description and a birthday (with or without the year) saved; the phone's country is
+// guessed from the time zone or the language. Two browsers connected by hand-copied codes swap profiles by hash (the
+// manual connection stands in for a contact here: each side adds a contact with its id), see changes and removals,
+// and keep them after a reload and a backup restore. It reaches into the app's modules, which only the dev server
+// serves, so run it against that:
 //   VITE_TURN_URL= npx vite --port 5173 --strictPort &   then   node scripts/e2e-profile.mjs
 import { chromium, firefox, webkit } from 'playwright';
 
@@ -70,21 +71,42 @@ const closeProfile = async (page) => {
   await page.keyboard.press('Escape');
 };
 
-// Types a phone number (digits after the country code) and a description, and saves them. Resolves with the error
-// shown, if any.
+// Types a phone number (digits after the country code) and a description, and saves them. The number is checked as
+// it is typed: when it can't be saved, Save is off and this resolves with the note shown.
 const saveInfo = async (page, digits, about) => {
   await page.getByLabel('Phone number').fill('');
   await page.getByLabel('Phone number').pressSequentially(digits);
   await page.getByLabel('Description').fill(about);
+
+  const note = page.locator('p', { hasText: /mobile number|country of your phone/ });
+
+  if (await note.isVisible()) {
+    return await page.getByRole('button', { name: 'Save' }).isDisabled() ? await note.textContent() : 'Save is on';
+  }
+
   await page.getByRole('button', { name: 'Save' }).click();
+  await waitFor('saved', 5, () => page.getByText('Saved.').isVisible());
 
-  const shown = await waitFor('saved or refused', 5, async () => (
-    await page.getByText('Saved.').isVisible() || await page.getByText('isn\'t a mobile number').isVisible()
-  ));
+  return null;
+};
 
-  return shown && await page.getByText('isn\'t a mobile number').isVisible()
-    ? await page.getByText('isn\'t a mobile number').textContent()
-    : null;
+// Types and chooses a birthday (the day and year typed, the month's number chosen; '' for none) and saves it. It is
+// checked as it is entered: when it can't be saved, Save is off and this resolves with the note shown.
+const saveBirthday = async (page, day, month, year) => {
+  await page.getByLabel('Day', { exact: true }).fill(day);
+  await page.getByLabel('Month', { exact: true }).selectOption(month);
+  await page.getByLabel('Year', { exact: true }).fill(year);
+
+  const note = page.locator('p', { hasText: /birthday|year|no such date|hasn't come/ });
+
+  if (await note.isVisible()) {
+    return await page.getByRole('button', { name: 'Save' }).isDisabled() ? await note.textContent() : 'Save is on';
+  }
+
+  await page.getByRole('button', { name: 'Save' }).click();
+  await waitFor('saved', 5, () => page.getByText('Saved.').isVisible());
+
+  return null;
 };
 
 // A photo-like test image (`width` x `height`, a gradient, so it doesn't compress to nothing) as a PNG file, set as
@@ -130,11 +152,18 @@ const theirProfile = page => page.evaluate(async () => {
   const { store } = await import('/web-rtc-chat/src/store/store.ts');
   const contact = store.getState().contacts.list.find(c => c.id === 'manual');
 
-  return { picture: contact?.picture ?? null, phone: contact?.phone ?? '', about: contact?.about ?? '' };
+  return {
+    picture: contact?.picture ?? null,
+    phone: contact?.phone ?? '',
+    about: contact?.about ?? '',
+    birthday: contact?.birthday ?? '',
+  };
 });
 
-// No picture, phone or description.
-const isEmpty = ({ picture, phone, about }) => picture === null && phone === '' && about === '';
+// No picture, phone, description or birthday.
+const isEmpty = ({ picture, phone, about, birthday }) => (
+  picture === null && phone === '' && about === '' && birthday === ''
+);
 
 const theirPicture = async page => (await theirProfile(page)).picture;
 
@@ -192,6 +221,24 @@ const testMaking = async (type, name) => {
     `${name}: a landline is refused`,
   );
   check((await ourProfile(page)).phone === '', `${name}: nothing is saved then`);
+  check(
+    (await saveInfo(page, '50123', 'x'))?.includes('whole mobile number') ?? false,
+    `${name}: a number not typed to its end isn't taken`,
+  );
+
+  // A number stops at the most digits a mobile number of its country has (with or without the leading 0).
+  await page.getByLabel('Phone number').fill('');
+  await page.getByLabel('Phone number').pressSequentially('5555555555555');
+  check(
+    await page.getByLabel('Phone number').inputValue() === '55 555 55 55',
+    `${name}: an Azerbaijani number stops at 9 digits`,
+  );
+  await page.getByLabel('Phone number').fill('');
+  await page.getByLabel('Phone number').pressSequentially('050123456789');
+  check(
+    (await page.getByLabel('Phone number').inputValue()).replace(/\D/g, '') === '0501234567',
+    `${name}: and at 10 with its leading 0`,
+  );
   check(await saveInfo(page, '501234567', 'Line one\nLine two') === null, `${name}: a mobile number is accepted`);
   check((await ourProfile(page)).phone === '+994501234567', `${name}: it is saved as +994501234567`);
   check(await page.getByLabel('Phone number').inputValue() === '50 123 45 67', `${name}: it is shown spaced`);
@@ -225,6 +272,103 @@ const testMaking = async (type, name) => {
   await page.getByLabel('Search').fill('+994');
   await page.getByRole('button', { name: /Azerbaijan/ }).click();
   await page.getByLabel('Phone number').fill('501234567');
+
+  // Save waits while a picture is being made.
+  await page.getByLabel('Description').fill('Waiting for the picture');
+  await page.locator('input[type=file][accept="image/*"]').setInputFiles({
+    name: 'big.png',
+    mimeType: 'image/png',
+    buffer: await page.evaluate(async () => {
+      const canvas = document.createElement('canvas');
+
+      canvas.width = 4000;
+      canvas.height = 3000;
+      canvas.getContext('2d').fillRect(0, 0, 4000, 3000);
+
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+
+      return [...new Uint8Array(await blob.arrayBuffer())];
+    }).then(bytes => Buffer.from(bytes)),
+  });
+  check(
+    await page.getByRole('button', { name: 'Save' }).isDisabled(),
+    `${name}: Save is off while the picture is being made`,
+  );
+  check(
+    await waitFor('picture made', 20, () => page.getByRole('button', { name: 'Save' }).isEnabled()),
+    `${name}: and on again once it is made`,
+  );
+  await page.getByLabel('Description').fill('Line one\nLine two');
+
+  // The birthday: a day and month are needed, the year is optional; 29 February only in a leap year.
+  check(
+    (await saveBirthday(page, '12', '', ''))?.includes('choose the month') ?? false,
+    `${name}: a birthday without its month is refused`,
+  );
+  check(
+    (await saveBirthday(page, '29', '2', '2023')) === 'There is no such date.',
+    `${name}: 29 February 2023 is refused`,
+  );
+  check(
+    (await saveBirthday(page, '1', '1', '1850'))?.includes('from 1900') ?? false,
+    `${name}: a year before 1900 is refused`,
+  );
+  check(
+    (await saveBirthday(page, '0', '1', ''))?.includes('no such date') ?? false,
+    `${name}: day 0 is refused`,
+  );
+  check(
+    (await saveBirthday(page, '32', '1', ''))?.includes('no such date') ?? false,
+    `${name}: day 32 is refused`,
+  );
+  await page.getByLabel('Day', { exact: true }).fill('1a2b3');
+  check(await page.getByLabel('Day', { exact: true }).inputValue() === '12', `${name}: the day takes 2 digits only`);
+  check(
+    (await saveBirthday(page, '1', '1', '199'))?.includes('4 digits') ?? false,
+    `${name}: a year of 3 digits isn't taken`,
+  );
+  check(
+    (await saveBirthday(page, '1', '1', String(new Date().getFullYear() + 1)))?.includes('from 1900') ?? false,
+    `${name}: next year is refused`,
+  );
+
+  // Two days on: the page's time zone (Baku) can already be a day ahead of this script's.
+  const tomorrow = new Date(Date.now() + 2 * 86_400_000);
+
+  if (tomorrow.getFullYear() === new Date().getFullYear()) {
+    check(
+      (await saveBirthday(
+        page,
+        String(tomorrow.getDate()),
+        String(tomorrow.getMonth() + 1),
+        String(tomorrow.getFullYear()),
+      )) === 'This day hasn\'t come yet.',
+      `${name}: a day still to come this year is refused`,
+    );
+  }
+
+  await page.getByLabel('Year', { exact: true }).fill('19a8');
+  check(
+    await page.getByLabel('Year', { exact: true }).inputValue() === '198',
+    `${name}: the year takes digits only`,
+  );
+  check((await ourProfile(page)).birthday === '', `${name}: no birthday is saved then`);
+  check(await saveBirthday(page, '09', '3', '') === null, `${name}: a day typed with its 0 is accepted`);
+  check((await ourProfile(page)).birthday === '--03-09', `${name}: it is saved as --03-09`);
+  check(await page.getByLabel('Day', { exact: true }).inputValue() === '9', `${name}: and then shown as 9`);
+  check(await saveBirthday(page, '29', '2', '') === null, `${name}: 29 February without a year is accepted`);
+  check((await ourProfile(page)).birthday === '--02-29', `${name}: it is saved as --02-29`);
+  check(await saveBirthday(page, '29', '2', '2000') === null, `${name}: 29 February 2000 is accepted`);
+  check((await ourProfile(page)).birthday === '2000-02-29', `${name}: it is saved as 2000-02-29`);
+  check((await ourProfile(page)).phone === '+994501234567', `${name}: the phone stays saved with it`);
+  await closeProfile(page);
+  await openProfile(page);
+  check(
+    await page.getByLabel('Day', { exact: true }).inputValue() === '29'
+    && await page.getByLabel('Month', { exact: true }).inputValue() === '2'
+    && await page.getByLabel('Year', { exact: true }).inputValue() === '2000',
+    `${name}: the saved birthday is shown when the window opens again`,
+  );
   await closeProfile(page);
 
   // Into a backup and out again: the backup's picture comes back only when the device has none.
@@ -255,18 +399,20 @@ const testMaking = async (type, name) => {
     };
 
     store.dispatch(pictureChosen('data:image/png;base64,AAAA'));
-    store.dispatch(infoChosen({ phone: '+12025550123', about: '' }));
+    store.dispatch(infoChosen({ phone: '+12025550123', about: '', birthday: '' }));
 
     const keptError = await restore();
     const now = store.getState().profile;
-    const kept = now.picture === 'data:image/png;base64,AAAA' && now.phone === '+12025550123' && now.about === '';
+    const kept = now.picture === 'data:image/png;base64,AAAA' && now.phone === '+12025550123' && now.about === ''
+      && now.birthday === '';
 
     store.dispatch(pictureChosen(null));
-    store.dispatch(infoChosen({ phone: '', about: '' }));
+    store.dispatch(infoChosen({ phone: '', about: '', birthday: '' }));
 
     const backError = await restore();
     const after = store.getState().profile;
-    const back = after.picture === profile.picture && after.phone === profile.phone && after.about === profile.about;
+    const back = after.picture === profile.picture && after.phone === profile.phone && after.about === profile.about
+      && after.birthday === profile.birthday && profile.birthday === '2000-02-29';
 
     return { kept, back, errors: [keptError, backError] };
   });
@@ -352,6 +498,7 @@ const testSwap = async () => {
   await choosePicture(a.page, 800, 1200);
   await openProfile(a.page);
   await saveInfo(a.page, '501234567', 'Hello from A');
+  await saveBirthday(a.page, '7', '11', '');
   await closeProfile(a.page);
   await connect(a.page, b.page);
   await pretendContact(a.page);
@@ -369,9 +516,9 @@ const testSwap = async () => {
     await waitFor('B gets the phone', 10, async () => {
       const theirs = await theirProfile(b.page);
 
-      return theirs.phone === '+994501234567' && theirs.about === 'Hello from A';
+      return theirs.phone === '+994501234567' && theirs.about === 'Hello from A' && theirs.birthday === '--11-07';
     }),
-    'B gets A\'s phone and description',
+    'B gets A\'s phone, description and birthday',
   );
   check(isEmpty(await theirProfile(a.page)), 'A gets nothing from B, who has nothing');
   check(
@@ -418,6 +565,13 @@ const testSwap = async () => {
     await waitFor('B gets the new description', 10, async () => (await theirProfile(b.page)).about === 'Changed'),
     'B gets the new description right away',
   );
+  await openProfile(a.page);
+  await saveBirthday(a.page, '7', '11', '1990');
+  await closeProfile(a.page);
+  check(
+    await waitFor('B gets the year', 10, async () => (await theirProfile(b.page)).birthday === '1990-11-07'),
+    'B gets the birthday\'s year once A adds it',
+  );
   check(await a.page.evaluate(() => window.countSent()) < 1000, 'without the picture being sent again');
 
   await choosePicture(a.page, 600, 600);
@@ -436,9 +590,10 @@ const testSwap = async () => {
     await waitFor('B keeps it', 10, async () => {
       const theirs = await theirProfile(b.page);
 
-      return theirs.picture === changed && theirs.phone === '+994501234567' && theirs.about === 'Changed';
+      return theirs.picture === changed && theirs.phone === '+994501234567' && theirs.about === 'Changed'
+        && theirs.birthday === '1990-11-07';
     }),
-    'B still has the picture, phone and description after a reload',
+    'B still has the picture, phone, description and birthday after a reload',
   );
   await a.page.reload();
   await a.page.getByRole('button', { name: 'Settings' }).waitFor();
@@ -446,7 +601,8 @@ const testSwap = async () => {
     await waitFor('A keeps it', 10, async () => {
       const ours = await ourProfile(a.page);
 
-      return ours.picture === changed && ours.phone === '+994501234567' && ours.about === 'Changed';
+      return ours.picture === changed && ours.phone === '+994501234567' && ours.about === 'Changed'
+        && ours.birthday === '1990-11-07';
     }),
     'A still has its own',
   );
@@ -457,8 +613,8 @@ const testSwap = async () => {
   await a.page.getByRole('button', { name: 'Remove' }).click();
   await a.page.getByLabel('Phone number').fill('');
   await a.page.getByLabel('Description').fill('');
-  await a.page.getByRole('button', { name: 'Save' }).click();
-  check(isEmpty(await ourProfile(a.page)), 'A removes the picture, phone and description');
+  await saveBirthday(a.page, '', '', '');
+  check(isEmpty(await ourProfile(a.page)), 'A removes the picture, phone, description and birthday');
   check(
     await waitFor('B loses it', 10, async () => (
       isEmpty(await theirProfile(b.page))

@@ -31,3 +31,7 @@
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
+
+.over {
+  color: var(--warn);
+}

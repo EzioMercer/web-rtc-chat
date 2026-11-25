@@ -64,12 +64,12 @@ const contactsSlice = createSlice({
         }
       }
     },
-    // They sent their phone number and description; empty ones are removed.
+    // They sent their phone number, description and birthday; empty ones are removed.
     infoReceived: (state, { payload }: PayloadAction<{ id: string; info: ProfileInfo }>) => {
       const contact = find(state, payload.id);
 
       if (contact) {
-        for (const field of ['phone', 'about'] as const) {
+        for (const field of ['phone', 'about', 'birthday'] as const) {
           if (payload.info[field]) {
             contact[field] = payload.info[field];
           } else {

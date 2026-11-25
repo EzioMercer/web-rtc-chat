@@ -19,6 +19,7 @@ import { STORAGE_KEYS } from '../identity/storageKeys.ts';
 import type { ContactKey } from '../identity/types.ts';
 import { vault } from '../identity/vault.ts';
 import { isAbout } from '../profile/isAbout.ts';
+import { isBirthday } from '../profile/isBirthday.ts';
 import { isPhone } from '../profile/isPhone.ts';
 import { isPicture } from '../profile/isPicture.ts';
 import { kv, type KvWrite } from '../storage/kv.ts';
@@ -284,6 +285,7 @@ export const restoreBackup = async (
             picture: isPicture(info.picture) ? info.picture : null,
             phone: isPhone(info.phone) ? info.phone : '',
             about: isAbout(info.about) ? info.about : '',
+            birthday: isBirthday(info.birthday) ? info.birthday : '',
           };
           break;
         }

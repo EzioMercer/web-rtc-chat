@@ -1,4 +1,5 @@
 import { isAbout } from '../profile/isAbout.ts';
+import { isBirthday } from '../profile/isBirthday.ts';
 import { isPhone } from '../profile/isPhone.ts';
 import { isPicture } from '../profile/isPicture.ts';
 import type { Contact } from '../../store/contacts/types.ts';
@@ -17,5 +18,6 @@ export const validContact = (contact: unknown): contact is Contact => {
     && (c.picture === undefined || isPicture(c.picture))
     && (c.phone === undefined || isPhone(c.phone))
     && (c.about === undefined || isAbout(c.about))
+    && (c.birthday === undefined || isBirthday(c.birthday))
     && (c.lastConnected === null || (Number.isSafeInteger(c.lastConnected) && Number(c.lastConnected) >= 0));
 };

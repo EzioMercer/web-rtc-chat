@@ -26,7 +26,7 @@ Live: https://eziomercer.github.io/web-rtc-chat/
 - 🟢 **Online and last connected**: "online" while you're connected, then "last connected at 20:13", "yesterday",
   "3 days ago" and so on; an icon shows whether you're connected directly or through the relay
 - 📅 **Days**: messages are grouped by day (Today, Yesterday, a weekday, a date), in your own time zone
-- 🖼️ **Profile**: picture, phone number and description, seen only by your contacts
+- 🖼️ **Profile**: picture, phone number, description and birthday, seen only by your contacts
 - 🔒 **End-to-end encrypted**: no server ever sees your messages
 - 👤 **No account**: no phone number needed, no email, no sign-up
 - 💾 **Your chats stay with you**, encrypted on your device
@@ -44,7 +44,7 @@ Live: https://eziomercer.github.io/web-rtc-chat/
    accounts.
 2. **Your identity is keys, not an account.** For each contact the app creates a new key pair on your device, so no
    two contacts see the same key and they can't tell they know the same person (unless you add a picture, phone
-   number or description: everyone gets the same ones). There is no sign-up, email, phone
+   number, description or birthday: everyone gets the same ones). There is no sign-up, email, phone
    number or password. You choose how the keys and chats are protected on this device:
    - **passkey:** fingerprint, face or device PIN (recommended);
    - **passphrase;**
@@ -74,11 +74,11 @@ Live: https://eziomercer.github.io/web-rtc-chat/
    After that, relays aren't involved in that conversation. Every time you connect, the two apps also swap a new
    mailbox secret over the direct link, so an old invite or secret stops working.
 7. **Your profile goes the same way.** Settings → Profile info: a picture (a small 256 px square made from any
-   photo), a mobile number (checked for its country) and a description of up to 150 characters, all optional. The
-   number's country is guessed on the device from its time zone, nothing is asked of a server. Each time a contact
-   connects, your app sends two fingerprints (hashes): one of the picture, one of the phone and description. Only
-   for a part that differs do they ask, over the direct link. A change reaches connected contacts right away, the
-   others when they connect next.
+   photo), a mobile number (checked for its country), a description of up to 150 characters and a birthday (the year
+   is optional), all optional. The number's country is guessed on the device from its time zone, nothing is asked of
+   a server. Each time a contact connects, your app sends two fingerprints (hashes): one of the picture, one of the
+   phone, description and birthday. Only for a part that differs do they ask, over the direct link. A change reaches
+   connected contacts right away, the others when they connect next.
 6. **Chats stay on your device.** Messages and files are saved in the browser (IndexedDB), encrypted, and come back
    after a reload. With a temporary identity they live only in the tab's memory, and so does the manual connection's
    chat. The app runs in one tab at a time: a second tab waits until the first is closed.
@@ -131,7 +131,7 @@ hand, without contacts or relays.
 - **Messages never touch a server.** No server or relay ever stores (or sees) them. Only your own device keeps
   them, and only encrypted.
   - Saved in IndexedDB: your contact list (names, their profiles, both public keys, mailbox secrets), your private
-    key for each contact, your settings, your profile (picture, phone number, description), and your chats
+    key for each contact, your settings, your profile (picture, phone number, description, birthday), and your chats
     (messages, files, voice and video messages).
   - All of it is encrypted (AES-GCM) with a random data key. The data key is encrypted with your passkey or
     passphrase key; changing the protection only encrypts the data key again. With "no protection" the key that
@@ -171,7 +171,7 @@ Restore (or "Restore from a backup file" on the first screen) brings them back, 
 - **Offline meanwhile.** While a backup is made or restored, the app stops the relays and closes its connections,
   so nothing changes halfway. Then it reconnects by itself.
 - **Restoring adds and replaces.** A chat from the backup replaces the same chat on the device; others are added;
-  chats only on the device stay. Your picture, and your phone number and description, come back from the backup only
+  chats only on the device stay. Your picture, and your phone number, description and birthday, come back from the backup only
   if the device has none. If a
   different contact here has the same name, you choose: keep this device's, the backup's, or both. A restore is all or nothing: the whole file is checked and written first, and only then
   switched in at once.

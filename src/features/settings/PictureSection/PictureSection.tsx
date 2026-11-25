@@ -9,16 +9,21 @@ import { ButtonVariant } from '../../../ui/Button/ButtonVariant.ts';
 import settingsStyles from '../SettingsDialog/SettingsDialog.module.css';
 import styles from './PictureSection.module.css';
 
+type Props = {
+  // The picture is being made or sent (the profile's Save waits for it too).
+  busy: boolean;
+  onBusy: (busy: boolean) => void;
+};
+
 // Our picture, which every contact sees: choose, change or remove it.
-export const PictureSection = () => {
+export const PictureSection = ({ busy, onBusy }: Props) => {
   const dispatch = useAppDispatch();
   const picture = useAppSelector(state => state.profile.picture);
   const inputRef = useRef<HTMLInputElement>(null);
-  const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
   const change = async (file: Blob | null) => {
-    setBusy(true);
+    onBusy(true);
     setError('');
 
     try {
@@ -26,7 +31,7 @@ export const PictureSection = () => {
     } catch (err) {
       setError(errorMessage(err));
     } finally {
-      setBusy(false);
+      onBusy(false);
     }
   };
 

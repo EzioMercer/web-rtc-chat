@@ -6,4 +6,6 @@ export type ProfileState = {
   phone: string;
   // A few words about ourselves (up to MAX_ABOUT_CHARS, new lines allowed), or '' for none. Sent like the picture.
   about: string;
+  // "2001-02-28", or "--02-28" without the year (see isBirthday), or '' for none. Sent like the picture.
+  birthday: string;
 };

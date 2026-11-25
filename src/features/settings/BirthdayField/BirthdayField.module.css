@@ -1,0 +1,73 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* On a narrow phone the year goes to its own line rather than being squeezed. */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.part,
+.year {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.part {
+  flex: 0 0 auto;
+}
+
+.year {
+  flex: 1 1 5.5em;
+  /* Narrower than a text box's natural width, which would push it to the next line. */
+  min-width: 0;
+}
+
+.small {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.day,
+.input {
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--field);
+  outline: none;
+  font-variant-numeric: tabular-nums;
+  transition: border-color 0.15s;
+}
+
+/* Room for two digits inside the padding. */
+.day {
+  box-sizing: content-box;
+  width: 3ch;
+}
+
+.input {
+  width: 100%;
+}
+
+/* Short numbers read best in the middle of their boxes (the placeholder too). */
+.day,
+.input {
+  text-align: center;
+}
+
+.day:focus,
+.input:focus {
+  border-color: var(--accent);
+}

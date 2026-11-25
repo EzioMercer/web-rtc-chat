@@ -74,6 +74,7 @@ export const writeBackup = async (
     ...(source.profile.picture ? { picture: source.profile.picture } : {}),
     ...(source.profile.phone ? { phone: source.profile.phone } : {}),
     ...(source.profile.about ? { about: source.profile.about } : {}),
+    ...(source.profile.birthday ? { birthday: source.profile.birthday } : {}),
   };
 
   await writer.json(RecordType.Info, info);

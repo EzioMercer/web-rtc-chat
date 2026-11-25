@@ -6,6 +6,7 @@ export const EMPTY_PROFILE: ProfileState = {
   picture: null,
   phone: '',
   about: '',
+  birthday: '',
 };
 
 const profileSlice = createSlice({
@@ -19,6 +20,7 @@ const profileSlice = createSlice({
     infoChosen: (state, { payload }: PayloadAction<ProfileInfo>) => {
       state.phone = payload.phone;
       state.about = payload.about;
+      state.birthday = payload.birthday;
     },
   },
 });
